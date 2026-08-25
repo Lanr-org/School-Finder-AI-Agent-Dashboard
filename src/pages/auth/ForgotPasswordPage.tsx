@@ -1,4 +1,5 @@
 import {
+  AlertCircle,
   ArrowLeft,
   ArrowRight,
   CheckCircle2,
@@ -7,22 +8,37 @@ import {
   Mail,
   ShieldCheck,
 } from 'lucide-react'
+import { isAxiosError } from 'axios'
 import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import Button from '../../components/ui/Button.js'
 import Card from '../../components/ui/Card.js'
 import Input from '../../components/ui/Input.js'
+import { api } from '../../lib/api/client.js'
+import type { ApiErrorResponse } from '../../lib/api/types.js'
 
 type RequestState = 'idle' | 'submitting' | 'sent'
 
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState('')
   const [requestState, setRequestState] = useState<RequestState>('idle')
+  const [error, setError] = useState<string | null>(null)
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
+    setError(null)
     setRequestState('submitting')
-    window.setTimeout(() => setRequestState('sent'), 650)
+
+    try {
+      await api.post('/auth/forgot-password', { email })
+      setRequestState('sent')
+    } catch (err) {
+      const message = isAxiosError<ApiErrorResponse>(err)
+        ? (err.response?.data.error.message ?? 'Failed to send reset link')
+        : 'Failed to send reset link'
+      setError(message)
+      setRequestState('idle')
+    }
   }
 
   return (
@@ -98,6 +114,13 @@ const ForgotPasswordPage = () => {
                 </div>
 
                 <form className="space-y-5" onSubmit={handleSubmit}>
+                  {error ? (
+                    <div className="flex items-start gap-2 rounded-xl bg-[#FEE2E2] px-4 py-3 text-sm text-[#B91C1C]">
+                      <AlertCircle className="mt-0.5 shrink-0" size={16} />
+                      <span>{error}</span>
+                    </div>
+                  ) : null}
+
                   <Input
                     autoComplete="email"
                     id="recovery-email"

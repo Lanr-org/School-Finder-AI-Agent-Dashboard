@@ -1,183 +1,94 @@
 import {
-  ArrowDownUp,
+  AlertCircle,
   BookOpen,
-  CalendarClock,
   ChevronLeft,
   ChevronRight,
   CircleDollarSign,
-  GraduationCap,
+  Loader2,
   Pencil,
   Plus,
-  Search,
   School,
-  Sparkles,
+  Search,
 } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { isAxiosError } from 'axios'
 import AppShell from '../../components/layout/AppShell.js'
 import Badge from '../../components/ui/Badge.js'
 import Button from '../../components/ui/Button.js'
 import Card from '../../components/ui/Card.js'
 import Input from '../../components/ui/Input.js'
+import type { ApiErrorResponse } from '../../lib/api/types.js'
+import { useAuthStore } from '../../store/authStore.js'
+import { useSchools } from '../../features/schools/useSchools.js'
+import { usePrograms } from '../../features/programs/usePrograms.js'
+import type { ProgramIntake, StudyLevel } from '../../features/programs/programs.api.js'
 
-type ScholarshipStatus = 'Available' | 'Limited' | 'Unavailable'
+const PAGE_SIZE = 20
+const MANAGE_ROLES = ['ADMIN', 'OPERATIONS']
 
-type ProgramRecord = {
-  category: string
-  country: string
-  currency: string
-  deadline: string
-  id: string
-  intakePeriods: string[]
-  level: string
-  name: string
-  scholarship: ScholarshipStatus
-  school: string
-  schoolId: string
-  tuitionAmount: number
-}
-
-const programs: ProgramRecord[] = [
-  {
-    category: 'Business',
-    country: 'Canada',
-    currency: 'CAD',
-    deadline: 'Jun 30, 2026',
-    id: 'PRG-3108',
-    intakePeriods: ['Fall 2026'],
-    level: 'Postgraduate',
-    name: 'Business Analytics',
-    scholarship: 'Available',
-    school: 'Northbridge College',
-    schoolId: 'SCH-2048',
-    tuitionAmount: 22400,
-  },
-  {
-    category: 'Computing and IT',
-    country: 'Canada',
-    currency: 'CAD',
-    deadline: 'Jul 15, 2026',
-    id: 'PRG-3107',
-    intakePeriods: ['Fall 2026', 'Winter 2027'],
-    level: 'Postgraduate',
-    name: 'Data and Business Intelligence',
-    scholarship: 'Limited',
-    school: 'Northbridge College',
-    schoolId: 'SCH-2048',
-    tuitionAmount: 23100,
-  },
-  {
-    category: 'Health Sciences',
-    country: 'United Kingdom',
-    currency: 'GBP',
-    deadline: 'Aug 14, 2026',
-    id: 'PRG-3106',
-    intakePeriods: ['Fall 2026'],
-    level: 'Masters',
-    name: 'Public Health',
-    scholarship: 'Available',
-    school: 'Westhaven University',
-    schoolId: 'SCH-2046',
-    tuitionAmount: 19600,
-  },
-  {
-    category: 'Computing and IT',
-    country: 'Australia',
-    currency: 'AUD',
-    deadline: 'Sep 1, 2026',
-    id: 'PRG-3105',
-    intakePeriods: ['Spring 2027'],
-    level: 'Undergraduate',
-    name: 'Computer Science',
-    scholarship: 'Unavailable',
-    school: 'Harbour Institute',
-    schoolId: 'SCH-2045',
-    tuitionAmount: 28400,
-  },
-  {
-    category: 'Engineering',
-    country: 'Germany',
-    currency: 'EUR',
-    deadline: 'Oct 15, 2026',
-    id: 'PRG-3104',
-    intakePeriods: ['Winter 2027'],
-    level: 'Masters',
-    name: 'Mechanical Engineering',
-    scholarship: 'Limited',
-    school: 'Linden Technical Institute',
-    schoolId: 'SCH-2043',
-    tuitionAmount: 14800,
-  },
-  {
-    category: 'Business',
-    country: 'Canada',
-    currency: 'CAD',
-    deadline: 'Oct 30, 2026',
-    id: 'PRG-3103',
-    intakePeriods: ['Winter 2027'],
-    level: 'Diploma',
-    name: 'International Business Management',
-    scholarship: 'Unavailable',
-    school: 'Northbridge College',
-    schoolId: 'SCH-2048',
-    tuitionAmount: 18750,
-  },
+const studyLevelOptions: { label: string; value: StudyLevel | 'ALL' }[] = [
+  { label: 'All levels', value: 'ALL' },
+  { label: 'Undergraduate', value: 'UNDERGRADUATE' },
+  { label: 'Postgraduate', value: 'POSTGRADUATE' },
+  { label: 'Doctorate', value: 'DOCTORATE' },
+  { label: 'Foundation', value: 'FOUNDATION' },
 ]
 
-const scholarshipTone: Record<ScholarshipStatus, 'success' | 'warning' | 'neutral'> = {
-  Available: 'success',
-  Limited: 'warning',
-  Unavailable: 'neutral',
+const studyLevelLabels: Record<StudyLevel, string> = {
+  DOCTORATE: 'Doctorate',
+  FOUNDATION: 'Foundation',
+  POSTGRADUATE: 'Postgraduate',
+  UNDERGRADUATE: 'Undergraduate',
 }
 
-const programStats = [
-  { icon: BookOpen, label: 'Total programs', note: 'Across 164 schools', value: '1,286' },
-  { icon: GraduationCap, label: 'Study levels', note: 'Certificate to doctorate', value: '7' },
-  { icon: Sparkles, label: 'Scholarship options', note: '312 currently available', value: '418' },
-  { icon: CalendarClock, label: 'Deadlines due', note: 'Within the next 30 days', value: '42' },
-] as const
+const formatIntakeMonth = (month: string) => month.charAt(0) + month.slice(1).toLowerCase()
+
+const formatDate = (value: string) =>
+  new Date(value).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
+
+const getNextDeadline = (intakes: ProgramIntake[]) => {
+  const deadlines = intakes
+    .map((intake) => intake.applicationDeadline)
+    .filter((deadline): deadline is string => deadline !== null)
+    .sort()
+  const now = new Date().toISOString()
+  return deadlines.find((deadline) => deadline >= now) ?? deadlines.at(-1) ?? null
+}
 
 const ProgramsPage = () => {
-  const [country, setCountry] = useState('All countries')
-  const [intake, setIntake] = useState('All intakes')
-  const [level, setLevel] = useState('All levels')
-  const [maxTuition, setMaxTuition] = useState('Any tuition')
-  const [query, setQuery] = useState('')
-  const [scholarship, setScholarship] = useState('All scholarships')
-  const [school, setSchool] = useState('All schools')
+  const canManage = useAuthStore((state) => (state.user ? MANAGE_ROLES.includes(state.user.role) : false))
+  const [searchInput, setSearchInput] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [studyLevel, setStudyLevel] = useState<StudyLevel | 'ALL'>('ALL')
+  const [schoolId, setSchoolId] = useState('ALL')
+  const [page, setPage] = useState(1)
 
-  const filteredPrograms = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase()
-    const tuitionLimit = maxTuition === 'Any tuition' ? Number.POSITIVE_INFINITY : Number(maxTuition)
+  useEffect(() => {
+    const timeout = setTimeout(() => setDebouncedSearch(searchInput.trim()), 300)
+    return () => clearTimeout(timeout)
+  }, [searchInput])
 
-    return programs.filter((program) => {
-      const matchesQuery =
-        !normalizedQuery ||
-        program.name.toLowerCase().includes(normalizedQuery) ||
-        program.school.toLowerCase().includes(normalizedQuery) ||
-        program.category.toLowerCase().includes(normalizedQuery)
+  const { data: schoolsData } = useSchools({ page: 1, limit: 100 })
+  const schoolOptions = schoolsData?.schools ?? []
 
-      return (
-        matchesQuery &&
-        (country === 'All countries' || program.country === country) &&
-        (school === 'All schools' || program.school === school) &&
-        (level === 'All levels' || program.level === level) &&
-        (intake === 'All intakes' || program.intakePeriods.some((period) => period.startsWith(intake))) &&
-        (scholarship === 'All scholarships' || program.scholarship === scholarship) &&
-        program.tuitionAmount <= tuitionLimit
-      )
-    })
-  }, [country, intake, level, maxTuition, query, scholarship, school])
+  const queryParams = useMemo(
+    () => ({
+      page,
+      limit: PAGE_SIZE,
+      search: debouncedSearch || undefined,
+      studyLevel: studyLevel === 'ALL' ? undefined : studyLevel,
+      schoolId: schoolId === 'ALL' ? undefined : schoolId,
+    }),
+    [debouncedSearch, page, schoolId, studyLevel],
+  )
 
-  const clearFilters = () => {
-    setCountry('All countries')
-    setIntake('All intakes')
-    setLevel('All levels')
-    setMaxTuition('Any tuition')
-    setQuery('')
-    setScholarship('All scholarships')
-    setSchool('All schools')
-  }
+  const { data, error, isError, isLoading, isFetching } = usePrograms(queryParams)
+
+  const resetToFirstPage = () => setPage(1)
+
+  const programs = data?.programs ?? []
+  const pagination = data?.pagination
 
   return (
     <AppShell>
@@ -191,10 +102,7 @@ const ProgramsPage = () => {
             </p>
           </div>
 
-          <div className="flex flex-wrap gap-3">
-            <Button leftIcon={<ArrowDownUp size={17} />} size="md" variant="secondary">
-              Recently updated
-            </Button>
+          {canManage ? (
             <Link
               className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-transparent bg-[#045A58] px-4 text-sm font-semibold text-white outline-none transition hover:bg-[#034A48] focus:ring-4 focus:ring-[#E6F4F3]"
               to="/programs/new"
@@ -202,28 +110,7 @@ const ProgramsPage = () => {
               <Plus size={17} />
               Add program
             </Link>
-          </div>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {programStats.map((stat) => {
-            const Icon = stat.icon
-
-            return (
-              <Card className="p-5" key={stat.label}>
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-medium text-[#6B7280]">{stat.label}</p>
-                    <p className="mt-3 text-3xl font-semibold tracking-normal text-[#111827]">{stat.value}</p>
-                    <p className="mt-2 text-xs font-medium text-[#6B7280]">{stat.note}</p>
-                  </div>
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#E6F4F3] text-[#045A58]">
-                    <Icon size={20} />
-                  </div>
-                </div>
-              </Card>
-            )
-          })}
+          ) : null}
         </div>
 
         <Card className="p-0">
@@ -235,84 +122,66 @@ const ProgramsPage = () => {
               </p>
             </div>
 
-            <div className="mt-5 grid gap-3 xl:grid-cols-[minmax(280px,1fr)_180px_180px_160px]">
+            <div className="mt-5 grid gap-3 xl:grid-cols-[minmax(280px,1fr)_220px_200px]">
               <Input
                 className="h-11 bg-[#F9FAFB]"
                 id="program-search"
                 leftIcon={<Search size={18} />}
-                onChange={(event) => setQuery(event.target.value)}
-                placeholder="Search program, school, or category"
+                onChange={(event) => {
+                  setSearchInput(event.target.value)
+                  resetToFirstPage()
+                }}
+                placeholder="Search by program name"
                 type="search"
-                value={query}
-              />
-              <FilterSelect
-                id="country-filter"
-                label="Country"
-                onChange={setCountry}
-                options={['All countries', 'Canada', 'United Kingdom', 'Australia', 'Germany']}
-                value={country}
+                value={searchInput}
               />
               <FilterSelect
                 id="school-filter"
                 label="School"
-                onChange={setSchool}
+                onChange={(value) => {
+                  setSchoolId(value)
+                  resetToFirstPage()
+                }}
                 options={[
-                  'All schools',
-                  'Northbridge College',
-                  'Westhaven University',
-                  'Harbour Institute',
-                  'Linden Technical Institute',
+                  { label: 'All schools', value: 'ALL' },
+                  ...schoolOptions.map((s) => ({ label: s.name, value: s.publicId })),
                 ]}
-                value={school}
+                value={schoolId}
               />
               <FilterSelect
                 id="level-filter"
                 label="Level"
-                onChange={setLevel}
-                options={['All levels', 'Diploma', 'Undergraduate', 'Postgraduate', 'Masters']}
-                value={level}
-              />
-            </div>
-
-            <div className="mt-3 grid gap-3 sm:grid-cols-3 xl:max-w-[720px]">
-              <FilterSelect
-                id="tuition-filter"
-                label="Tuition"
-                onChange={setMaxTuition}
-                options={[
-                  { label: 'Any tuition', value: 'Any tuition' },
-                  { label: 'Up to 15,000', value: '15000' },
-                  { label: 'Up to 20,000', value: '20000' },
-                  { label: 'Up to 25,000', value: '25000' },
-                  { label: 'Up to 30,000', value: '30000' },
-                ]}
-                value={maxTuition}
-              />
-              <FilterSelect
-                id="intake-filter"
-                label="Intake"
-                onChange={setIntake}
-                options={['All intakes', 'Fall', 'Winter', 'Spring', 'Summer']}
-                value={intake}
-              />
-              <FilterSelect
-                id="scholarship-filter"
-                label="Scholarship"
-                onChange={setScholarship}
-                options={['All scholarships', 'Available', 'Limited', 'Unavailable']}
-                value={scholarship}
+                onChange={(value) => {
+                  setStudyLevel(value as StudyLevel | 'ALL')
+                  resetToFirstPage()
+                }}
+                options={studyLevelOptions}
+                value={studyLevel}
               />
             </div>
           </div>
 
-          {filteredPrograms.length ? (
-            <div className="overflow-x-auto">
+          {isLoading ? (
+            <div className="flex min-h-72 flex-col items-center justify-center gap-3 px-6 py-12 text-center">
+              <Loader2 className="animate-spin text-[#045A58]" size={24} />
+              <p className="text-sm text-[#6B7280]">Loading programs…</p>
+            </div>
+          ) : isError ? (
+            <div className="flex min-h-72 flex-col items-center justify-center gap-3 px-6 py-12 text-center">
+              <AlertCircle className="text-[#DC2626]" size={24} />
+              <p className="text-sm text-[#6B7280]">
+                {isAxiosError<ApiErrorResponse>(error)
+                  ? (error.response?.data.error.message ?? 'Failed to load programs')
+                  : 'Failed to load programs'}
+              </p>
+            </div>
+          ) : programs.length ? (
+            <div className={`overflow-x-auto ${isFetching ? 'opacity-60' : ''}`}>
               <table className="w-full min-w-[1160px] text-left">
                 <thead>
                   <tr className="border-b border-[#E5E7EB] text-xs font-semibold uppercase tracking-normal text-[#6B7280]">
                     <th className="px-6 py-3">Program name</th>
                     <th className="px-6 py-3">School</th>
-                    <th className="px-6 py-3">Country</th>
                     <th className="px-6 py-3">Level</th>
                     <th className="px-6 py-3">Tuition</th>
                     <th className="px-6 py-3">Intake periods</th>
@@ -322,8 +191,8 @@ const ProgramsPage = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#E5E7EB]">
-                  {filteredPrograms.map((program) => (
-                    <tr className="transition hover:bg-[#F9FAFB]" key={program.id}>
+                  {programs.map((program) => (
+                    <tr className="transition hover:bg-[#F9FAFB]" key={program.publicId}>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#E6F4F3] text-[#045A58]">
@@ -332,12 +201,12 @@ const ProgramsPage = () => {
                           <div>
                             <Link
                               className="text-sm font-semibold text-[#111827] outline-none transition hover:text-[#045A58] focus:underline"
-                              to={`/programs/${program.id}`}
+                              to={`/programs/${program.publicId}`}
                             >
                               {program.name}
                             </Link>
                             <p className="mt-1 text-xs font-medium text-[#6B7280]">
-                              {program.id} · {program.category}
+                              {program.publicId} · {program.category}
                             </p>
                           </div>
                         </div>
@@ -345,44 +214,52 @@ const ProgramsPage = () => {
                       <td className="px-6 py-4">
                         <Link
                           className="inline-flex items-center gap-2 text-sm font-semibold text-[#045A58] outline-none hover:text-[#034A48] focus:underline"
-                          to={`/schools/${program.schoolId}`}
+                          to={`/schools/${program.school.publicId}`}
                         >
                           <School size={16} />
-                          {program.school}
+                          {program.school.name}
                         </Link>
                       </td>
-                      <td className="px-6 py-4 text-sm text-[#6B7280]">{program.country}</td>
                       <td className="px-6 py-4">
-                        <Badge tone="brand">{program.level}</Badge>
+                        <Badge tone="brand">{studyLevelLabels[program.studyLevel]}</Badge>
                       </td>
                       <td className="px-6 py-4">
                         <span className="inline-flex items-center gap-2 text-sm font-semibold text-[#111827]">
                           <CircleDollarSign className="text-[#6B7280]" size={16} />
-                          {program.currency} {program.tuitionAmount.toLocaleString()}
+                          {program.tuitionCurrency} {Number(program.tuitionAmount).toLocaleString()}
                         </span>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex flex-wrap gap-1.5">
-                          {program.intakePeriods.map((period) => (
-                            <Badge className="h-6 px-2" key={period} tone="neutral">
-                              {period}
+                          {program.intakes.map((intake) => (
+                            <Badge className="h-6 px-2" key={`${intake.month}-${intake.year}`} tone="neutral">
+                              {formatIntakeMonth(intake.month)} {intake.year}
                             </Badge>
                           ))}
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-sm font-medium text-[#6B7280]">{program.deadline}</td>
-                      <td className="px-6 py-4">
-                        <Badge tone={scholarshipTone[program.scholarship]}>{program.scholarship}</Badge>
+                      <td className="px-6 py-4 text-sm font-medium text-[#6B7280]">
+                        {(() => {
+                          const nextDeadline = getNextDeadline(program.intakes)
+                          return nextDeadline ? formatDate(nextDeadline) : '—'
+                        })()}
+                      </td>
+                      <td className="px-6 py-4 text-sm text-[#6B7280]">
+                        {program.scholarshipAvailability ?? '—'}
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <Link
-                          aria-label={`Edit ${program.name}`}
-                          className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-[#6B7280] outline-none transition hover:bg-[#E6F4F3] hover:text-[#045A58] focus:ring-4 focus:ring-[#E6F4F3]"
-                          title="Edit program"
-                          to={`/programs/${program.id}/edit`}
-                        >
-                          <Pencil size={16} />
-                        </Link>
+                        {canManage ? (
+                          <Link
+                            aria-label={`Edit ${program.name}`}
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-[#6B7280] outline-none transition hover:bg-[#E6F4F3] hover:text-[#045A58] focus:ring-4 focus:ring-[#E6F4F3]"
+                            title="Edit program"
+                            to={`/programs/${program.publicId}/edit`}
+                          >
+                            <Pencil size={16} />
+                          </Link>
+                        ) : (
+                          <p className="text-xs font-medium text-[#9CA3AF]">View only</p>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -398,7 +275,17 @@ const ProgramsPage = () => {
               <p className="mt-2 max-w-md text-sm leading-6 text-[#6B7280]">
                 Adjust the search or clear filters to return to the complete program directory.
               </p>
-              <Button className="mt-5" onClick={clearFilters} size="md" variant="secondary">
+              <Button
+                className="mt-5"
+                onClick={() => {
+                  setSearchInput('')
+                  setStudyLevel('ALL')
+                  setSchoolId('ALL')
+                  resetToFirstPage()
+                }}
+                size="md"
+                variant="secondary"
+              >
                 Clear filters
               </Button>
             </div>
@@ -406,14 +293,30 @@ const ProgramsPage = () => {
 
           <div className="flex flex-col gap-3 border-t border-[#E5E7EB] px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
             <p className="text-sm text-[#6B7280]">
-              Showing <span className="font-semibold text-[#111827]">{filteredPrograms.length}</span> of{' '}
-              <span className="font-semibold text-[#111827]">1,286</span> programs
+              {pagination ? (
+                <>
+                  Showing <span className="font-semibold text-[#111827]">{programs.length}</span> of{' '}
+                  <span className="font-semibold text-[#111827]">{pagination.total}</span> programs
+                </>
+              ) : null}
             </p>
             <div className="flex items-center gap-2">
-              <Button disabled leftIcon={<ChevronLeft size={16} />} size="sm" variant="secondary">
+              <Button
+                disabled={page <= 1}
+                leftIcon={<ChevronLeft size={16} />}
+                onClick={() => setPage((current) => Math.max(1, current - 1))}
+                size="sm"
+                variant="secondary"
+              >
                 Previous
               </Button>
-              <Button rightIcon={<ChevronRight size={16} />} size="sm" variant="secondary">
+              <Button
+                disabled={!pagination || page >= pagination.totalPages}
+                onClick={() => setPage((current) => current + 1)}
+                rightIcon={<ChevronRight size={16} />}
+                size="sm"
+                variant="secondary"
+              >
                 Next
               </Button>
             </div>
@@ -424,16 +327,11 @@ const ProgramsPage = () => {
   )
 }
 
-type FilterOption = string | {
-  label: string
-  value: string
-}
-
 type FilterSelectProps = {
   id: string
   label: string
   onChange: (value: string) => void
-  options: FilterOption[]
+  options: { label: string; value: string }[]
   value: string
 }
 
@@ -448,16 +346,11 @@ const FilterSelect = ({ id, label, onChange, options, value }: FilterSelectProps
       onChange={(event) => onChange(event.target.value)}
       value={value}
     >
-      {options.map((option) => {
-        const label = typeof option === 'string' ? option : option.label
-        const optionValue = typeof option === 'string' ? option : option.value
-
-        return (
-          <option key={optionValue} value={optionValue}>
-            {label}
-          </option>
-        )
-      })}
+      {options.map((option) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
     </select>
   </div>
 )

@@ -1,156 +1,104 @@
 import {
-  ArrowDownUp,
-  BookOpen,
+  AlertCircle,
   Building2,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
   CircleOff,
   ExternalLink,
+  Loader2,
   MapPin,
   Pencil,
   Plus,
   Search,
-  ShieldCheck,
 } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { isAxiosError } from 'axios'
 import AppShell from '../../components/layout/AppShell.js'
 import Badge from '../../components/ui/Badge.js'
 import Button from '../../components/ui/Button.js'
 import Card from '../../components/ui/Card.js'
 import Input from '../../components/ui/Input.js'
+import { api } from '../../lib/api/client.js'
+import type { ApiErrorResponse } from '../../lib/api/types.js'
+import { useAuthStore } from '../../store/authStore.js'
+import { useSchools } from '../../features/schools/useSchools.js'
+import type { PartnerStatus, School, SchoolType } from '../../features/schools/schools.api.js'
 
-type PartnerStatus = 'Partner' | 'Prospect' | 'Non-partner'
-type SchoolStatus = 'Active' | 'Inactive'
+const PAGE_SIZE = 20
+const MANAGE_ROLES = ['ADMIN', 'OPERATIONS']
 
-type SchoolRecord = {
-  city: string
-  country: string
-  id: string
-  lastUpdated: string
-  name: string
-  partnerStatus: PartnerStatus
-  programCount: number
-  status: SchoolStatus
-  type: 'College' | 'University' | 'Institute'
-  visaFriendlinessScore: number
-}
-
-const schools: SchoolRecord[] = [
-  {
-    city: 'Toronto',
-    country: 'Canada',
-    id: 'SCH-2048',
-    lastUpdated: 'Today, 9:42 AM',
-    name: 'Northbridge College',
-    partnerStatus: 'Partner',
-    programCount: 28,
-    status: 'Active',
-    type: 'College',
-    visaFriendlinessScore: 92,
-  },
-  {
-    city: 'Vancouver',
-    country: 'Canada',
-    id: 'SCH-2047',
-    lastUpdated: 'Yesterday',
-    name: 'Maple Coast University',
-    partnerStatus: 'Prospect',
-    programCount: 41,
-    status: 'Active',
-    type: 'University',
-    visaFriendlinessScore: 88,
-  },
-  {
-    city: 'Manchester',
-    country: 'United Kingdom',
-    id: 'SCH-2046',
-    lastUpdated: '2 days ago',
-    name: 'Westhaven University',
-    partnerStatus: 'Partner',
-    programCount: 35,
-    status: 'Active',
-    type: 'University',
-    visaFriendlinessScore: 86,
-  },
-  {
-    city: 'Melbourne',
-    country: 'Australia',
-    id: 'SCH-2045',
-    lastUpdated: '3 days ago',
-    name: 'Harbour Institute',
-    partnerStatus: 'Non-partner',
-    programCount: 19,
-    status: 'Active',
-    type: 'Institute',
-    visaFriendlinessScore: 81,
-  },
-  {
-    city: 'Birmingham',
-    country: 'United Kingdom',
-    id: 'SCH-2044',
-    lastUpdated: 'May 29, 2026',
-    name: 'Kingsford Metropolitan College',
-    partnerStatus: 'Prospect',
-    programCount: 16,
-    status: 'Inactive',
-    type: 'College',
-    visaFriendlinessScore: 74,
-  },
-  {
-    city: 'Berlin',
-    country: 'Germany',
-    id: 'SCH-2043',
-    lastUpdated: 'May 27, 2026',
-    name: 'Linden Technical Institute',
-    partnerStatus: 'Non-partner',
-    programCount: 22,
-    status: 'Active',
-    type: 'Institute',
-    visaFriendlinessScore: 79,
-  },
+const typeOptions: { label: string; value: SchoolType | 'ALL' }[] = [
+  { label: 'All types', value: 'ALL' },
+  { label: 'University', value: 'UNIVERSITY' },
+  { label: 'College', value: 'COLLEGE' },
+  { label: 'Institute', value: 'INSTITUTE' },
+  { label: 'Polytechnic', value: 'POLYTECHNIC' },
 ]
 
-const partnerTone: Record<PartnerStatus, 'brand' | 'neutral' | 'success' | 'warning'> = {
-  'Non-partner': 'neutral',
-  Partner: 'success',
-  Prospect: 'warning',
+const partnerOptions: { label: string; value: PartnerStatus | 'ALL' }[] = [
+  { label: 'All partner statuses', value: 'ALL' },
+  { label: 'Partner', value: 'PARTNER' },
+  { label: 'Prospect', value: 'PROSPECT' },
+  { label: 'Non-partner', value: 'NON_PARTNER' },
+]
+
+const partnerLabels: Record<PartnerStatus, string> = {
+  PARTNER: 'Partner',
+  PROSPECT: 'Prospect',
+  NON_PARTNER: 'Non-partner',
 }
 
-const schoolStats = [
-  { icon: Building2, label: 'Total schools', note: 'Across 12 countries', value: '164' },
-  { icon: CheckCircle2, label: 'Active records', note: '94% of directory', value: '154' },
-  { icon: ShieldCheck, label: 'Partner schools', note: '8 added this quarter', value: '68' },
-  { icon: BookOpen, label: 'Linked programs', note: '42 need review', value: '1,286' },
-] as const
+const partnerTone: Record<PartnerStatus, 'brand' | 'neutral' | 'success' | 'warning'> = {
+  NON_PARTNER: 'neutral',
+  PARTNER: 'success',
+  PROSPECT: 'warning',
+}
+
+const formatDate = (value: string) =>
+  new Date(value).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
 
 const SchoolsPage = () => {
-  const [city, setCity] = useState('All cities')
-  const [country, setCountry] = useState('All countries')
-  const [partnerStatus, setPartnerStatus] = useState('All partner statuses')
-  const [query, setQuery] = useState('')
-  const [type, setType] = useState('All types')
+  const queryClient = useQueryClient()
+  const canManage = useAuthStore((state) => (state.user ? MANAGE_ROLES.includes(state.user.role) : false))
+  const [searchInput, setSearchInput] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [type, setType] = useState<SchoolType | 'ALL'>('ALL')
+  const [partnerStatus, setPartnerStatus] = useState<PartnerStatus | 'ALL'>('ALL')
+  const [page, setPage] = useState(1)
 
-  const filteredSchools = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase()
+  useEffect(() => {
+    const timeout = setTimeout(() => setDebouncedSearch(searchInput.trim()), 300)
+    return () => clearTimeout(timeout)
+  }, [searchInput])
 
-    return schools.filter((school) => {
-      const matchesQuery =
-        !normalizedQuery ||
-        school.name.toLowerCase().includes(normalizedQuery) ||
-        school.city.toLowerCase().includes(normalizedQuery) ||
-        school.country.toLowerCase().includes(normalizedQuery)
+  const queryParams = useMemo(
+    () => ({
+      page,
+      limit: PAGE_SIZE,
+      search: debouncedSearch || undefined,
+      schoolType: type === 'ALL' ? undefined : type,
+      partnerStatus: partnerStatus === 'ALL' ? undefined : partnerStatus,
+    }),
+    [debouncedSearch, page, partnerStatus, type],
+  )
 
-      return (
-        matchesQuery &&
-        (country === 'All countries' || school.country === country) &&
-        (city === 'All cities' || school.city === city) &&
-        (type === 'All types' || school.type === type) &&
-        (partnerStatus === 'All partner statuses' || school.partnerStatus === partnerStatus)
-      )
-    })
-  }, [city, country, partnerStatus, query, type])
+  const { data, error, isError, isLoading, isFetching } = useSchools(queryParams)
+
+  const toggleStatus = useMutation({
+    mutationFn: (school: School) =>
+      school.recordStatus === 'ACTIVE'
+        ? api.delete(`/schools/${school.publicId}`)
+        : api.patch(`/schools/${school.publicId}`, { recordStatus: 'ACTIVE' }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['schools'] }),
+  })
+
+  const resetToFirstPage = () => setPage(1)
+
+  const schools = data?.schools ?? []
+  const pagination = data?.pagination
 
   return (
     <AppShell>
@@ -168,111 +116,95 @@ const SchoolsPage = () => {
             <Button leftIcon={<ExternalLink size={17} />} size="md" variant="secondary">
               Export directory
             </Button>
-            <Link
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-transparent bg-[#045A58] px-4 text-sm font-semibold text-white outline-none transition hover:bg-[#034A48] focus:ring-4 focus:ring-[#E6F4F3]"
-              to="/schools/new"
-            >
-              <Plus size={17} />
-              Add school
-            </Link>
+            {canManage ? (
+              <Link
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-transparent bg-[#045A58] px-4 text-sm font-semibold text-white outline-none transition hover:bg-[#034A48] focus:ring-4 focus:ring-[#E6F4F3]"
+                to="/schools/new"
+              >
+                <Plus size={17} />
+                Add school
+              </Link>
+            ) : null}
           </div>
-        </div>
-
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {schoolStats.map((stat) => {
-            const Icon = stat.icon
-
-            return (
-              <Card className="p-5" key={stat.label}>
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-medium text-[#6B7280]">{stat.label}</p>
-                    <p className="mt-3 text-3xl font-semibold tracking-normal text-[#111827]">{stat.value}</p>
-                    <p className="mt-2 text-xs font-medium text-[#6B7280]">{stat.note}</p>
-                  </div>
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#E6F4F3] text-[#045A58]">
-                    <Icon size={20} />
-                  </div>
-                </div>
-              </Card>
-            )
-          })}
         </div>
 
         <Card className="p-0">
           <div className="border-b border-[#E5E7EB] px-5 py-5 sm:px-6">
-            <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-              <div>
-                <h2 className="text-lg font-semibold text-[#111827]">School directory</h2>
-                <p className="mt-1 text-sm text-[#6B7280]">
-                  Review school coverage and keep operational records current.
-                </p>
-              </div>
-              <Button leftIcon={<ArrowDownUp size={17} />} size="md" variant="secondary">
-                Recently updated
-              </Button>
+            <div>
+              <h2 className="text-lg font-semibold text-[#111827]">School directory</h2>
+              <p className="mt-1 text-sm text-[#6B7280]">
+                Review school coverage and keep operational records current.
+              </p>
             </div>
 
-            <div className="mt-5 grid gap-3 xl:grid-cols-[minmax(280px,1fr)_170px_160px_150px_190px]">
+            <div className="mt-5 grid gap-3 xl:grid-cols-[minmax(280px,1fr)_200px_220px]">
               <Input
                 className="h-11 bg-[#F9FAFB]"
                 id="school-search"
                 leftIcon={<Search size={18} />}
-                onChange={(event) => setQuery(event.target.value)}
+                onChange={(event) => {
+                  setSearchInput(event.target.value)
+                  resetToFirstPage()
+                }}
                 placeholder="Search school, city, or country"
                 type="search"
-                value={query}
+                value={searchInput}
               />
 
               <FilterSelect
-                id="country-filter"
-                label="Country"
-                onChange={setCountry}
-                options={['All countries', 'Canada', 'United Kingdom', 'Australia', 'Germany']}
-                value={country}
-              />
-              <FilterSelect
-                id="city-filter"
-                label="City"
-                onChange={setCity}
-                options={['All cities', 'Toronto', 'Vancouver', 'Manchester', 'Melbourne', 'Birmingham', 'Berlin']}
-                value={city}
-              />
-              <FilterSelect
                 id="type-filter"
                 label="Type"
-                onChange={setType}
-                options={['All types', 'University', 'College', 'Institute']}
+                onChange={(value) => {
+                  setType(value as SchoolType | 'ALL')
+                  resetToFirstPage()
+                }}
+                options={typeOptions}
                 value={type}
               />
               <FilterSelect
                 id="partner-filter"
                 label="Partner status"
-                onChange={setPartnerStatus}
-                options={['All partner statuses', 'Partner', 'Prospect', 'Non-partner']}
+                onChange={(value) => {
+                  setPartnerStatus(value as PartnerStatus | 'ALL')
+                  resetToFirstPage()
+                }}
+                options={partnerOptions}
                 value={partnerStatus}
               />
             </div>
           </div>
 
-          {filteredSchools.length ? (
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[1080px] text-left">
+          {isLoading ? (
+            <div className="flex min-h-72 flex-col items-center justify-center gap-3 px-6 py-12 text-center">
+              <Loader2 className="animate-spin text-[#045A58]" size={24} />
+              <p className="text-sm text-[#6B7280]">Loading schools…</p>
+            </div>
+          ) : isError ? (
+            <div className="flex min-h-72 flex-col items-center justify-center gap-3 px-6 py-12 text-center">
+              <AlertCircle className="text-[#DC2626]" size={24} />
+              <p className="text-sm text-[#6B7280]">
+                {isAxiosError<ApiErrorResponse>(error)
+                  ? (error.response?.data.error.message ?? 'Failed to load schools')
+                  : 'Failed to load schools'}
+              </p>
+            </div>
+          ) : schools.length ? (
+            <div className={`overflow-x-auto ${isFetching ? 'opacity-60' : ''}`}>
+              <table className="w-full min-w-[1000px] text-left">
                 <thead>
                   <tr className="border-b border-[#E5E7EB] text-xs font-semibold uppercase tracking-normal text-[#6B7280]">
                     <th className="px-6 py-3">School name</th>
                     <th className="px-6 py-3">Location</th>
                     <th className="px-6 py-3">Type</th>
                     <th className="px-6 py-3">Partner status</th>
-                    <th className="px-6 py-3">Programs</th>
                     <th className="px-6 py-3">Visa score</th>
                     <th className="px-6 py-3">Last updated</th>
                     <th className="px-6 py-3 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#E5E7EB]">
-                  {filteredSchools.map((school) => (
-                    <tr className="transition hover:bg-[#F9FAFB]" key={school.id}>
+                  {schools.map((school) => (
+                    <tr className="transition hover:bg-[#F9FAFB]" key={school.publicId}>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#E6F4F3] text-[#045A58]">
@@ -282,13 +214,13 @@ const SchoolsPage = () => {
                             <div className="flex items-center gap-2">
                               <Link
                                 className="text-sm font-semibold text-[#111827] outline-none transition hover:text-[#045A58] focus:underline"
-                                to={`/schools/${school.id}`}
+                                to={`/schools/${school.publicId}`}
                               >
                                 {school.name}
                               </Link>
-                              {school.status === 'Inactive' ? <Badge tone="error">Inactive</Badge> : null}
+                              {school.recordStatus === 'INACTIVE' ? <Badge tone="error">Inactive</Badge> : null}
                             </div>
-                            <p className="mt-1 text-xs font-medium text-[#6B7280]">{school.id}</p>
+                            <p className="mt-1 text-xs font-medium text-[#6B7280]">{school.publicId}</p>
                           </div>
                         </div>
                       </td>
@@ -298,52 +230,63 @@ const SchoolsPage = () => {
                           {school.city}, {school.country}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-sm text-[#6B7280]">{school.type}</td>
-                      <td className="px-6 py-4">
-                        <Badge tone={partnerTone[school.partnerStatus]}>{school.partnerStatus}</Badge>
+                      <td className="px-6 py-4 text-sm text-[#6B7280]">
+                        {school.schoolType.charAt(0) + school.schoolType.slice(1).toLowerCase()}
                       </td>
                       <td className="px-6 py-4">
-                        <button
-                          className="inline-flex items-center gap-2 text-sm font-semibold text-[#045A58] outline-none hover:text-[#034A48] focus:underline"
-                          type="button"
-                        >
-                          <BookOpen size={16} />
-                          {school.programCount}
-                        </button>
+                        <Badge tone={partnerTone[school.partnerStatus]}>
+                          {partnerLabels[school.partnerStatus]}
+                        </Badge>
                       </td>
                       <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="h-2 w-20 rounded-full bg-[#E5E7EB]">
-                            <div
-                              className="h-2 rounded-full bg-[#045A58]"
-                              style={{ width: `${school.visaFriendlinessScore}%` }}
-                            />
+                        {school.visaFriendlinessScore === null ? (
+                          <span className="text-sm text-[#6B7280]">—</span>
+                        ) : (
+                          <div className="flex items-center gap-3">
+                            <div className="h-2 w-20 rounded-full bg-[#E5E7EB]">
+                              <div
+                                className="h-2 rounded-full bg-[#045A58]"
+                                style={{ width: `${school.visaFriendlinessScore}%` }}
+                              />
+                            </div>
+                            <span className="text-sm font-semibold text-[#111827]">
+                              {school.visaFriendlinessScore}
+                            </span>
                           </div>
-                          <span className="text-sm font-semibold text-[#111827]">
-                            {school.visaFriendlinessScore}
-                          </span>
-                        </div>
+                        )}
                       </td>
-                      <td className="px-6 py-4 text-sm font-medium text-[#6B7280]">{school.lastUpdated}</td>
+                      <td className="px-6 py-4 text-sm font-medium text-[#6B7280]">
+                        {formatDate(school.updatedAt)}
+                      </td>
                       <td className="px-6 py-4">
-                        <div className="flex items-center justify-end gap-1">
-                          <Link
-                            aria-label={`Edit ${school.name}`}
-                            className="flex h-9 w-9 items-center justify-center rounded-xl text-[#6B7280] outline-none transition hover:bg-[#E6F4F3] hover:text-[#045A58] focus:ring-4 focus:ring-[#E6F4F3]"
-                            title="Edit school"
-                            to={`/schools/${school.id}`}
-                          >
-                            <Pencil size={16} />
-                          </Link>
-                          <button
-                            aria-label={`${school.status === 'Active' ? 'Disable' : 'Enable'} ${school.name}`}
-                            className="flex h-9 w-9 items-center justify-center rounded-xl text-[#6B7280] outline-none transition hover:bg-[#FEE2E2] hover:text-[#DC2626] focus:ring-4 focus:ring-[#FEE2E2]"
-                            title={school.status === 'Active' ? 'Disable school' : 'Enable school'}
-                            type="button"
-                          >
-                            <CircleOff size={16} />
-                          </button>
-                        </div>
+                        {canManage ? (
+                          <div className="flex items-center justify-end gap-1">
+                            <Link
+                              aria-label={`Edit ${school.name}`}
+                              className="flex h-9 w-9 items-center justify-center rounded-xl text-[#6B7280] outline-none transition hover:bg-[#E6F4F3] hover:text-[#045A58] focus:ring-4 focus:ring-[#E6F4F3]"
+                              title="Edit school"
+                              to={`/schools/${school.publicId}/edit`}
+                            >
+                              <Pencil size={16} />
+                            </Link>
+                            <button
+                              aria-label={`${school.recordStatus === 'ACTIVE' ? 'Disable' : 'Enable'} ${school.name}`}
+                              className="flex h-9 w-9 items-center justify-center rounded-xl text-[#6B7280] outline-none transition hover:bg-[#FEE2E2] hover:text-[#DC2626] focus:ring-4 focus:ring-[#FEE2E2] disabled:cursor-not-allowed disabled:opacity-60"
+                              disabled={toggleStatus.isPending}
+                              onClick={() => toggleStatus.mutate(school)}
+                              title={school.recordStatus === 'ACTIVE' ? 'Disable school' : 'Enable school'}
+                              type="button"
+                            >
+                              {school.recordStatus === 'ACTIVE' ? (
+                                <CircleOff size={16} />
+                              ) : (
+                                <CheckCircle2 size={16} />
+                              )}
+                            </button>
+                          </div>
+                        ) : (
+                          <p className="text-right text-xs font-medium text-[#9CA3AF]">View only</p>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -362,11 +305,10 @@ const SchoolsPage = () => {
               <Button
                 className="mt-5"
                 onClick={() => {
-                  setCity('All cities')
-                  setCountry('All countries')
-                  setPartnerStatus('All partner statuses')
-                  setQuery('')
-                  setType('All types')
+                  setSearchInput('')
+                  setType('ALL')
+                  setPartnerStatus('ALL')
+                  resetToFirstPage()
                 }}
                 size="md"
                 variant="secondary"
@@ -378,14 +320,30 @@ const SchoolsPage = () => {
 
           <div className="flex flex-col gap-3 border-t border-[#E5E7EB] px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
             <p className="text-sm text-[#6B7280]">
-              Showing <span className="font-semibold text-[#111827]">{filteredSchools.length}</span> of{' '}
-              <span className="font-semibold text-[#111827]">164</span> schools
+              {pagination ? (
+                <>
+                  Showing <span className="font-semibold text-[#111827]">{schools.length}</span> of{' '}
+                  <span className="font-semibold text-[#111827]">{pagination.total}</span> schools
+                </>
+              ) : null}
             </p>
             <div className="flex items-center gap-2">
-              <Button disabled leftIcon={<ChevronLeft size={16} />} size="sm" variant="secondary">
+              <Button
+                disabled={page <= 1}
+                leftIcon={<ChevronLeft size={16} />}
+                onClick={() => setPage((current) => Math.max(1, current - 1))}
+                size="sm"
+                variant="secondary"
+              >
                 Previous
               </Button>
-              <Button rightIcon={<ChevronRight size={16} />} size="sm" variant="secondary">
+              <Button
+                disabled={!pagination || page >= pagination.totalPages}
+                onClick={() => setPage((current) => current + 1)}
+                rightIcon={<ChevronRight size={16} />}
+                size="sm"
+                variant="secondary"
+              >
                 Next
               </Button>
             </div>
@@ -396,15 +354,15 @@ const SchoolsPage = () => {
   )
 }
 
-type FilterSelectProps = {
+type FilterSelectProps<TValue extends string> = {
   id: string
   label: string
-  onChange: (value: string) => void
-  options: string[]
-  value: string
+  onChange: (value: TValue) => void
+  options: { label: string; value: TValue }[]
+  value: TValue
 }
 
-const FilterSelect = ({ id, label, onChange, options, value }: FilterSelectProps) => {
+const FilterSelect = <TValue extends string>({ id, label, onChange, options, value }: FilterSelectProps<TValue>) => {
   return (
     <div>
       <label className="sr-only" htmlFor={id}>
@@ -413,11 +371,13 @@ const FilterSelect = ({ id, label, onChange, options, value }: FilterSelectProps
       <select
         className="h-11 w-full rounded-xl border border-[#E5E7EB] bg-white px-3 text-sm font-medium text-[#374151] outline-none transition focus:border-[#045A58] focus:ring-4 focus:ring-[#E6F4F3]"
         id={id}
-        onChange={(event) => onChange(event.target.value)}
+        onChange={(event) => onChange(event.target.value as TValue)}
         value={value}
       >
         {options.map((option) => (
-          <option key={option}>{option}</option>
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
         ))}
       </select>
     </div>

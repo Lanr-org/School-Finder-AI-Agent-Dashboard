@@ -14,11 +14,13 @@ import {
 import type { LucideIcon } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 import { cn } from '../../utils/cn.js'
+import { useAuthStore } from '../../store/authStore.js'
 
 type NavItem = {
   icon: LucideIcon
   label: string
   path: string
+  roles?: string[]
 }
 
 type NavSection = {
@@ -49,7 +51,7 @@ const navSections: NavSection[] = [
   {
     label: 'Admin',
     items: [
-      { icon: UsersRound, label: 'Team', path: '/team' },
+      { icon: UsersRound, label: 'Team', path: '/team', roles: ['ADMIN'] },
       { icon: UserRoundCheck, label: 'Advisors', path: '/advisors' },
       { icon: Settings, label: 'Settings', path: '/settings' },
     ],
@@ -84,10 +86,19 @@ const SidebarHeader = ({ onClose }: { onClose?: () => void }) => {
 }
 
 const SidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => {
+  const userRole = useAuthStore((state) => state.user?.role)
+
+  const visibleSections = navSections
+    .map((section) => ({
+      ...section,
+      items: section.items.filter((item) => !item.roles || (userRole && item.roles.includes(userRole))),
+    }))
+    .filter((section) => section.items.length > 0)
+
   return (
     <>
       <nav className="flex-1 space-y-7 overflow-y-auto pb-5">
-        {navSections.map((section) => (
+        {visibleSections.map((section) => (
           <div key={section.label}>
             <p className="mb-2 px-3 text-xs font-semibold uppercase tracking-normal text-[#9CA3AF]">
               {section.label}

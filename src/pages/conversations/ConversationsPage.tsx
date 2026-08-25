@@ -1,183 +1,112 @@
 import {
+  AlertCircle,
   AlertTriangle,
-  ArrowDownUp,
-  Bot,
-  CheckCircle2,
   ChevronLeft,
   ChevronRight,
+  CheckCircle2,
   Clock3,
   Eye,
+  Loader2,
   MessageSquareText,
   Search,
   UserRoundCheck,
   Users,
 } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { isAxiosError } from 'axios'
 import AppShell from '../../components/layout/AppShell.js'
 import Badge from '../../components/ui/Badge.js'
 import Button from '../../components/ui/Button.js'
 import Card from '../../components/ui/Card.js'
 import Input from '../../components/ui/Input.js'
-import { cn } from '../../utils/cn.js'
+import type { ApiErrorResponse } from '../../lib/api/types.js'
+import { useTeamMembers } from '../../features/team/useTeamMembers.js'
+import { useConversations } from '../../features/conversations/useConversations.js'
+import type { ConversationStatus } from '../../features/conversations/conversations.api.js'
 
-type ConversationStatus = 'Active' | 'Escalated' | 'Resolved'
-
-type Conversation = {
-  advisor?: string
-  extractedFilters: string[]
-  id: string
-  lastMessage: string
-  messageCount: number
-  startedAt: string
-  status: ConversationStatus
-  student: string
-  studentId: string
-  summary: string
-  unreadCount: number
-}
-
-const conversations: Conversation[] = [
-  {
-    advisor: 'Amina Yusuf',
-    extractedFilters: ['Canada', 'Business Analytics', 'Fall 2026', 'Scholarship'],
-    id: 'CON-4812',
-    lastMessage: '18 min ago',
-    messageCount: 34,
-    startedAt: 'June 5, 2026',
-    status: 'Active',
-    student: 'Chinedu Nwosu',
-    studentId: 'STU-1048',
-    summary:
-      'Student wants a Canada-focused postgraduate business analytics program with scholarship options and a moderate annual budget.',
-    unreadCount: 2,
-  },
-  {
-    extractedFilters: ['United Kingdom', 'Public Health', 'Spring 2027'],
-    id: 'CON-4811',
-    lastMessage: '42 min ago',
-    messageCount: 21,
-    startedAt: 'June 6, 2026',
-    status: 'Escalated',
-    student: 'Sofia Ahmed',
-    studentId: 'STU-1047',
-    summary:
-      'Student needs human guidance on public-health entry requirements and whether prior clinical experience is mandatory.',
-    unreadCount: 5,
-  },
-  {
-    advisor: 'Daniel Okafor',
-    extractedFilters: ['Australia', 'Computer Science', 'Fall 2026', 'IELTS pending'],
-    id: 'CON-4810',
-    lastMessage: '1 hr ago',
-    messageCount: 46,
-    startedAt: 'June 2, 2026',
-    status: 'Active',
-    student: 'Emeka Ibe',
-    studentId: 'STU-1046',
-    summary:
-      'Student is comparing Australian computing programs and needs clarification on English-test timing and application deadlines.',
-    unreadCount: 0,
-  },
-  {
-    advisor: 'Maya Chen',
-    extractedFilters: ['Canada', 'Nursing', 'Winter 2027', 'Visa priority'],
-    id: 'CON-4809',
-    lastMessage: '2 hrs ago',
-    messageCount: 29,
-    startedAt: 'June 1, 2026',
-    status: 'Escalated',
-    student: 'Grace Okorie',
-    studentId: 'STU-1045',
-    summary:
-      'Student is seeking nursing pathways with strong visa support and requires advisor review of academic prerequisites.',
-    unreadCount: 1,
-  },
-  {
-    extractedFilters: ['United States', 'Data Science', 'Fall 2026'],
-    id: 'CON-4808',
-    lastMessage: 'Yesterday',
-    messageCount: 18,
-    startedAt: 'May 30, 2026',
-    status: 'Active',
-    student: 'Malik Bello',
-    studentId: 'STU-1044',
-    summary:
-      'Student has provided a destination and program preference but has not confirmed budget, English test, or academic background.',
-    unreadCount: 0,
-  },
-  {
-    advisor: 'Amina Yusuf',
-    extractedFilters: ['Germany', 'Mechanical Engineering', 'Summer 2027'],
-    id: 'CON-4807',
-    lastMessage: 'June 4, 2026',
-    messageCount: 38,
-    startedAt: 'May 25, 2026',
-    status: 'Resolved',
-    student: 'Tara Mensah',
-    studentId: 'STU-1043',
-    summary:
-      'Initial qualification review is complete and the student has received a shortlist of German engineering programs.',
-    unreadCount: 0,
-  },
-]
+const PAGE_SIZE = 20
 
 const statusTone: Record<ConversationStatus, 'brand' | 'error' | 'success'> = {
-  Active: 'brand',
-  Escalated: 'error',
-  Resolved: 'success',
+  ACTIVE: 'brand',
+  ESCALATED: 'error',
+  RESOLVED: 'success',
 }
 
-const statusTabs = ['All', 'Active', 'Escalated', 'Resolved', 'Unassigned'] as const
+const statusLabels: Record<ConversationStatus, string> = {
+  ACTIVE: 'Active',
+  ESCALATED: 'Escalated',
+  RESOLVED: 'Resolved',
+}
 
-const conversationStats = [
-  { icon: MessageSquareText, label: 'Active', note: '12 new today', value: '84' },
-  { icon: AlertTriangle, label: 'Escalated', note: 'Needs human review', value: '9' },
-  { icon: Users, label: 'Unassigned', note: 'Awaiting advisor', value: '17' },
-  { icon: CheckCircle2, label: 'Resolved', note: 'This month', value: '126' },
-] as const
+const statusTabs = ['ALL', 'ACTIVE', 'ESCALATED', 'RESOLVED', 'UNASSIGNED'] as const
+type StatusTab = (typeof statusTabs)[number]
+
+const formatRelativeTime = (value: string) => {
+  const diffMs = Date.now() - new Date(value).getTime()
+  const minutes = Math.round(diffMs / 60000)
+  if (minutes < 1) return 'just now'
+  if (minutes < 60) return `${minutes} min ago`
+  const hours = Math.round(minutes / 60)
+  if (hours < 24) return `${hours} hr${hours === 1 ? '' : 's'} ago`
+  return new Date(value).toLocaleDateString(undefined, { day: 'numeric', month: 'short' })
+}
 
 const ConversationsPage = () => {
-  const [advisor, setAdvisor] = useState('All advisors')
-  const [query, setQuery] = useState('')
-  const [status, setStatus] = useState<(typeof statusTabs)[number]>('All')
+  const [searchInput, setSearchInput] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [advisorId, setAdvisorId] = useState('ALL')
+  const [status, setStatus] = useState<StatusTab>('ALL')
+  const [page, setPage] = useState(1)
 
-  const filteredConversations = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase()
+  useEffect(() => {
+    const timeout = setTimeout(() => setDebouncedSearch(searchInput.trim()), 300)
+    return () => clearTimeout(timeout)
+  }, [searchInput])
 
-    return conversations.filter((conversation) => {
-      const matchesQuery =
-        !normalizedQuery ||
-        conversation.student.toLowerCase().includes(normalizedQuery) ||
-        conversation.studentId.toLowerCase().includes(normalizedQuery) ||
-        conversation.summary.toLowerCase().includes(normalizedQuery) ||
-        conversation.extractedFilters.some((filter) => filter.toLowerCase().includes(normalizedQuery))
-      const matchesStatus =
-        status === 'All' ||
-        (status === 'Unassigned' ? !conversation.advisor : conversation.status === status)
-      const matchesAdvisor =
-        advisor === 'All advisors' ||
-        (advisor === 'Unassigned' ? !conversation.advisor : conversation.advisor === advisor)
+  useEffect(() => setPage(1), [debouncedSearch, advisorId, status])
 
-      return matchesQuery && matchesStatus && matchesAdvisor
-    })
-  }, [advisor, query, status])
+  const { data: advisors } = useTeamMembers()
+  const advisorOptions = useMemo(() => (advisors ?? []).filter((member) => member.role === 'ADVISOR'), [advisors])
+
+  const queryParams = useMemo(
+    () => ({
+      page,
+      limit: PAGE_SIZE,
+      search: debouncedSearch || undefined,
+      advisorId: advisorId !== 'ALL' ? advisorId : undefined,
+      status: status === 'ALL' || status === 'UNASSIGNED' ? undefined : status,
+      unassigned: status === 'UNASSIGNED' ? true : undefined,
+    }),
+    [page, debouncedSearch, advisorId, status],
+  )
+
+  const { data, isLoading, isFetching, isError, error } = useConversations(queryParams)
+
+  const activeCount = useConversations({ page: 1, limit: 1, status: 'ACTIVE' }).data?.pagination.total
+  const escalatedCount = useConversations({ page: 1, limit: 1, status: 'ESCALATED' }).data?.pagination.total
+  const resolvedCount = useConversations({ page: 1, limit: 1, status: 'RESOLVED' }).data?.pagination.total
+  const unassignedCount = useConversations({ page: 1, limit: 1, unassigned: true }).data?.pagination.total
+
+  const conversationStats = [
+    { icon: MessageSquareText, label: 'Active', value: activeCount },
+    { icon: AlertTriangle, label: 'Escalated', value: escalatedCount },
+    { icon: Users, label: 'Unassigned', value: unassignedCount },
+    { icon: CheckCircle2, label: 'Resolved', value: resolvedCount },
+  ] as const
+
+  const conversations = data?.conversations ?? []
+  const pagination = data?.pagination
 
   return (
     <AppShell>
       <div className="space-y-6">
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-          <div>
-            <p className="text-sm font-medium text-[#6B7280]">Telegram operations</p>
-            <h1 className="mt-1 text-3xl font-semibold tracking-normal text-[#111827]">Conversations</h1>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-[#6B7280]">
-              Review AI-agent conversations, identify escalations, and route students to the right advisor.
-            </p>
-          </div>
-
-          <Button leftIcon={<ArrowDownUp size={17} />} size="md" variant="secondary">
-            Latest activity
-          </Button>
+        <div>
+          <p className="text-sm font-medium text-[#6B7280]">Telegram operations</p>
+          <h1 className="mt-1 text-3xl font-semibold tracking-normal text-[#111827]">Conversations</h1>
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-[#6B7280]">
+            Review AI-agent conversations, identify escalations, and route students to the right advisor.
+          </p>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -189,8 +118,9 @@ const ConversationsPage = () => {
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-sm font-medium text-[#6B7280]">{stat.label}</p>
-                    <p className="mt-3 text-3xl font-semibold tracking-normal text-[#111827]">{stat.value}</p>
-                    <p className="mt-2 text-xs font-medium text-[#6B7280]">{stat.note}</p>
+                    <p className="mt-3 text-3xl font-semibold tracking-normal text-[#111827]">
+                      {stat.value ?? '—'}
+                    </p>
                   </div>
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#E6F4F3] text-[#045A58]">
                     <Icon size={20} />
@@ -206,7 +136,7 @@ const ConversationsPage = () => {
             <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
               <div>
                 <h2 className="text-lg font-semibold text-[#111827]">Conversation queue</h2>
-                <p className="mt-1 text-sm text-[#6B7280]">Prioritize unread, escalated, and unassigned conversations.</p>
+                <p className="mt-1 text-sm text-[#6B7280]">Prioritize escalated and unassigned conversations.</p>
               </div>
 
               <div className="grid gap-3 sm:grid-cols-[minmax(260px,1fr)_190px] xl:w-[620px]">
@@ -214,22 +144,23 @@ const ConversationsPage = () => {
                   className="h-11 bg-[#F9FAFB]"
                   id="conversation-search"
                   leftIcon={<Search size={18} />}
-                  onChange={(event) => setQuery(event.target.value)}
-                  placeholder="Search student, summary, or filter"
+                  onChange={(event) => setSearchInput(event.target.value)}
+                  placeholder="Search student name or ID"
                   type="search"
-                  value={query}
+                  value={searchInput}
                 />
                 <select
                   aria-label="Filter by advisor"
                   className="h-11 rounded-xl border border-[#E5E7EB] bg-white px-3 text-sm font-medium text-[#374151] outline-none transition focus:border-[#045A58] focus:ring-4 focus:ring-[#E6F4F3]"
-                  onChange={(event) => setAdvisor(event.target.value)}
-                  value={advisor}
+                  onChange={(event) => setAdvisorId(event.target.value)}
+                  value={advisorId}
                 >
-                  <option>All advisors</option>
-                  <option>Unassigned</option>
-                  <option>Amina Yusuf</option>
-                  <option>Daniel Okafor</option>
-                  <option>Maya Chen</option>
+                  <option value="ALL">All advisors</option>
+                  {advisorOptions.map((advisor) => (
+                    <option key={advisor.publicId} value={advisor.publicId}>
+                      {advisor.fullName}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -237,76 +168,64 @@ const ConversationsPage = () => {
             <div className="mt-5 flex gap-1 overflow-x-auto">
               {statusTabs.map((tab) => (
                 <button
-                  className={cn(
-                    'h-10 shrink-0 border-b-2 px-4 text-sm font-semibold outline-none transition',
+                  className={`h-10 shrink-0 border-b-2 px-4 text-sm font-semibold outline-none transition ${
                     status === tab
                       ? 'border-[#045A58] text-[#045A58]'
-                      : 'border-transparent text-[#6B7280] hover:text-[#111827]',
-                  )}
+                      : 'border-transparent text-[#6B7280] hover:text-[#111827]'
+                  }`}
                   key={tab}
                   onClick={() => setStatus(tab)}
                   type="button"
                 >
-                  {tab}
+                  {tab === 'ALL' ? 'All' : tab === 'UNASSIGNED' ? 'Unassigned' : statusLabels[tab]}
                 </button>
               ))}
             </div>
           </div>
 
-          {filteredConversations.length ? (
-            <div className="divide-y divide-[#E5E7EB]">
-              {filteredConversations.map((conversation) => (
-                <article className="px-5 py-5 transition hover:bg-[#F9FAFB] sm:px-6" key={conversation.id}>
-                  <div className="grid gap-5 xl:grid-cols-[220px_minmax(0,1fr)_210px_96px] xl:items-start">
+          {isLoading ? (
+            <div className="flex min-h-72 items-center justify-center">
+              <Loader2 className="animate-spin text-[#045A58]" size={28} />
+            </div>
+          ) : isError ? (
+            <div className="flex min-h-72 flex-col items-center justify-center gap-3 px-6 py-12 text-center">
+              <AlertCircle className="text-[#DC2626]" size={24} />
+              <p className="text-sm text-[#6B7280]">
+                {isAxiosError<ApiErrorResponse>(error)
+                  ? (error.response?.data.error.message ?? 'Failed to load conversations')
+                  : 'Failed to load conversations'}
+              </p>
+            </div>
+          ) : conversations.length ? (
+            <div className={`divide-y divide-[#E5E7EB] ${isFetching ? 'opacity-60' : ''}`}>
+              {conversations.map((conversation) => (
+                <article className="px-5 py-5 transition hover:bg-[#F9FAFB] sm:px-6" key={conversation.publicId}>
+                  <div className="grid gap-5 sm:grid-cols-[220px_minmax(0,1fr)_96px] sm:items-center">
                     <div className="flex items-start gap-3">
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#E6F4F3] text-sm font-semibold text-[#045A58]">
-                        {conversation.student
-                          .split(' ')
-                          .map((name) => name[0])
-                          .join('')
-                          .slice(0, 2)}
+                        {conversation.student.firstName[0]}
+                        {conversation.student.lastName?.[0] ?? ''}
                       </div>
                       <div className="min-w-0">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <p className="text-sm font-semibold text-[#111827]">{conversation.student}</p>
-                          {conversation.unreadCount ? (
-                            <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#045A58] px-1.5 text-[11px] font-bold text-white">
-                              {conversation.unreadCount}
-                            </span>
-                          ) : null}
-                        </div>
+                        <p className="text-sm font-semibold text-[#111827]">
+                          {conversation.student.firstName} {conversation.student.lastName ?? ''}
+                        </p>
                         <p className="mt-1 text-xs font-medium text-[#6B7280]">
-                          {conversation.studentId} · {conversation.id}
+                          {conversation.student.publicId} · {conversation.publicId}
                         </p>
                         <div className="mt-3 flex flex-wrap gap-2">
-                          <Badge tone={statusTone[conversation.status]}>{conversation.status}</Badge>
-                          <Badge tone="neutral">{conversation.messageCount} messages</Badge>
+                          <Badge tone={statusTone[conversation.status]}>{statusLabels[conversation.status]}</Badge>
                         </div>
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-normal text-[#9CA3AF]">
-                        <Bot size={15} />
-                        AI summary
-                      </div>
-                      <p className="mt-2 text-sm leading-6 text-[#374151]">{conversation.summary}</p>
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        {conversation.extractedFilters.map((filter) => (
-                          <Badge className="h-6 px-2" key={filter} tone="brand">
-                            {filter}
-                          </Badge>
-                        ))}
                       </div>
                     </div>
 
                     <div className="space-y-3">
                       <div>
                         <p className="text-xs font-semibold uppercase tracking-normal text-[#9CA3AF]">Assigned advisor</p>
-                        {conversation.advisor ? (
+                        {conversation.student.assignedAdvisor ? (
                           <p className="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-[#111827]">
                             <UserRoundCheck className="text-[#045A58]" size={16} />
-                            {conversation.advisor}
+                            {conversation.student.assignedAdvisor.fullName}
                           </p>
                         ) : (
                           <Badge className="mt-2" tone="warning">Unassigned</Badge>
@@ -314,15 +233,14 @@ const ConversationsPage = () => {
                       </div>
                       <div className="flex items-center gap-2 text-sm text-[#6B7280]">
                         <Clock3 size={15} />
-                        {conversation.lastMessage}
+                        {formatRelativeTime(conversation.lastActivityAt)}
                       </div>
-                      <p className="text-xs font-medium text-[#9CA3AF]">Started {conversation.startedAt}</p>
                     </div>
 
-                    <div className="flex xl:justify-end">
+                    <div className="flex sm:justify-end">
                       <Link
                         className="inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-transparent bg-transparent px-3 text-sm font-semibold text-[#045A58] outline-none transition hover:bg-[#E6F4F3] hover:text-[#034A48] focus:ring-4 focus:ring-[#E6F4F3]"
-                        to={`/conversations/${conversation.id}`}
+                        to={`/conversations/${conversation.publicId}`}
                       >
                         <Eye size={16} />
                         Open
@@ -344,9 +262,9 @@ const ConversationsPage = () => {
               <Button
                 className="mt-5"
                 onClick={() => {
-                  setAdvisor('All advisors')
-                  setQuery('')
-                  setStatus('All')
+                  setAdvisorId('ALL')
+                  setSearchInput('')
+                  setStatus('ALL')
                 }}
                 size="md"
                 variant="secondary"
@@ -356,20 +274,34 @@ const ConversationsPage = () => {
             </div>
           )}
 
-          <div className="flex flex-col gap-3 border-t border-[#E5E7EB] px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-            <p className="text-sm text-[#6B7280]">
-              Showing <span className="font-semibold text-[#111827]">{filteredConversations.length}</span> of{' '}
-              <span className="font-semibold text-[#111827]">236</span> conversations
-            </p>
-            <div className="flex items-center gap-2">
-              <Button disabled leftIcon={<ChevronLeft size={16} />} size="sm" variant="secondary">
-                Previous
-              </Button>
-              <Button rightIcon={<ChevronRight size={16} />} size="sm" variant="secondary">
-                Next
-              </Button>
+          {pagination ? (
+            <div className="flex flex-col gap-3 border-t border-[#E5E7EB] px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+              <p className="text-sm text-[#6B7280]">
+                Showing <span className="font-semibold text-[#111827]">{conversations.length}</span> of{' '}
+                <span className="font-semibold text-[#111827]">{pagination.total}</span> conversations
+              </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  disabled={page <= 1}
+                  leftIcon={<ChevronLeft size={16} />}
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  size="sm"
+                  variant="secondary"
+                >
+                  Previous
+                </Button>
+                <Button
+                  disabled={page >= pagination.totalPages}
+                  onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
+                  rightIcon={<ChevronRight size={16} />}
+                  size="sm"
+                  variant="secondary"
+                >
+                  Next
+                </Button>
+              </div>
             </div>
-          </div>
+          ) : null}
         </Card>
       </div>
     </AppShell>

@@ -11,53 +11,62 @@ import {
   Mail,
   ShieldCheck,
 } from 'lucide-react'
+import { isAxiosError } from 'axios'
 import { useEffect, useMemo, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import Button from '../../components/ui/Button.js'
 import Card from '../../components/ui/Card.js'
 import Input from '../../components/ui/Input.js'
+import { api } from '../../lib/api/client.js'
+import type { ApiErrorResponse, ApiSuccessResponse } from '../../lib/api/types.js'
 
-type InvitationState = 'validating' | 'valid' | 'invalid' | 'expired' | 'used' | 'submitting' | 'success'
+type InvitationState = 'validating' | 'valid' | 'invalid' | 'expired' | 'submitting' | 'success'
 
-const invitationErrors: Record<'expired' | 'invalid' | 'used', { description: string; title: string }> = {
+const invitationErrors: Record<'expired' | 'invalid', { description: string; title: string }> = {
   expired: {
     description: 'This invitation has expired. Ask an administrator to resend your invitation from the Team page.',
     title: 'Invitation expired',
   },
   invalid: {
-    description: 'This invitation link is not valid. Check that you opened the complete link from your invitation email.',
+    description:
+      'This invitation link is not valid. Check that you opened the complete link from your invitation email, or it may have already been used.',
     title: 'Invalid invitation',
   },
-  used: {
-    description: 'This invitation has already been accepted. Sign in with the password created during account setup.',
-    title: 'Invitation already used',
-  },
 }
+
+const errorCode = (error: unknown): string | undefined =>
+  isAxiosError<ApiErrorResponse>(error) ? error.response?.data.error.code : undefined
+
+const errorMessage = (error: unknown, fallback: string): string =>
+  isAxiosError<ApiErrorResponse>(error) ? (error.response?.data.error.message ?? fallback) : fallback
 
 const SetPasswordPage = () => {
   const navigate = useNavigate()
   const { token } = useParams()
   const [invitationState, setInvitationState] = useState<InvitationState>('validating')
+  const [invitationEmail, setInvitationEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   useEffect(() => {
-    const validationTimer = window.setTimeout(() => {
-      if (!token || token === 'invalid') {
-        setInvitationState('invalid')
-      } else if (token === 'expired') {
-        setInvitationState('expired')
-      } else if (token === 'used') {
-        setInvitationState('used')
-      } else {
-        setInvitationState('valid')
-      }
-    }, 450)
+    if (!token) {
+      setInvitationState('invalid')
+      return
+    }
 
-    return () => window.clearTimeout(validationTimer)
+    api
+      .get<ApiSuccessResponse<{ fullName: string; email: string }>>(`/auth/invitations/${token}`)
+      .then((res) => {
+        setInvitationEmail(res.data.data.email)
+        setInvitationState('valid')
+      })
+      .catch((error: unknown) => {
+        setInvitationState(errorCode(error) === 'TOKEN_EXPIRED' ? 'expired' : 'invalid')
+      })
   }, [token])
 
   const requirements = useMemo(
@@ -76,14 +85,29 @@ const SetPasswordPage = () => {
   const confirmPasswordError =
     submitted && !passwordsMatch ? 'Enter the same password in both fields.' : undefined
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setSubmitted(true)
+    setSubmitError(null)
 
-    if (!passwordIsValid || !passwordsMatch) return
+    if (!passwordIsValid || !passwordsMatch || !token) return
 
     setInvitationState('submitting')
-    window.setTimeout(() => setInvitationState('success'), 650)
+
+    try {
+      await api.post(`/auth/invitations/${token}/accept`, {
+        newPassword: password,
+        confirmNewPassword: confirmPassword,
+      })
+      setInvitationState('success')
+    } catch (error) {
+      if (errorCode(error) === 'TOKEN_EXPIRED') {
+        setInvitationState('expired')
+      } else {
+        setSubmitError(errorMessage(error, 'Failed to activate account'))
+        setInvitationState('valid')
+      }
+    }
   }
 
   return (
@@ -110,9 +134,7 @@ const SetPasswordPage = () => {
                 icon={<LoaderCircle className="animate-spin" size={25} />}
                 title="Validating invitation"
               />
-            ) : invitationState === 'invalid' ||
-              invitationState === 'expired' ||
-              invitationState === 'used' ? (
+            ) : invitationState === 'invalid' || invitationState === 'expired' ? (
               <ErrorPanel state={invitationState} />
             ) : invitationState === 'success' ? (
               <SuccessPanel onContinue={() => navigate('/login')} />
@@ -133,13 +155,18 @@ const SetPasswordPage = () => {
                   <Mail className="mt-0.5 shrink-0 text-[#045A58]" size={18} />
                   <div className="min-w-0">
                     <p className="text-xs font-semibold uppercase tracking-normal text-[#9CA3AF]">Invitation for</p>
-                    <p className="mt-1 break-words text-sm font-semibold text-[#111827]">
-                      advisor@company.com
-                    </p>
+                    <p className="mt-1 break-words text-sm font-semibold text-[#111827]">{invitationEmail}</p>
                   </div>
                 </div>
 
                 <form className="space-y-5" onSubmit={handleSubmit}>
+                  {submitError ? (
+                    <div className="flex items-start gap-2 rounded-xl bg-[#FEE2E2] px-4 py-3 text-sm text-[#B91C1C]">
+                      <AlertCircle className="mt-0.5 shrink-0" size={16} />
+                      <span>{submitError}</span>
+                    </div>
+                  ) : null}
+
                   <Input
                     autoComplete="new-password"
                     {...(passwordError ? { error: passwordError } : {})}
@@ -274,7 +301,7 @@ const StatusPanel = ({
   </section>
 )
 
-const ErrorPanel = ({ state }: { state: 'expired' | 'invalid' | 'used' }) => {
+const ErrorPanel = ({ state }: { state: 'expired' | 'invalid' }) => {
   const error = invitationErrors[state]
 
   return (
