@@ -14,7 +14,7 @@ import {
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { isAxiosError } from 'axios'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import AppShell from '../../components/layout/AppShell.js'
 import Badge from '../../components/ui/Badge.js'
 import Button from '../../components/ui/Button.js'
@@ -76,10 +76,11 @@ const formatDate = (value: string) =>
   new Date(value).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
 
 const StudentsPage = () => {
+  const [searchParams] = useSearchParams()
   const [searchInput, setSearchInput] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [status, setStatus] = useState<StudentStatus | 'ALL'>('ALL')
-  const [advisorId, setAdvisorId] = useState('ALL')
+  const [advisorId, setAdvisorId] = useState(searchParams.get('advisorId') ?? 'ALL')
   const [page, setPage] = useState(1)
 
   useEffect(() => {

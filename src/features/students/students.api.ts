@@ -62,3 +62,8 @@ export const assignStudentAdvisor = async (studentId: string, advisorId: string 
   const res = await api.patch<ApiSuccessResponse<Student>>(`/students/${studentId}/advisor`, { advisorId })
   return res.data.data
 }
+
+export const updateStudentStatus = async (studentId: string, status: StudentStatus): Promise<Student> => {
+  const res = await api.patch<ApiSuccessResponse<Student>>(`/students/${studentId}/status`, { status })
+  return res.data.data
+}

@@ -1,5 +1,12 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { assignStudentAdvisor, getStudent, listStudents, type ListStudentsParams } from './students.api.js'
+import {
+  assignStudentAdvisor,
+  getStudent,
+  listStudents,
+  updateStudentStatus,
+  type ListStudentsParams,
+  type StudentStatus,
+} from './students.api.js'
 
 export const useStudents = (params: ListStudentsParams) =>
   useQuery({
@@ -25,6 +32,20 @@ export const useAssignStudentAdvisor = (studentId: string | undefined) => {
       void queryClient.invalidateQueries({ queryKey: ['students'] })
       void queryClient.invalidateQueries({ queryKey: ['conversation'] })
       void queryClient.invalidateQueries({ queryKey: ['conversations'] })
+      void queryClient.invalidateQueries({ queryKey: ['advisor-profiles'] })
+      void queryClient.invalidateQueries({ queryKey: ['advisor-students'] })
+    },
+  })
+}
+
+export const useUpdateStudentStatus = (studentId: string | undefined) => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (status: StudentStatus) => updateStudentStatus(studentId as string, status),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['student', studentId] })
+      void queryClient.invalidateQueries({ queryKey: ['students'] })
     },
   })
 }

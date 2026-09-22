@@ -4,108 +4,57 @@ import Badge from '../ui/Badge.js'
 import Button from '../ui/Button.js'
 import Input from '../ui/Input.js'
 import Modal from '../ui/Modal.js'
-
-type Availability = 'Available' | 'Limited' | 'Unavailable'
-
-type AdvisorOption = {
-  activeStudents: number
-  availability: Availability
-  capacity: number
-  id: string
-  name: string
-  specializations: string[]
-}
+import type { AdvisorAvailability, AdvisorProfile } from '../../features/advisors/advisors.api.js'
 
 type AssignAdvisorModalProps = {
-  currentAdvisor: string
+  advisors: AdvisorProfile[]
+  currentAdvisorId: string | null
   isOpen: boolean
-  onAssign: (advisor: AdvisorOption) => void
+  onAssign: (advisorId: string) => void
   onClose: () => void
   studentName: string
 }
 
-const advisors: AdvisorOption[] = [
-  {
-    activeStudents: 18,
-    availability: 'Available',
-    capacity: 25,
-    id: 'USR-1001',
-    name: 'Amina Yusuf',
-    specializations: ['Canada', 'Postgraduate', 'Business'],
-  },
-  {
-    activeStudents: 23,
-    availability: 'Limited',
-    capacity: 25,
-    id: 'USR-1002',
-    name: 'Daniel Okafor',
-    specializations: ['United Kingdom', 'STEM', 'Scholarships'],
-  },
-  {
-    activeStudents: 27,
-    availability: 'Unavailable',
-    capacity: 25,
-    id: 'USR-1003',
-    name: 'Maya Chen',
-    specializations: ['Canada', 'Diploma', 'Visa support'],
-  },
-  {
-    activeStudents: 14,
-    availability: 'Available',
-    capacity: 22,
-    id: 'USR-1007',
-    name: 'Femi Balogun',
-    specializations: ['Australia', 'Undergraduate', 'Engineering'],
-  },
-  {
-    activeStudents: 20,
-    availability: 'Limited',
-    capacity: 24,
-    id: 'USR-1008',
-    name: 'Zainab Bello',
-    specializations: ['Germany', 'Masters', 'Technology'],
-  },
-]
+const availabilityTone: Record<AdvisorAvailability, 'error' | 'success' | 'warning'> = {
+  AVAILABLE: 'success',
+  LIMITED: 'warning',
+  UNAVAILABLE: 'error',
+}
 
-const availabilityTone: Record<Availability, 'error' | 'success' | 'warning'> = {
-  Available: 'success',
-  Limited: 'warning',
-  Unavailable: 'error',
+const availabilityLabels: Record<AdvisorAvailability, string> = {
+  AVAILABLE: 'Available',
+  LIMITED: 'Limited',
+  UNAVAILABLE: 'Unavailable',
 }
 
 const AssignAdvisorModal = ({
-  currentAdvisor,
+  advisors,
+  currentAdvisorId,
   isOpen,
   onAssign,
   onClose,
   studentName,
 }: AssignAdvisorModalProps) => {
-  const currentAdvisorOption = advisors.find((advisor) => advisor.name === currentAdvisor)
   const [query, setQuery] = useState('')
-  const [selectedAdvisorId, setSelectedAdvisorId] = useState(currentAdvisorOption?.id ?? '')
+  const [selectedAdvisorId, setSelectedAdvisorId] = useState(currentAdvisorId ?? '')
 
   useEffect(() => {
     if (isOpen) {
       setQuery('')
-      setSelectedAdvisorId(currentAdvisorOption?.id ?? '')
+      setSelectedAdvisorId(currentAdvisorId ?? '')
     }
-  }, [currentAdvisorOption?.id, isOpen])
+  }, [currentAdvisorId, isOpen])
 
   const filteredAdvisors = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase()
 
     return advisors.filter(
-      (advisor) =>
-        !normalizedQuery ||
-        advisor.name.toLowerCase().includes(normalizedQuery) ||
-        advisor.specializations.some((specialization) =>
-          specialization.toLowerCase().includes(normalizedQuery),
-        ),
+      (advisor) => !normalizedQuery || advisor.fullName.toLowerCase().includes(normalizedQuery),
     )
-  }, [query])
+  }, [advisors, query])
 
-  const selectedAdvisor = advisors.find((advisor) => advisor.id === selectedAdvisorId)
-  const assignmentChanged = Boolean(selectedAdvisor && selectedAdvisor.name !== currentAdvisor)
+  const selectedAdvisor = advisors.find((advisor) => advisor.advisorId === selectedAdvisorId)
+  const assignmentChanged = Boolean(selectedAdvisor && selectedAdvisor.advisorId !== currentAdvisorId)
 
   return (
     <Modal
@@ -113,7 +62,7 @@ const AssignAdvisorModal = ({
       isOpen={isOpen}
       onClose={onClose}
       size="lg"
-      title={currentAdvisor ? 'Reassign advisor' : 'Assign advisor'}
+      title={currentAdvisorId ? 'Reassign advisor' : 'Assign advisor'}
     >
       <div className="border-b border-[#E5E7EB] px-5 py-4 sm:px-6">
         <Input
@@ -121,7 +70,7 @@ const AssignAdvisorModal = ({
           id="advisor-assignment-search"
           leftIcon={<Search size={17} />}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search advisor or specialization"
+          placeholder="Search advisor by name"
           type="search"
           value={query}
         />
@@ -131,15 +80,16 @@ const AssignAdvisorModal = ({
         {filteredAdvisors.length ? (
           <div className="space-y-3">
             {filteredAdvisors.map((advisor) => {
-              const isSelected = selectedAdvisorId === advisor.id
-              const isCurrent = currentAdvisor === advisor.name
-              const isOverCapacity = advisor.activeStudents >= advisor.capacity
-              const isUnavailable = advisor.availability === 'Unavailable'
+              const isSelected = selectedAdvisorId === advisor.advisorId
+              const isCurrent = currentAdvisorId === advisor.advisorId
+              const isOverCapacity =
+                advisor.maxCapacity !== null && advisor.activeStudentCount >= advisor.maxCapacity
+              const isUnavailable = advisor.availability === 'UNAVAILABLE'
               const isDisabled = (isUnavailable || isOverCapacity) && !isCurrent
-              const workloadPercentage = Math.min(
-                Math.round((advisor.activeStudents / advisor.capacity) * 100),
-                100,
-              )
+              const workloadPercentage =
+                advisor.maxCapacity === null
+                  ? 0
+                  : Math.min(Math.round((advisor.activeStudentCount / advisor.maxCapacity) * 100), 100)
 
               return (
                 <button
@@ -152,13 +102,13 @@ const AssignAdvisorModal = ({
                         : 'border-[#E5E7EB] bg-white hover:border-[#B9DAD8] hover:bg-[#F9FAFB]'
                   }`}
                   disabled={isDisabled}
-                  key={advisor.id}
-                  onClick={() => setSelectedAdvisorId(advisor.id)}
+                  key={advisor.advisorId}
+                  onClick={() => setSelectedAdvisorId(advisor.advisorId)}
                   type="button"
                 >
                   <div className="flex items-start gap-3">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#E6F4F3] text-sm font-semibold text-[#045A58]">
-                      {advisor.name
+                      {advisor.fullName
                         .split(' ')
                         .map((name) => name[0])
                         .join('')
@@ -166,39 +116,36 @@ const AssignAdvisorModal = ({
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">
-                        <p className="text-sm font-semibold text-[#111827]">{advisor.name}</p>
-                        <Badge tone={availabilityTone[advisor.availability]}>{advisor.availability}</Badge>
+                        <p className="text-sm font-semibold text-[#111827]">{advisor.fullName}</p>
+                        <Badge tone={availabilityTone[advisor.availability]}>
+                          {availabilityLabels[advisor.availability]}
+                        </Badge>
                         {isCurrent ? <Badge tone="brand">Current</Badge> : null}
-                      </div>
-                      <div className="mt-2 flex flex-wrap gap-1.5">
-                        {advisor.specializations.map((specialization) => (
-                          <span
-                            className="rounded-full bg-[#F3F4F6] px-2.5 py-1 text-xs font-medium text-[#6B7280]"
-                            key={specialization}
-                          >
-                            {specialization}
-                          </span>
-                        ))}
                       </div>
                       <div className="mt-3">
                         <div className="flex items-center justify-between gap-3 text-xs">
                           <span className="font-medium text-[#6B7280]">
-                            {advisor.activeStudents} of {advisor.capacity} active students
+                            {advisor.activeStudentCount}
+                            {advisor.maxCapacity === null ? ' active students (no limit)' : ` of ${advisor.maxCapacity} active students`}
                           </span>
-                          <span className="font-semibold text-[#374151]">{workloadPercentage}%</span>
+                          {advisor.maxCapacity !== null ? (
+                            <span className="font-semibold text-[#374151]">{workloadPercentage}%</span>
+                          ) : null}
                         </div>
-                        <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[#E5E7EB]">
-                          <div
-                            className={`h-full rounded-full ${
-                              isOverCapacity
-                                ? 'bg-[#DC2626]'
-                                : workloadPercentage >= 85
-                                  ? 'bg-[#D97706]'
-                                  : 'bg-[#045A58]'
-                            }`}
-                            style={{ width: `${workloadPercentage}%` }}
-                          />
-                        </div>
+                        {advisor.maxCapacity !== null ? (
+                          <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-[#E5E7EB]">
+                            <div
+                              className={`h-full rounded-full ${
+                                isOverCapacity
+                                  ? 'bg-[#DC2626]'
+                                  : workloadPercentage >= 85
+                                    ? 'bg-[#D97706]'
+                                    : 'bg-[#045A58]'
+                              }`}
+                              style={{ width: `${workloadPercentage}%` }}
+                            />
+                          </div>
+                        ) : null}
                         {isDisabled ? (
                           <p className="mt-2 text-xs font-medium text-[#B42318]">
                             {isUnavailable
@@ -228,7 +175,7 @@ const AssignAdvisorModal = ({
               <Users size={19} />
             </div>
             <h3 className="mt-4 text-sm font-semibold text-[#111827]">No matching advisors</h3>
-            <p className="mt-1 text-sm text-[#6B7280]">Try another name or specialization.</p>
+            <p className="mt-1 text-sm text-[#6B7280]">Try another name.</p>
           </div>
         )}
       </div>
@@ -246,7 +193,7 @@ const AssignAdvisorModal = ({
             leftIcon={<UserRoundCheck size={16} />}
             onClick={() => {
               if (selectedAdvisor) {
-                onAssign(selectedAdvisor)
+                onAssign(selectedAdvisor.advisorId)
               }
             }}
             size="md"
@@ -259,5 +206,4 @@ const AssignAdvisorModal = ({
   )
 }
 
-export type { AdvisorOption }
 export default AssignAdvisorModal
