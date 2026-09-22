@@ -4,6 +4,7 @@ import {
   GraduationCap,
   LayoutDashboard,
   MessageSquareText,
+  Newspaper,
   School,
   Settings,
   Sparkles,
@@ -53,6 +54,7 @@ const navSections: NavSection[] = [
     items: [
       { icon: UsersRound, label: 'Team', path: '/team', roles: ['ADMIN'] },
       { icon: UserRoundCheck, label: 'Advisors', path: '/advisors' },
+      { icon: Newspaper, label: 'Industry Intel', path: '/industry-intel' },
       { icon: Settings, label: 'Settings', path: '/settings' },
     ],
   },

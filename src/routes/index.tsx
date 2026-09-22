@@ -9,6 +9,7 @@ import SetPasswordPage from '../pages/auth/SetPasswordPage.js'
 import ConversationDetailPage from '../pages/conversations/ConversationDetailPage.js'
 import ConversationsPage from '../pages/conversations/ConversationsPage.js'
 import DashboardPage from '../pages/dashboard/DashboardPage.js'
+import IndustryIntelPage from '../pages/industry-intel/IndustryIntelPage.js'
 import AddProgramPage from '../pages/programs/AddProgramPage.js'
 import EditProgramPage from '../pages/programs/EditProgramPage.js'
 import GlobalAddProgramPage from '../pages/programs/GlobalAddProgramPage.js'
@@ -61,6 +62,7 @@ const AppRoutes = () => {
         <Route path='/team/:memberId' element={<ProtectedRoute roles={['ADMIN']}><TeamMemberDetailPage /></ProtectedRoute>} />
         <Route path='/advisors' element={<ProtectedRoute><AdvisorsPage /></ProtectedRoute>} />
         <Route path='/settings' element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+        <Route path='/industry-intel' element={<ProtectedRoute><IndustryIntelPage /></ProtectedRoute>} />
         <Route path='*' element={<NotFoundPage />} />
     </Routes>
   )
