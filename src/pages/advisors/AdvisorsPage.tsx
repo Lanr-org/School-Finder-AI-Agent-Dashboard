@@ -5,6 +5,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock3,
+  Loader2,
   Search,
   SlidersHorizontal,
   UserRoundCheck,
@@ -12,108 +13,31 @@ import {
   UsersRound,
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
+import { isAxiosError } from 'axios'
 import { useNavigate } from 'react-router-dom'
 import AppShell from '../../components/layout/AppShell.js'
 import Badge from '../../components/ui/Badge.js'
 import Button from '../../components/ui/Button.js'
 import Card from '../../components/ui/Card.js'
 import Input from '../../components/ui/Input.js'
+import type { ApiErrorResponse } from '../../lib/api/types.js'
+import { useAdvisorProfiles } from '../../features/advisors/useAdvisors.js'
+import type { AdvisorAvailability, AdvisorProfile } from '../../features/advisors/advisors.api.js'
 
-type Availability = 'Available' | 'Limited' | 'Unavailable'
 type WorkloadState = 'Balanced' | 'Near capacity' | 'Over capacity'
 
-type Advisor = {
-  activeStudents: number
-  availability: Availability
-  capacity: number
-  email: string
-  followUpsDue: number
-  fullName: string
-  id: string
-  lastActive: string
-  specializations: string[]
-  workloadState: WorkloadState
+const PAGE_SIZE = 10
+
+const availabilityLabels: Record<AdvisorAvailability, string> = {
+  AVAILABLE: 'Available',
+  LIMITED: 'Limited',
+  UNAVAILABLE: 'Unavailable',
 }
 
-const advisors: Advisor[] = [
-  {
-    activeStudents: 18,
-    availability: 'Available',
-    capacity: 25,
-    email: 'amina@pikinic.example',
-    followUpsDue: 3,
-    fullName: 'Amina Yusuf',
-    id: 'USR-1001',
-    lastActive: 'Today, 8:42 AM',
-    specializations: ['Canada', 'Postgraduate', 'Business'],
-    workloadState: 'Balanced',
-  },
-  {
-    activeStudents: 23,
-    availability: 'Limited',
-    capacity: 25,
-    email: 'daniel@pikinic.example',
-    followUpsDue: 7,
-    fullName: 'Daniel Okafor',
-    id: 'USR-1002',
-    lastActive: 'Today, 9:18 AM',
-    specializations: ['United Kingdom', 'STEM', 'Scholarships'],
-    workloadState: 'Near capacity',
-  },
-  {
-    activeStudents: 27,
-    availability: 'Unavailable',
-    capacity: 25,
-    email: 'maya@pikinic.example',
-    followUpsDue: 9,
-    fullName: 'Maya Chen',
-    id: 'USR-1003',
-    lastActive: 'Yesterday, 4:12 PM',
-    specializations: ['Canada', 'Diploma', 'Visa support'],
-    workloadState: 'Over capacity',
-  },
-  {
-    activeStudents: 14,
-    availability: 'Available',
-    capacity: 22,
-    email: 'femi@pikinic.example',
-    followUpsDue: 2,
-    fullName: 'Femi Balogun',
-    id: 'USR-1007',
-    lastActive: 'Today, 7:55 AM',
-    specializations: ['Australia', 'Undergraduate', 'Engineering'],
-    workloadState: 'Balanced',
-  },
-  {
-    activeStudents: 20,
-    availability: 'Limited',
-    capacity: 24,
-    email: 'zainab@pikinic.example',
-    followUpsDue: 5,
-    fullName: 'Zainab Bello',
-    id: 'USR-1008',
-    lastActive: 'June 8, 2026',
-    specializations: ['Germany', 'Masters', 'Technology'],
-    workloadState: 'Near capacity',
-  },
-  {
-    activeStudents: 11,
-    availability: 'Available',
-    capacity: 20,
-    email: 'grace@pikinic.example',
-    followUpsDue: 1,
-    fullName: 'Grace Mensah',
-    id: 'USR-1009',
-    lastActive: 'Today, 9:02 AM',
-    specializations: ['United States', 'MBA', 'Finance'],
-    workloadState: 'Balanced',
-  },
-]
-
-const availabilityTone: Record<Availability, 'error' | 'success' | 'warning'> = {
-  Available: 'success',
-  Limited: 'warning',
-  Unavailable: 'error',
+const availabilityTone: Record<AdvisorAvailability, 'error' | 'success' | 'warning'> = {
+  AVAILABLE: 'success',
+  LIMITED: 'warning',
+  UNAVAILABLE: 'error',
 }
 
 const workloadTone: Record<WorkloadState, 'error' | 'success' | 'warning'> = {
@@ -122,45 +46,93 @@ const workloadTone: Record<WorkloadState, 'error' | 'success' | 'warning'> = {
   'Over capacity': 'error',
 }
 
-const advisorStats = [
-  { icon: UserRoundCheck, label: 'Active advisors', note: 'Available for assignment', value: '9' },
-  { icon: Users, label: 'Assigned students', note: 'Across active advisors', value: '156' },
-  { icon: CheckCircle2, label: 'Available capacity', note: 'Open student slots', value: '38' },
-  { icon: CalendarClock, label: 'Follow-ups due', note: 'Require advisor attention', value: '27' },
-] as const
+const getWorkloadState = (advisor: AdvisorProfile): WorkloadState => {
+  if (advisor.maxCapacity === null) return 'Balanced'
+  const percentage = (advisor.activeStudentCount / advisor.maxCapacity) * 100
+  if (percentage >= 100) return 'Over capacity'
+  if (percentage >= 85) return 'Near capacity'
+  return 'Balanced'
+}
 
-const followUpQueue = [
-  { advisor: 'Maya Chen', due: 9, oldest: '2 days overdue', priority: 'High' },
-  { advisor: 'Daniel Okafor', due: 7, oldest: 'Due today', priority: 'High' },
-  { advisor: 'Zainab Bello', due: 5, oldest: 'Due today', priority: 'Medium' },
-  { advisor: 'Amina Yusuf', due: 3, oldest: 'Due tomorrow', priority: 'Normal' },
-] as const
+const getInitials = (fullName: string) =>
+  fullName
+    .split(' ')
+    .map((part) => part[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase()
 
 const AdvisorsPage = () => {
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
-  const [availability, setAvailability] = useState('All availability')
-  const [workload, setWorkload] = useState('All workloads')
+  const [availability, setAvailability] = useState<'All availability' | AdvisorAvailability>('All availability')
+  const [workload, setWorkload] = useState<'All workloads' | WorkloadState>('All workloads')
+  const [page, setPage] = useState(1)
+
+  const { data: advisors, isLoading, isError, error } = useAdvisorProfiles()
 
   const filteredAdvisors = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase()
+    const all = advisors ?? []
 
-    return advisors.filter((advisor) => {
+    return all.filter((advisor) => {
       const matchesQuery =
         !normalizedQuery ||
         advisor.fullName.toLowerCase().includes(normalizedQuery) ||
-        advisor.email.toLowerCase().includes(normalizedQuery) ||
-        advisor.specializations.some((specialization) =>
-          specialization.toLowerCase().includes(normalizedQuery),
-        )
+        advisor.email.toLowerCase().includes(normalizedQuery)
 
       return (
         matchesQuery &&
         (availability === 'All availability' || advisor.availability === availability) &&
-        (workload === 'All workloads' || advisor.workloadState === workload)
+        (workload === 'All workloads' || getWorkloadState(advisor) === workload)
       )
     })
-  }, [availability, query, workload])
+  }, [advisors, availability, query, workload])
+
+  const pageCount = Math.max(1, Math.ceil(filteredAdvisors.length / PAGE_SIZE))
+  const pagedAdvisors = filteredAdvisors.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+
+  const stats = useMemo(() => {
+    const all = advisors ?? []
+    const assignedStudents = all.reduce((sum, advisor) => sum + advisor.activeStudentCount, 0)
+    const availableCapacity = all.reduce((sum, advisor) => {
+      if (advisor.maxCapacity === null) return sum
+      return sum + Math.max(0, advisor.maxCapacity - advisor.activeStudentCount)
+    }, 0)
+    const followUpsDue = all.reduce((sum, advisor) => sum + advisor.pendingFollowUpCount, 0)
+
+    return [
+      { icon: UserRoundCheck, label: 'Advisor profiles', note: 'Configured for assignment', value: String(all.length) },
+      { icon: Users, label: 'Assigned students', note: 'Across active advisors', value: String(assignedStudents) },
+      { icon: CheckCircle2, label: 'Available capacity', note: 'Open student slots', value: String(availableCapacity) },
+      { icon: CalendarClock, label: 'Follow-ups due', note: 'Require advisor attention', value: String(followUpsDue) },
+    ] as const
+  }, [advisors])
+
+  const followUpQueue = useMemo(
+    () =>
+      (advisors ?? [])
+        .filter((advisor) => advisor.pendingFollowUpCount > 0)
+        .sort((a, b) => b.pendingFollowUpCount - a.pendingFollowUpCount)
+        .slice(0, 4),
+    [advisors],
+  )
+
+  const capacitySummary = useMemo(() => {
+    const all = advisors ?? []
+    let over = 0
+    let near = 0
+    let available = 0
+
+    for (const advisor of all) {
+      const state = getWorkloadState(advisor)
+      if (state === 'Over capacity') over += 1
+      else if (state === 'Near capacity') near += 1
+      else available += 1
+    }
+
+    return { available, near, over }
+  }, [advisors])
 
   return (
     <AppShell>
@@ -170,7 +142,7 @@ const AdvisorsPage = () => {
             <p className="text-sm font-medium text-[#6B7280]">Administration</p>
             <h1 className="mt-1 text-3xl font-semibold tracking-normal text-[#111827]">Advisors</h1>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-[#6B7280]">
-              Monitor advisor workload, availability, specializations, student assignments, and follow-up demand.
+              Monitor advisor workload, availability, student assignments, and follow-up demand.
             </p>
           </div>
 
@@ -190,7 +162,7 @@ const AdvisorsPage = () => {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          {advisorStats.map((stat) => {
+          {stats.map((stat) => {
             const Icon = stat.icon
 
             return (
@@ -225,20 +197,30 @@ const AdvisorsPage = () => {
                   className="h-11 bg-[#F9FAFB]"
                   id="advisor-search"
                   leftIcon={<Search size={18} />}
-                  onChange={(event) => setQuery(event.target.value)}
-                  placeholder="Search advisor or specialization"
+                  onChange={(event) => {
+                    setQuery(event.target.value)
+                    setPage(1)
+                  }}
+                  placeholder="Search advisor name or email"
                   type="search"
                   value={query}
                 />
                 <FilterSelect
                   label="Availability"
-                  onChange={setAvailability}
-                  options={['All availability', 'Available', 'Limited', 'Unavailable']}
+                  onChange={(value) => {
+                    setAvailability(value as typeof availability)
+                    setPage(1)
+                  }}
+                  options={['All availability', 'AVAILABLE', 'LIMITED', 'UNAVAILABLE']}
+                  optionLabels={{ AVAILABLE: 'Available', LIMITED: 'Limited', UNAVAILABLE: 'Unavailable' }}
                   value={availability}
                 />
                 <FilterSelect
                   label="Workload"
-                  onChange={setWorkload}
+                  onChange={(value) => {
+                    setWorkload(value as typeof workload)
+                    setPage(1)
+                  }}
                   options={['All workloads', 'Balanced', 'Near capacity', 'Over capacity']}
                   value={workload}
                 />
@@ -246,37 +228,45 @@ const AdvisorsPage = () => {
             </div>
           </div>
 
-          {filteredAdvisors.length ? (
+          {isLoading ? (
+            <div className="flex min-h-72 items-center justify-center">
+              <Loader2 className="animate-spin text-[#045A58]" size={28} />
+            </div>
+          ) : isError ? (
+            <div className="flex min-h-72 flex-col items-center justify-center gap-3 px-6 py-12 text-center">
+              <AlertCircle className="text-[#DC2626]" size={24} />
+              <p className="text-sm text-[#6B7280]">
+                {isAxiosError<ApiErrorResponse>(error)
+                  ? (error.response?.data.error.message ?? 'Failed to load advisors')
+                  : 'Failed to load advisors'}
+              </p>
+            </div>
+          ) : pagedAdvisors.length ? (
             <div className="max-h-[620px] overflow-auto overscroll-contain">
-              <table className="w-full min-w-[1120px] text-left">
+              <table className="w-full min-w-[960px] text-left">
                 <thead className="sticky top-0 z-10 bg-white">
                   <tr className="border-b border-[#E5E7EB] text-xs font-semibold uppercase tracking-normal text-[#6B7280]">
                     <th className="px-6 py-3">Advisor</th>
                     <th className="px-6 py-3">Availability</th>
                     <th className="px-6 py-3">Workload</th>
-                    <th className="px-6 py-3">Specializations</th>
                     <th className="whitespace-nowrap px-6 py-3">Follow-ups</th>
-                    <th className="px-6 py-3">Last active</th>
                     <th className="whitespace-nowrap px-6 py-3 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#E5E7EB]">
-                  {filteredAdvisors.map((advisor) => {
-                    const workloadPercentage = Math.min(
-                      Math.round((advisor.activeStudents / advisor.capacity) * 100),
-                      100,
-                    )
+                  {pagedAdvisors.map((advisor) => {
+                    const workloadState = getWorkloadState(advisor)
+                    const workloadPercentage =
+                      advisor.maxCapacity === null
+                        ? 0
+                        : Math.min(Math.round((advisor.activeStudentCount / advisor.maxCapacity) * 100), 100)
 
                     return (
-                      <tr className="transition hover:bg-[#F9FAFB]" key={advisor.id}>
+                      <tr className="transition hover:bg-[#F9FAFB]" key={advisor.advisorId}>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#E6F4F3] text-sm font-semibold text-[#045A58]">
-                              {advisor.fullName
-                                .split(' ')
-                                .map((name) => name[0])
-                                .join('')
-                                .slice(0, 2)}
+                              {getInitials(advisor.fullName)}
                             </div>
                             <div>
                               <p className="text-sm font-semibold text-[#111827]">{advisor.fullName}</p>
@@ -285,61 +275,53 @@ const AdvisorsPage = () => {
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <Badge tone={availabilityTone[advisor.availability]}>{advisor.availability}</Badge>
+                          <Badge tone={availabilityTone[advisor.availability]}>
+                            {availabilityLabels[advisor.availability]}
+                          </Badge>
                         </td>
                         <td className="px-6 py-4">
                           <div className="w-44">
                             <div className="flex items-center justify-between gap-3">
                               <span className="text-sm font-semibold text-[#111827]">
-                                {advisor.activeStudents} / {advisor.capacity}
+                                {advisor.activeStudentCount}
+                                {advisor.maxCapacity === null ? '' : ` / ${advisor.maxCapacity}`}
                               </span>
-                              <Badge tone={workloadTone[advisor.workloadState]}>
-                                {advisor.workloadState}
-                              </Badge>
+                              {advisor.maxCapacity !== null ? (
+                                <Badge tone={workloadTone[workloadState]}>{workloadState}</Badge>
+                              ) : (
+                                <Badge tone="neutral">No limit</Badge>
+                              )}
                             </div>
-                            <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#E5E7EB]">
-                              <div
-                                className={`h-full rounded-full ${
-                                  advisor.workloadState === 'Over capacity'
-                                    ? 'bg-[#DC2626]'
-                                    : advisor.workloadState === 'Near capacity'
-                                      ? 'bg-[#D97706]'
-                                      : 'bg-[#045A58]'
-                                }`}
-                                style={{ width: `${workloadPercentage}%` }}
-                              />
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex max-w-64 flex-wrap gap-1.5">
-                            {advisor.specializations.map((specialization) => (
-                              <Badge className="h-6 px-2.5" key={specialization} tone="neutral">
-                                {specialization}
-                              </Badge>
-                            ))}
+                            {advisor.maxCapacity !== null ? (
+                              <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[#E5E7EB]">
+                                <div
+                                  className={`h-full rounded-full ${
+                                    workloadState === 'Over capacity'
+                                      ? 'bg-[#DC2626]'
+                                      : workloadState === 'Near capacity'
+                                        ? 'bg-[#D97706]'
+                                        : 'bg-[#045A58]'
+                                  }`}
+                                  style={{ width: `${workloadPercentage}%` }}
+                                />
+                              </div>
+                            ) : null}
                           </div>
                         </td>
                         <td className="whitespace-nowrap px-6 py-4">
                           <span
                             className={`inline-flex items-center gap-2 whitespace-nowrap text-sm font-semibold ${
-                              advisor.followUpsDue >= 7 ? 'text-[#B42318]' : 'text-[#374151]'
+                              advisor.pendingFollowUpCount >= 7 ? 'text-[#B42318]' : 'text-[#374151]'
                             }`}
                           >
                             <CalendarClock size={16} />
-                            {advisor.followUpsDue} due
-                          </span>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className="inline-flex items-center gap-2 text-sm text-[#6B7280]">
-                            <Clock3 size={15} />
-                            {advisor.lastActive}
+                            {advisor.pendingFollowUpCount} due
                           </span>
                         </td>
                         <td className="whitespace-nowrap px-6 py-4 text-right">
                           <Button
                             className="w-max whitespace-nowrap"
-                            onClick={() => navigate('/students')}
+                            onClick={() => navigate(`/students?advisorId=${advisor.advisorId}`)}
                             size="sm"
                             variant="secondary"
                           >
@@ -367,6 +349,7 @@ const AdvisorsPage = () => {
                   setQuery('')
                   setAvailability('All availability')
                   setWorkload('All workloads')
+                  setPage(1)
                 }}
                 size="md"
                 variant="secondary"
@@ -378,14 +361,26 @@ const AdvisorsPage = () => {
 
           <div className="flex flex-col gap-3 border-t border-[#E5E7EB] px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
             <p className="text-sm text-[#6B7280]">
-              Showing <span className="font-semibold text-[#111827]">{filteredAdvisors.length}</span> of{' '}
-              <span className="font-semibold text-[#111827]">9</span> active advisors
+              Showing <span className="font-semibold text-[#111827]">{pagedAdvisors.length}</span> of{' '}
+              <span className="font-semibold text-[#111827]">{filteredAdvisors.length}</span> advisors
             </p>
             <div className="flex items-center gap-2">
-              <Button disabled leftIcon={<ChevronLeft size={16} />} size="sm" variant="secondary">
+              <Button
+                disabled={page <= 1}
+                leftIcon={<ChevronLeft size={16} />}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                size="sm"
+                variant="secondary"
+              >
                 Previous
               </Button>
-              <Button rightIcon={<ChevronRight size={16} />} size="sm" variant="secondary">
+              <Button
+                disabled={page >= pageCount}
+                onClick={() => setPage((p) => Math.min(pageCount, p + 1))}
+                rightIcon={<ChevronRight size={16} />}
+                size="sm"
+                variant="secondary"
+              >
                 Next
               </Button>
             </div>
@@ -398,31 +393,38 @@ const AdvisorsPage = () => {
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-semibold text-[#111827]">Follow-up review</h2>
-                  <p className="mt-1 text-sm text-[#6B7280]">Advisors with the largest active follow-up queues.</p>
+                  <p className="mt-1 text-sm text-[#6B7280]">Advisors with the largest pending follow-up queues.</p>
                 </div>
-                <Badge tone="warning">27 due</Badge>
+                <Badge tone="warning">{stats[3].value} due</Badge>
               </div>
             </div>
-            <div className="divide-y divide-[#E5E7EB]">
-              {followUpQueue.map((item) => (
-                <div
-                  className="grid gap-3 px-6 py-4 sm:grid-cols-[1fr_90px_140px_90px] sm:items-center"
-                  key={item.advisor}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#F3F4F6] text-[#045A58]">
-                      <UserRoundCheck size={17} />
+            {followUpQueue.length ? (
+              <div className="divide-y divide-[#E5E7EB]">
+                {followUpQueue.map((advisor) => (
+                  <div
+                    className="grid gap-3 px-6 py-4 sm:grid-cols-[1fr_100px_110px] sm:items-center"
+                    key={advisor.advisorId}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#F3F4F6] text-[#045A58]">
+                        <UserRoundCheck size={17} />
+                      </div>
+                      <span className="text-sm font-semibold text-[#111827]">{advisor.fullName}</span>
                     </div>
-                    <span className="text-sm font-semibold text-[#111827]">{item.advisor}</span>
+                    <span className="text-sm font-semibold text-[#111827]">{advisor.pendingFollowUpCount} due</span>
+                    <Button
+                      onClick={() => navigate(`/students?advisorId=${advisor.advisorId}`)}
+                      size="sm"
+                      variant="secondary"
+                    >
+                      Review
+                    </Button>
                   </div>
-                  <span className="text-sm font-semibold text-[#111827]">{item.due} due</span>
-                  <span className="text-sm text-[#6B7280]">{item.oldest}</span>
-                  <Badge tone={item.priority === 'High' ? 'error' : item.priority === 'Medium' ? 'warning' : 'neutral'}>
-                    {item.priority}
-                  </Badge>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="px-6 py-10 text-center text-sm text-[#6B7280]">No pending follow-ups right now.</div>
+            )}
           </Card>
 
           <Card>
@@ -433,23 +435,20 @@ const AdvisorsPage = () => {
               <div>
                 <h2 className="text-lg font-semibold text-[#111827]">Capacity attention</h2>
                 <p className="mt-1 text-sm leading-6 text-[#6B7280]">
-                  One advisor is over capacity and two are close to their assignment limits.
+                  {capacitySummary.over > 0
+                    ? `${capacitySummary.over} advisor${capacitySummary.over === 1 ? ' is' : 's are'} over capacity.`
+                    : 'No advisors are currently over capacity.'}
                 </p>
               </div>
             </div>
 
             <div className="mt-6 space-y-4">
-              <CapacityItem label="Over capacity" tone="error" value="1 advisor" />
-              <CapacityItem label="Near capacity" tone="warning" value="2 advisors" />
-              <CapacityItem label="Available" tone="success" value="3 shown" />
+              <CapacityItem label="Over capacity" tone="error" value={`${capacitySummary.over} advisors`} />
+              <CapacityItem label="Near capacity" tone="warning" value={`${capacitySummary.near} advisors`} />
+              <CapacityItem label="Available" tone="success" value={`${capacitySummary.available} advisors`} />
             </div>
 
-            <Button
-              className="mt-6 w-full"
-              onClick={() => navigate('/students')}
-              size="md"
-              variant="secondary"
-            >
+            <Button className="mt-6 w-full" onClick={() => navigate('/students')} size="md" variant="secondary">
               Review student assignments
             </Button>
           </Card>
@@ -463,11 +462,13 @@ const FilterSelect = ({
   label,
   onChange,
   options,
+  optionLabels,
   value,
 }: {
   label: string
   onChange: (value: string) => void
   options: string[]
+  optionLabels?: Record<string, string>
   value: string
 }) => (
   <select
@@ -477,7 +478,9 @@ const FilterSelect = ({
     value={value}
   >
     {options.map((option) => (
-      <option key={option}>{option}</option>
+      <option key={option} value={option}>
+        {optionLabels?.[option] ?? option}
+      </option>
     ))}
   </select>
 )

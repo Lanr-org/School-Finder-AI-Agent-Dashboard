@@ -1,20 +1,43 @@
-import { ArrowRight, GraduationCap, LockKeyhole, Mail } from 'lucide-react'
+import { AlertCircle, ArrowRight, GraduationCap, LockKeyhole, Mail } from 'lucide-react'
+import { isAxiosError } from 'axios'
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import Button from '../../components/ui/Button.js'
 import Card from '../../components/ui/Card.js'
 import Input from '../../components/ui/Input.js'
+import { api } from '../../lib/api/client.js'
+import type { ApiErrorResponse } from '../../lib/api/types.js'
+import { useAuthStore, type AuthUser } from '../../store/authStore.js'
 
 const LoginPage = () => {
   const navigate = useNavigate()
+  const loginSuccess = useAuthStore((state) => state.loginSuccess)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
-    localStorage.setItem('token', 'development-token')
-    navigate('/')
+    setError(null)
+    setSubmitting(true)
+
+    try {
+      const res = await api.post<{ data: { accessToken: string; user: AuthUser } }>(
+        '/auth/login',
+        { email, password },
+      )
+      loginSuccess(res.data.data.accessToken, res.data.data.user)
+      navigate('/')
+    } catch (err) {
+      const message = isAxiosError<ApiErrorResponse>(err)
+        ? (err.response?.data.error.message ?? 'Login failed')
+        : 'Login failed'
+      setError(message)
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -38,6 +61,13 @@ const LoginPage = () => {
             </div>
 
             <form className="space-y-5" onSubmit={handleSubmit}>
+              {error ? (
+                <div className="flex items-start gap-2 rounded-xl bg-[#FEE2E2] px-4 py-3 text-sm text-[#B91C1C]">
+                  <AlertCircle className="mt-0.5 shrink-0" size={16} />
+                  <span>{error}</span>
+                </div>
+              ) : null}
+
               <Input
                 id="email"
                 label="Email address"
@@ -71,11 +101,12 @@ const LoginPage = () => {
 
               <Button
                 className="w-full"
+                disabled={submitting}
                 rightIcon={<ArrowRight size={18} />}
                 size="lg"
                 type="submit"
               >
-                Sign in
+                {submitting ? 'Signing in…' : 'Sign in'}
               </Button>
             </form>
           </section>

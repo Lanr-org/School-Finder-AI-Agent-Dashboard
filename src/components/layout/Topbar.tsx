@@ -20,16 +20,26 @@ import Button from '../ui/Button.js'
 import Input from '../ui/Input.js'
 import Modal from '../ui/Modal.js'
 import { cn } from '../../utils/cn.js'
+import { api } from '../../lib/api/client.js'
+import { useAuthStore } from '../../store/authStore.js'
 
 type TopbarProps = {
   onMenuClick: () => void
 }
 
-const currentUser = {
-  initials: 'AY',
-  name: 'Amina Yusuf',
-  role: 'Admin',
+const roleLabels: Record<string, string> = {
+  ADMIN: 'Admin',
+  ADVISOR: 'Advisor',
+  OPERATIONS: 'Operations',
 }
+
+const initialsOf = (fullName: string) =>
+  fullName
+    .split(' ')
+    .map((part) => part[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase()
 
 type NotificationItem = {
   description: string
@@ -82,11 +92,19 @@ const initialNotifications: NotificationItem[] = [
 
 const Topbar = ({ onMenuClick }: TopbarProps) => {
   const navigate = useNavigate()
+  const authUser = useAuthStore((state) => state.user)
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
   const [isSignOutModalOpen, setIsSignOutModalOpen] = useState(false)
+  const [isSigningOut, setIsSigningOut] = useState(false)
   const [notifications, setNotifications] = useState(initialNotifications)
   const unreadCount = notifications.filter((notification) => !notification.read).length
+
+  const currentUser = {
+    initials: authUser ? initialsOf(authUser.fullName) : '',
+    name: authUser?.fullName ?? '',
+    role: authUser ? (roleLabels[authUser.role] ?? authUser.role) : '',
+  }
 
   useEffect(() => {
     const closePopovers = (event: MouseEvent) => {
@@ -112,10 +130,18 @@ const Topbar = ({ onMenuClick }: TopbarProps) => {
     }
   }, [])
 
-  const signOut = () => {
-    localStorage.removeItem('token')
-    setIsSignOutModalOpen(false)
-    navigate('/login', { replace: true })
+  const signOut = async () => {
+    setIsSigningOut(true)
+    try {
+      await api.post('/auth/logout')
+    } catch {
+      // Session may already be invalid server-side — still clear it locally.
+    } finally {
+      useAuthStore.getState().logout()
+      setIsSigningOut(false)
+      setIsSignOutModalOpen(false)
+      navigate('/login', { replace: true })
+    }
   }
 
   return (
@@ -371,8 +397,14 @@ const Topbar = ({ onMenuClick }: TopbarProps) => {
           <Button onClick={() => setIsSignOutModalOpen(false)} size="md" variant="secondary">
             Cancel
           </Button>
-          <Button leftIcon={<LogOut size={16} />} onClick={signOut} size="md" variant="danger">
-            Sign out
+          <Button
+            disabled={isSigningOut}
+            leftIcon={<LogOut size={16} />}
+            onClick={signOut}
+            size="md"
+            variant="danger"
+          >
+            {isSigningOut ? 'Signing out…' : 'Sign out'}
           </Button>
         </div>
       </Modal>

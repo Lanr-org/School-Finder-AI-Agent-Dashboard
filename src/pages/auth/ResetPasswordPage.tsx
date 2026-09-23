@@ -8,16 +8,21 @@ import {
   GraduationCap,
   LoaderCircle,
   LockKeyhole,
+  Mail,
   ShieldCheck,
 } from 'lucide-react'
+import { isAxiosError } from 'axios'
 import { useEffect, useMemo, useState, type FormEvent, type ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import Button from '../../components/ui/Button.js'
 import Card from '../../components/ui/Card.js'
 import Input from '../../components/ui/Input.js'
+import { api } from '../../lib/api/client.js'
+import type { ApiErrorResponse, ApiSuccessResponse } from '../../lib/api/types.js'
+import { useAuthStore } from '../../store/authStore.js'
 
-type ResetState = 'validating' | 'valid' | 'invalid' | 'expired' | 'used' | 'submitting' | 'success'
-type ResetErrorState = Extract<ResetState, 'expired' | 'invalid' | 'used'>
+type ResetState = 'validating' | 'valid' | 'invalid' | 'expired' | 'submitting' | 'success'
+type ResetErrorState = Extract<ResetState, 'expired' | 'invalid'>
 
 const resetErrors: Record<ResetErrorState, { description: string; title: string }> = {
   expired: {
@@ -25,39 +30,45 @@ const resetErrors: Record<ResetErrorState, { description: string; title: string 
     title: 'Reset link expired',
   },
   invalid: {
-    description: 'This password reset link is not valid. Check that you opened the complete link from your email.',
+    description:
+      'This password reset link is not valid. Check that you opened the complete link from your email, or it may have already been used.',
     title: 'Invalid reset link',
   },
-  used: {
-    description: 'This password reset link has already been used. Request another link if you still cannot sign in.',
-    title: 'Reset link already used',
-  },
 }
+
+const errorCode = (error: unknown): string | undefined =>
+  isAxiosError<ApiErrorResponse>(error) ? error.response?.data.error.code : undefined
+
+const errorMessage = (error: unknown, fallback: string): string =>
+  isAxiosError<ApiErrorResponse>(error) ? (error.response?.data.error.message ?? fallback) : fallback
 
 const ResetPasswordPage = () => {
   const navigate = useNavigate()
   const { token } = useParams()
   const [resetState, setResetState] = useState<ResetState>('validating')
+  const [resetEmail, setResetEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   useEffect(() => {
-    const validationTimer = window.setTimeout(() => {
-      if (!token || token === 'invalid') {
-        setResetState('invalid')
-      } else if (token === 'expired') {
-        setResetState('expired')
-      } else if (token === 'used') {
-        setResetState('used')
-      } else {
-        setResetState('valid')
-      }
-    }, 450)
+    if (!token) {
+      setResetState('invalid')
+      return
+    }
 
-    return () => window.clearTimeout(validationTimer)
+    api
+      .get<ApiSuccessResponse<{ fullName: string; email: string }>>(`/auth/reset-password/${token}`)
+      .then((res) => {
+        setResetEmail(res.data.data.email)
+        setResetState('valid')
+      })
+      .catch((error: unknown) => {
+        setResetState(errorCode(error) === 'TOKEN_EXPIRED' ? 'expired' : 'invalid')
+      })
   }, [token])
 
   const requirements = useMemo(
@@ -73,14 +84,31 @@ const ResetPasswordPage = () => {
   const passwordIsValid = requirements.every((requirement) => requirement.met)
   const passwordsMatch = password.length > 0 && password === confirmPassword
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setSubmitted(true)
+    setSubmitError(null)
 
-    if (!passwordIsValid || !passwordsMatch) return
+    if (!passwordIsValid || !passwordsMatch || !token) return
 
     setResetState('submitting')
-    window.setTimeout(() => setResetState('success'), 650)
+
+    try {
+      await api.post(`/auth/reset-password/${token}`, {
+        newPassword: password,
+        confirmNewPassword: confirmPassword,
+      })
+      // The backend clears the refresh cookie on a successful reset, ending any active session.
+      useAuthStore.getState().logout()
+      setResetState('success')
+    } catch (error) {
+      if (errorCode(error) === 'TOKEN_EXPIRED') {
+        setResetState('expired')
+      } else {
+        setSubmitError(errorMessage(error, 'Failed to reset password'))
+        setResetState('valid')
+      }
+    }
   }
 
   return (
@@ -107,7 +135,7 @@ const ResetPasswordPage = () => {
                 icon={<LoaderCircle className="animate-spin" size={25} />}
                 title="Validating reset link"
               />
-            ) : resetState === 'invalid' || resetState === 'expired' || resetState === 'used' ? (
+            ) : resetState === 'invalid' || resetState === 'expired' ? (
               <ErrorPanel state={resetState} />
             ) : resetState === 'success' ? (
               <SuccessPanel onContinue={() => navigate('/login')} />
@@ -124,7 +152,22 @@ const ResetPasswordPage = () => {
                   </p>
                 </div>
 
+                <div className="mb-6 flex items-start gap-3 rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] p-4">
+                  <Mail className="mt-0.5 shrink-0 text-[#045A58]" size={18} />
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold uppercase tracking-normal text-[#9CA3AF]">Resetting for</p>
+                    <p className="mt-1 break-words text-sm font-semibold text-[#111827]">{resetEmail}</p>
+                  </div>
+                </div>
+
                 <form className="space-y-5" onSubmit={handleSubmit}>
+                  {submitError ? (
+                    <div className="flex items-start gap-2 rounded-xl bg-[#FEE2E2] px-4 py-3 text-sm text-[#B91C1C]">
+                      <AlertCircle className="mt-0.5 shrink-0" size={16} />
+                      <span>{submitError}</span>
+                    </div>
+                  ) : null}
+
                   <Input
                     autoComplete="new-password"
                     {...(submitted && !passwordIsValid

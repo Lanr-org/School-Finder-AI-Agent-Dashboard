@@ -1,4 +1,5 @@
 import {
+  AlertCircle,
   Bell,
   CheckCircle2,
   Eye,
@@ -13,6 +14,7 @@ import {
   Smartphone,
   UserRound,
 } from 'lucide-react'
+import { isAxiosError } from 'axios'
 import { useState, type FormEvent, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import AppShell from '../../components/layout/AppShell.js'
@@ -20,10 +22,27 @@ import Badge from '../../components/ui/Badge.js'
 import Button from '../../components/ui/Button.js'
 import Card from '../../components/ui/Card.js'
 import Input from '../../components/ui/Input.js'
+import { api } from '../../lib/api/client.js'
+import type { ApiErrorResponse, ApiSuccessResponse } from '../../lib/api/types.js'
+import { useAuthStore } from '../../store/authStore.js'
+import { useCurrentUser } from '../../features/account/useCurrentUser.js'
 
 type NotificationKey = 'assignments' | 'conversations' | 'followUps' | 'recommendations' | 'team'
 
+const roleLabels: Record<string, string> = {
+  ADMIN: 'Admin',
+  ADVISOR: 'Advisor',
+  OPERATIONS: 'Operations',
+}
+
+const statusLabels: Record<string, string> = {
+  ACTIVE: 'Active',
+  DISABLED: 'Disabled',
+  INVITED: 'Invited',
+}
+
 const AccountSettingsPage = () => {
+  const { data: currentUser } = useCurrentUser()
   const [notifications, setNotifications] = useState<Record<NotificationKey, boolean>>({
     assignments: true,
     conversations: true,
@@ -38,6 +57,9 @@ const AccountSettingsPage = () => {
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [passwordSubmitted, setPasswordSubmitted] = useState(false)
+  const [passwordSubmitting, setPasswordSubmitting] = useState(false)
+  const [passwordError, setPasswordError] = useState<string | null>(null)
+  const [passwordSuccess, setPasswordSuccess] = useState(false)
 
   const passwordRequirements = [
     { label: 'At least 8 characters', met: newPassword.length >= 8 },
@@ -48,16 +70,36 @@ const AccountSettingsPage = () => {
   const newPasswordIsValid = passwordRequirements.every((requirement) => requirement.met)
   const passwordsMatch = newPassword.length > 0 && newPassword === confirmPassword
 
-  const handlePasswordSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handlePasswordSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setPasswordSubmitted(true)
+    setPasswordError(null)
+    setPasswordSuccess(false)
 
     if (!currentPassword || !newPasswordIsValid || !passwordsMatch) return
 
-    setCurrentPassword('')
-    setNewPassword('')
-    setConfirmPassword('')
-    setPasswordSubmitted(false)
+    setPasswordSubmitting(true)
+
+    try {
+      const res = await api.post<ApiSuccessResponse<{ accessToken: string }>>('/auth/change-password', {
+        currentPassword,
+        newPassword,
+        confirmNewPassword: confirmPassword,
+      })
+      useAuthStore.getState().setAccessToken(res.data.data.accessToken)
+      setCurrentPassword('')
+      setNewPassword('')
+      setConfirmPassword('')
+      setPasswordSubmitted(false)
+      setPasswordSuccess(true)
+    } catch (error) {
+      const message = isAxiosError<ApiErrorResponse>(error)
+        ? (error.response?.data.error.message ?? 'Failed to change password')
+        : 'Failed to change password'
+      setPasswordError(message)
+    } finally {
+      setPasswordSubmitting(false)
+    }
   }
 
   return (
@@ -98,11 +140,11 @@ const AccountSettingsPage = () => {
                 icon={<UserRound size={19} />}
                 title="Personal information"
               >
-                <div className="grid gap-5 sm:grid-cols-2">
+                <div className="grid gap-5 sm:grid-cols-2" key={currentUser?.publicId ?? 'loading'}>
                   <div className="sm:col-span-2">
                     <Input
                       autoComplete="name"
-                      defaultValue="Amina Yusuf"
+                      defaultValue={currentUser?.fullName ?? ''}
                       id="account-full-name"
                       label="Full name"
                       name="fullName"
@@ -111,7 +153,7 @@ const AccountSettingsPage = () => {
                   </div>
                   <Input
                     autoComplete="email"
-                    defaultValue="amina@pikinic.example"
+                    defaultValue={currentUser?.email ?? ''}
                     helperText="Your sign-in email. Changes may require verification."
                     id="account-email"
                     label="Work email"
@@ -122,7 +164,7 @@ const AccountSettingsPage = () => {
                   />
                   <Input
                     autoComplete="tel"
-                    defaultValue="+234 803 555 0101"
+                    defaultValue={currentUser?.phone ?? ''}
                     helperText="Used for internal contact only."
                     id="account-phone"
                     label="Phone number"
@@ -192,8 +234,8 @@ const AccountSettingsPage = () => {
             <form onSubmit={handlePasswordSubmit}>
               <SettingsSection
                 action={
-                  <Button leftIcon={<KeyRound size={16} />} size="sm" type="submit">
-                    Change password
+                  <Button disabled={passwordSubmitting} leftIcon={<KeyRound size={16} />} size="sm" type="submit">
+                    {passwordSubmitting ? 'Changing…' : 'Change password'}
                   </Button>
                 }
                 description="Verify your current password before creating a new one."
@@ -201,6 +243,20 @@ const AccountSettingsPage = () => {
                 title="Password"
               >
                 <div className="grid gap-5">
+                  {passwordError ? (
+                    <div className="flex items-start gap-2 rounded-xl bg-[#FEE2E2] px-4 py-3 text-sm text-[#B91C1C]">
+                      <AlertCircle className="mt-0.5 shrink-0" size={16} />
+                      <span>{passwordError}</span>
+                    </div>
+                  ) : null}
+
+                  {passwordSuccess ? (
+                    <div className="flex items-start gap-2 rounded-xl bg-[#DCFCE7] px-4 py-3 text-sm text-[#166534]">
+                      <CheckCircle2 className="mt-0.5 shrink-0" size={16} />
+                      <span>Your password has been changed.</span>
+                    </div>
+                  ) : null}
+
                   <Input
                     autoComplete="current-password"
                     {...(passwordSubmitted && !currentPassword
@@ -306,9 +362,12 @@ const AccountSettingsPage = () => {
                 </div>
               </div>
               <div className="mt-5 space-y-4 border-t border-[#E5E7EB] pt-5">
-                <SummaryItem label="Role" value="Admin" />
-                <SummaryItem label="Status" value="Active" />
-                <SummaryItem label="User ID" value="USR-1001" />
+                <SummaryItem label="Role" value={currentUser ? (roleLabels[currentUser.role] ?? currentUser.role) : '—'} />
+                <SummaryItem
+                  label="Status"
+                  value={currentUser ? (statusLabels[currentUser.status] ?? currentUser.status) : '—'}
+                />
+                <SummaryItem label="User ID" value={currentUser?.publicId ?? '—'} />
               </div>
             </Card>
 
