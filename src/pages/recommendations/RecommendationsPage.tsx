@@ -1,6 +1,5 @@
 import {
   AlertCircle,
-  ArrowDownUp,
   Check,
   CheckCircle2,
   ChevronLeft,
@@ -8,6 +7,7 @@ import {
   CircleDollarSign,
   GitCompareArrows,
   GraduationCap,
+  Loader2,
   MapPin,
   Search,
   Sparkles,
@@ -15,181 +15,106 @@ import {
   Users,
   X,
 } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { isAxiosError } from 'axios'
 import AppShell from '../../components/layout/AppShell.js'
 import Badge from '../../components/ui/Badge.js'
 import Button from '../../components/ui/Button.js'
 import Card from '../../components/ui/Card.js'
 import Input from '../../components/ui/Input.js'
+import GenerateRecommendationsModal from '../../components/modals/GenerateRecommendationsModal.js'
+import type { ApiErrorResponse } from '../../lib/api/types.js'
 import { cn } from '../../utils/cn.js'
+import { useTeamMembers } from '../../features/team/useTeamMembers.js'
+import { useSettingGroups } from '../../features/settings/useSettings.js'
+import {
+  useCreateShortlist,
+  useDeleteShortlist,
+  useRecommendationsList,
+} from '../../features/recommendations/useRecommendations.js'
+import type { RecommendationListItem } from '../../features/recommendations/recommendations.api.js'
 
-type Recommendation = {
-  country: string
-  createdAt: string
-  id: string
-  missingRequirements: string[]
-  program: string
-  programId: string
-  reasons: string[]
-  school: string
-  schoolId: string
-  score: number
-  scoreBreakdown: {
-    budget: number
-    intake: number
-    program: number
-    visa: number
-  }
-  shortlisted: boolean
-  student: string
-  studentId: string
-  tuition: string
-}
+const PAGE_SIZE = 20
 
-const recommendations: Recommendation[] = [
-  {
-    country: 'Canada',
-    createdAt: 'Today, 9:42 AM',
-    id: 'REC-7108',
-    missingRequirements: ['Confirm transcript format'],
-    program: 'Business Analytics',
-    programId: 'PRG-3108',
-    reasons: ['Within annual budget', 'Fall intake available', 'IELTS requirement met'],
-    school: 'Northbridge College',
-    schoolId: 'SCH-2048',
-    score: 92,
-    scoreBreakdown: { budget: 95, intake: 100, program: 94, visa: 80 },
-    shortlisted: true,
-    student: 'Chinedu Nwosu',
-    studentId: 'STU-1048',
-    tuition: 'CAD 22,400',
-  },
-  {
-    country: 'Canada',
-    createdAt: 'Today, 9:42 AM',
-    id: 'REC-7107',
-    missingRequirements: ['Scholarship deadline check'],
-    program: 'Data and Business Intelligence',
-    programId: 'PRG-3107',
-    reasons: ['Strong program alignment', 'Flexible intake', 'Partner school'],
-    school: 'Maple Coast University',
-    schoolId: 'SCH-2047',
-    score: 88,
-    scoreBreakdown: { budget: 84, intake: 96, program: 92, visa: 82 },
-    shortlisted: false,
-    student: 'Chinedu Nwosu',
-    studentId: 'STU-1048',
-    tuition: 'CAD 23,100',
-  },
-  {
-    country: 'United Kingdom',
-    createdAt: 'Yesterday, 3:18 PM',
-    id: 'REC-7106',
-    missingRequirements: ['Confirm clinical experience'],
-    program: 'Public Health',
-    programId: 'PRG-3106',
-    reasons: ['Preferred destination', 'Scholarship available', 'Spring pathway available'],
-    school: 'Westhaven University',
-    schoolId: 'SCH-2046',
-    score: 89,
-    scoreBreakdown: { budget: 86, intake: 92, program: 94, visa: 78 },
-    shortlisted: true,
-    student: 'Sofia Ahmed',
-    studentId: 'STU-1047',
-    tuition: 'GBP 19,600',
-  },
-  {
-    country: 'Australia',
-    createdAt: 'Yesterday, 12:05 PM',
-    id: 'REC-7105',
-    missingRequirements: ['IELTS result pending'],
-    program: 'Computer Science',
-    programId: 'PRG-3105',
-    reasons: ['Academic background match', 'Preferred country', 'Application window open'],
-    school: 'Harbour Institute',
-    schoolId: 'SCH-2045',
-    score: 84,
-    scoreBreakdown: { budget: 72, intake: 90, program: 93, visa: 81 },
-    shortlisted: false,
-    student: 'Emeka Ibe',
-    studentId: 'STU-1046',
-    tuition: 'AUD 28,400',
-  },
-  {
-    country: 'Germany',
-    createdAt: 'June 5, 2026',
-    id: 'REC-7104',
-    missingRequirements: [],
-    program: 'Mechanical Engineering',
-    programId: 'PRG-3104',
-    reasons: ['Strong budget fit', 'Academic field aligned', 'Winter intake available'],
-    school: 'Linden Technical Institute',
-    schoolId: 'SCH-2043',
-    score: 90,
-    scoreBreakdown: { budget: 98, intake: 88, program: 94, visa: 76 },
-    shortlisted: true,
-    student: 'Tara Mensah',
-    studentId: 'STU-1043',
-    tuition: 'EUR 14,800',
-  },
-]
+const formatTuition = (amount: number, currency: string) =>
+  `${currency} ${amount.toLocaleString()}`
 
-const recommendationStats = [
-  { icon: Sparkles, label: 'Generated', note: 'This month', value: '364' },
-  { icon: Star, label: 'Shortlisted', note: 'Across 82 students', value: '126' },
-  { icon: CheckCircle2, label: 'Strong matches', note: 'Score of 85 or higher', value: '218' },
-  { icon: AlertCircle, label: 'Missing requirements', note: 'Needs advisor review', value: '47' },
-] as const
+const formatDate = (value: string) =>
+  new Date(value).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
 
 const RecommendationsPage = () => {
   const [comparisonIds, setComparisonIds] = useState<string[]>([])
-  const [country, setCountry] = useState('All countries')
-  const [query, setQuery] = useState('')
-  const [shortlistedIds, setShortlistedIds] = useState(
-    recommendations.filter((item) => item.shortlisted).map((item) => item.id),
+  const [country, setCountry] = useState('ALL')
+  const [advisorId, setAdvisorId] = useState('ALL')
+  const [searchInput, setSearchInput] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
+  const [page, setPage] = useState(1)
+  const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false)
+
+  useEffect(() => {
+    const timeout = setTimeout(() => setDebouncedSearch(searchInput.trim()), 300)
+    return () => clearTimeout(timeout)
+  }, [searchInput])
+
+  useEffect(() => setPage(1), [debouncedSearch, country, advisorId])
+
+  const { data: advisors } = useTeamMembers()
+  const advisorOptions = useMemo(() => (advisors ?? []).filter((member) => member.role === 'ADVISOR'), [advisors])
+
+  const { data: settingGroups } = useSettingGroups()
+  const countryOptions = useMemo(
+    () => settingGroups?.find((group) => group.key === 'countries')?.values ?? [],
+    [settingGroups],
   )
-  const [student, setStudent] = useState('All students')
 
-  const filteredRecommendations = useMemo(() => {
-    const normalizedQuery = query.trim().toLowerCase()
+  const queryParams = useMemo(
+    () => ({
+      page,
+      limit: PAGE_SIZE,
+      search: debouncedSearch || undefined,
+      country: country === 'ALL' ? undefined : country,
+      advisorId: advisorId !== 'ALL' ? advisorId : undefined,
+    }),
+    [page, debouncedSearch, country, advisorId],
+  )
 
-    return recommendations.filter((recommendation) => {
-      const matchesQuery =
-        !normalizedQuery ||
-        recommendation.student.toLowerCase().includes(normalizedQuery) ||
-        recommendation.school.toLowerCase().includes(normalizedQuery) ||
-        recommendation.program.toLowerCase().includes(normalizedQuery)
+  const { data, isLoading, isFetching, isError, error } = useRecommendationsList(queryParams)
+  const recommendations = data?.recommendations ?? []
+  const pagination = data?.pagination
+  const summary = data?.summary
 
-      return (
-        matchesQuery &&
-        (country === 'All countries' || recommendation.country === country) &&
-        (student === 'All students' || recommendation.student === student)
-      )
-    })
-  }, [country, query, student])
+  const createShortlist = useCreateShortlist()
+  const deleteShortlist = useDeleteShortlist()
 
-  const comparisonItems = recommendations.filter((item) => comparisonIds.includes(item.id))
+  const comparisonItems = recommendations.filter((item) => comparisonIds.includes(item.publicId))
 
   const toggleComparison = (id: string) => {
     setComparisonIds((current) => {
       if (current.includes(id)) {
         return current.filter((item) => item !== id)
       }
-
       if (current.length >= 2) {
         return current
       }
-
       return [...current, id]
     })
   }
 
-  const toggleShortlist = (id: string) => {
-    setShortlistedIds((current) =>
-      current.includes(id) ? current.filter((item) => item !== id) : [...current, id],
-    )
+  const toggleShortlist = (recommendation: RecommendationListItem) => {
+    if (recommendation.shortlisted) {
+      deleteShortlist.mutate({ studentId: recommendation.studentId, programId: recommendation.program.publicId })
+    } else {
+      createShortlist.mutate({ studentId: recommendation.studentId, programId: recommendation.program.publicId })
+    }
   }
+
+  const recommendationStats = [
+    { icon: Sparkles, label: 'Generated', note: 'Across the current scope', value: summary?.generated },
+    { icon: Star, label: 'Shortlisted', note: 'Programs shortlisted', value: summary?.shortlisted },
+    { icon: CheckCircle2, label: 'Strong matches', note: 'Score of 85 or higher', value: summary?.strongMatches },
+    { icon: AlertCircle, label: 'Missing requirements', note: 'Needs advisor review', value: summary?.missingRequirements },
+  ] as const
 
   return (
     <AppShell>
@@ -203,8 +128,12 @@ const RecommendationsPage = () => {
             </p>
           </div>
 
-          <Button leftIcon={<ArrowDownUp size={17} />} size="md" variant="secondary">
-            Highest score
+          <Button
+            leftIcon={<Sparkles size={17} />}
+            onClick={() => setIsGenerateModalOpen(true)}
+            size="md"
+          >
+            Generate recommendations
           </Button>
         </div>
 
@@ -217,7 +146,9 @@ const RecommendationsPage = () => {
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <p className="text-sm font-medium text-[#6B7280]">{stat.label}</p>
-                    <p className="mt-3 text-3xl font-semibold tracking-normal text-[#111827]">{stat.value}</p>
+                    <p className="mt-3 text-3xl font-semibold tracking-normal text-[#111827]">
+                      {stat.value ?? '—'}
+                    </p>
                     <p className="mt-2 text-xs font-medium text-[#6B7280]">{stat.note}</p>
                   </div>
                   <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#E6F4F3] text-[#045A58]">
@@ -244,40 +175,72 @@ const RecommendationsPage = () => {
                   className="h-11 bg-[#F9FAFB]"
                   id="recommendation-search"
                   leftIcon={<Search size={18} />}
-                  onChange={(event) => setQuery(event.target.value)}
+                  onChange={(event) => setSearchInput(event.target.value)}
                   placeholder="Search student, school, or program"
                   type="search"
-                  value={query}
+                  value={searchInput}
                 />
-                <FilterSelect
-                  label="Student"
-                  onChange={setStudent}
-                  options={['All students', 'Chinedu Nwosu', 'Sofia Ahmed', 'Emeka Ibe', 'Tara Mensah']}
-                  value={student}
-                />
-                <FilterSelect
-                  label="Country"
-                  onChange={setCountry}
-                  options={['All countries', 'Canada', 'United Kingdom', 'Australia', 'Germany']}
+                <label className="sr-only" htmlFor="advisor-filter">
+                  Advisor
+                </label>
+                <select
+                  className="h-11 rounded-xl border border-[#E5E7EB] bg-white px-3 text-sm font-medium text-[#374151] outline-none transition focus:border-[#045A58] focus:ring-4 focus:ring-[#E6F4F3]"
+                  id="advisor-filter"
+                  onChange={(event) => setAdvisorId(event.target.value)}
+                  value={advisorId}
+                >
+                  <option value="ALL">All advisors</option>
+                  {advisorOptions.map((advisor) => (
+                    <option key={advisor.publicId} value={advisor.publicId}>
+                      {advisor.fullName}
+                    </option>
+                  ))}
+                </select>
+                <label className="sr-only" htmlFor="country-filter">
+                  Country
+                </label>
+                <select
+                  className="h-11 rounded-xl border border-[#E5E7EB] bg-white px-3 text-sm font-medium text-[#374151] outline-none transition focus:border-[#045A58] focus:ring-4 focus:ring-[#E6F4F3]"
+                  id="country-filter"
+                  onChange={(event) => setCountry(event.target.value)}
                   value={country}
-                />
+                >
+                  <option value="ALL">All countries</option>
+                  {countryOptions.map((value) => (
+                    <option key={value.id} value={value.label}>
+                      {value.label}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
           </div>
 
-          {filteredRecommendations.length ? (
-            <div className="divide-y divide-[#E5E7EB]">
-              {filteredRecommendations.map((recommendation) => {
-                const isCompared = comparisonIds.includes(recommendation.id)
-                const isShortlisted = shortlistedIds.includes(recommendation.id)
+          {isLoading ? (
+            <div className="flex min-h-72 items-center justify-center">
+              <Loader2 className="animate-spin text-[#045A58]" size={28} />
+            </div>
+          ) : isError ? (
+            <div className="flex min-h-72 flex-col items-center justify-center gap-3 px-6 py-12 text-center">
+              <AlertCircle className="text-[#DC2626]" size={24} />
+              <p className="text-sm text-[#6B7280]">
+                {isAxiosError<ApiErrorResponse>(error)
+                  ? (error.response?.data.error.message ?? 'Failed to load recommendations')
+                  : 'Failed to load recommendations'}
+              </p>
+            </div>
+          ) : recommendations.length ? (
+            <div className={cn('divide-y divide-[#E5E7EB]', isFetching && 'opacity-60')}>
+              {recommendations.map((recommendation) => {
+                const isCompared = comparisonIds.includes(recommendation.publicId)
 
                 return (
-                  <article className="px-5 py-6 transition hover:bg-[#F9FAFB] sm:px-6" key={recommendation.id}>
+                  <article className="px-5 py-6 transition hover:bg-[#F9FAFB] sm:px-6" key={recommendation.publicId}>
                     <div className="grid gap-6 2xl:grid-cols-[220px_minmax(0,1fr)_260px_180px]">
                       <div>
                         <div className="flex items-center gap-3">
                           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#E6F4F3] text-sm font-semibold text-[#045A58]">
-                            {recommendation.student
+                            {recommendation.studentName
                               .split(' ')
                               .map((name) => name[0])
                               .join('')
@@ -288,10 +251,10 @@ const RecommendationsPage = () => {
                               className="text-sm font-semibold text-[#111827] outline-none transition hover:text-[#045A58] focus:underline"
                               to={`/students/${recommendation.studentId}`}
                             >
-                              {recommendation.student}
+                              {recommendation.studentName}
                             </Link>
                             <p className="mt-1 text-xs font-medium text-[#6B7280]">
-                              {recommendation.studentId} / {recommendation.createdAt}
+                              {recommendation.studentId} / {formatDate(recommendation.createdAt)}
                             </p>
                           </div>
                         </div>
@@ -300,16 +263,18 @@ const RecommendationsPage = () => {
                           <div className="flex items-end justify-between gap-3">
                             <div>
                               <p className="text-xs font-semibold uppercase tracking-normal text-[#9CA3AF]">Fit score</p>
-                              <p className="mt-1 text-3xl font-semibold text-[#111827]">{recommendation.score}</p>
+                              <p className="mt-1 text-3xl font-semibold text-[#111827]">
+                                {recommendation.overallScore}
+                              </p>
                             </div>
-                            <Badge tone={recommendation.score >= 85 ? 'success' : 'warning'}>
-                              {recommendation.score >= 85 ? 'Strong match' : 'Review'}
+                            <Badge tone={recommendation.overallScore >= 85 ? 'success' : 'warning'}>
+                              {recommendation.overallScore >= 85 ? 'Strong match' : 'Review'}
                             </Badge>
                           </div>
                           <div className="mt-3 h-2 rounded-full bg-[#E5E7EB]">
                             <div
                               className="h-2 rounded-full bg-[#045A58]"
-                              style={{ width: `${recommendation.score}%` }}
+                              style={{ width: `${recommendation.overallScore}%` }}
                             />
                           </div>
                         </div>
@@ -320,25 +285,25 @@ const RecommendationsPage = () => {
                           <div>
                             <Link
                               className="text-base font-semibold text-[#111827] outline-none transition hover:text-[#045A58] focus:underline"
-                              to={`/schools/${recommendation.schoolId}`}
+                              to={`/schools/${recommendation.school.publicId}`}
                             >
-                              {recommendation.school}
+                              {recommendation.school.name}
                             </Link>
                             <Link
                               className="mt-1 block text-sm font-medium text-[#045A58] outline-none hover:text-[#034A48] focus:underline"
-                              to={`/programs/${recommendation.programId}`}
+                              to={`/programs/${recommendation.program.publicId}`}
                             >
-                              {recommendation.program}
+                              {recommendation.program.name}
                             </Link>
                           </div>
                           <div className="text-right">
                             <p className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#111827]">
                               <CircleDollarSign size={16} className="text-[#6B7280]" />
-                              {recommendation.tuition}
+                              {formatTuition(recommendation.program.tuitionAmount, recommendation.program.tuitionCurrency)}
                             </p>
                             <p className="mt-1 inline-flex items-center gap-1.5 text-xs font-medium text-[#6B7280]">
                               <MapPin size={14} />
-                              {recommendation.country}
+                              {recommendation.school.country}
                             </p>
                           </div>
                         </div>
@@ -346,14 +311,18 @@ const RecommendationsPage = () => {
                         <div className="mt-4 grid gap-3 sm:grid-cols-2">
                           <div>
                             <p className="text-xs font-semibold uppercase tracking-normal text-[#9CA3AF]">Why it matches</p>
-                            <ul className="mt-2 space-y-2">
-                              {recommendation.reasons.map((reason) => (
-                                <li className="flex items-start gap-2 text-sm text-[#374151]" key={reason}>
-                                  <Check className="mt-0.5 shrink-0 text-[#16A34A]" size={15} />
-                                  {reason}
-                                </li>
-                              ))}
-                            </ul>
+                            {recommendation.reasons.length ? (
+                              <ul className="mt-2 space-y-2">
+                                {recommendation.reasons.map((reason) => (
+                                  <li className="flex items-start gap-2 text-sm text-[#374151]" key={reason}>
+                                    <Check className="mt-0.5 shrink-0 text-[#16A34A]" size={15} />
+                                    {reason}
+                                  </li>
+                                ))}
+                              </ul>
+                            ) : (
+                              <p className="mt-2 text-sm text-[#6B7280]">No standout reasons on file.</p>
+                            )}
                           </div>
                           <div>
                             <p className="text-xs font-semibold uppercase tracking-normal text-[#9CA3AF]">Missing requirements</p>
@@ -390,15 +359,16 @@ const RecommendationsPage = () => {
                         <button
                           className={cn(
                             'inline-flex h-10 items-center justify-center gap-2 rounded-xl border px-4 text-sm font-semibold outline-none transition focus:ring-4',
-                            isShortlisted
+                            recommendation.shortlisted
                               ? 'border-[#B7D8D6] bg-[#E6F4F3] text-[#045A58] focus:ring-[#E6F4F3]'
                               : 'border-[#E5E7EB] bg-white text-[#111827] hover:bg-[#F9FAFB] focus:ring-[#E6F4F3]',
                           )}
-                          onClick={() => toggleShortlist(recommendation.id)}
+                          disabled={createShortlist.isPending || deleteShortlist.isPending}
+                          onClick={() => toggleShortlist(recommendation)}
                           type="button"
                         >
-                          <Star fill={isShortlisted ? 'currentColor' : 'none'} size={16} />
-                          {isShortlisted ? 'Shortlisted' : 'Shortlist'}
+                          <Star fill={recommendation.shortlisted ? 'currentColor' : 'none'} size={16} />
+                          {recommendation.shortlisted ? 'Shortlisted' : 'Shortlist'}
                         </button>
                         <button
                           className={cn(
@@ -409,7 +379,7 @@ const RecommendationsPage = () => {
                             !isCompared && comparisonIds.length >= 2 && 'cursor-not-allowed opacity-50',
                           )}
                           disabled={!isCompared && comparisonIds.length >= 2}
-                          onClick={() => toggleComparison(recommendation.id)}
+                          onClick={() => toggleComparison(recommendation.publicId)}
                           type="button"
                         >
                           <GitCompareArrows size={16} />
@@ -428,14 +398,14 @@ const RecommendationsPage = () => {
               </div>
               <h3 className="mt-4 text-base font-semibold text-[#111827]">No recommendations match these filters</h3>
               <p className="mt-2 max-w-md text-sm leading-6 text-[#6B7280]">
-                Change the student, country, or search filters to return to generated recommendations.
+                Change the advisor, country, or search filters, or generate recommendations for a student.
               </p>
               <Button
                 className="mt-5"
                 onClick={() => {
-                  setCountry('All countries')
-                  setQuery('')
-                  setStudent('All students')
+                  setCountry('ALL')
+                  setAdvisorId('ALL')
+                  setSearchInput('')
                 }}
                 size="md"
                 variant="secondary"
@@ -445,20 +415,35 @@ const RecommendationsPage = () => {
             </div>
           )}
 
-          <div className="flex flex-col gap-3 border-t border-[#E5E7EB] px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-            <p className="text-sm text-[#6B7280]">
-              Showing <span className="font-semibold text-[#111827]">{filteredRecommendations.length}</span> of{' '}
-              <span className="font-semibold text-[#111827]">364</span> recommendations
-            </p>
-            <div className="flex items-center gap-2">
-              <Button disabled leftIcon={<ChevronLeft size={16} />} size="sm" variant="secondary">
-                Previous
-              </Button>
-              <Button rightIcon={<ChevronRight size={16} />} size="sm" variant="secondary">
-                Next
-              </Button>
+          {pagination ? (
+            <div className="flex flex-col gap-3 border-t border-[#E5E7EB] px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+              <div className="flex items-center gap-2 text-sm text-[#6B7280]">
+                <Users size={16} />
+                Showing <span className="font-semibold text-[#111827]">{recommendations.length}</span> of{' '}
+                <span className="font-semibold text-[#111827]">{pagination.total}</span> recommendations
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  disabled={page <= 1}
+                  leftIcon={<ChevronLeft size={16} />}
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  size="sm"
+                  variant="secondary"
+                >
+                  Previous
+                </Button>
+                <Button
+                  disabled={page >= pagination.totalPages}
+                  onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
+                  rightIcon={<ChevronRight size={16} />}
+                  size="sm"
+                  variant="secondary"
+                >
+                  Next
+                </Button>
+              </div>
             </div>
-          </div>
+          ) : null}
         </Card>
 
         {comparisonItems.length ? (
@@ -477,26 +462,30 @@ const RecommendationsPage = () => {
 
             <div className="grid divide-y divide-[#E5E7EB] lg:grid-cols-2 lg:divide-x lg:divide-y-0">
               {comparisonItems.map((item) => (
-                <div className="p-6" key={item.id}>
+                <div className="p-6" key={item.publicId}>
                   <div className="flex items-start justify-between gap-4">
                     <div>
-                      <p className="text-base font-semibold text-[#111827]">{item.school}</p>
-                      <p className="mt-1 text-sm text-[#045A58]">{item.program}</p>
+                      <p className="text-base font-semibold text-[#111827]">{item.school.name}</p>
+                      <p className="mt-1 text-sm text-[#045A58]">{item.program.name}</p>
                     </div>
                     <button
-                      aria-label={`Remove ${item.school} from comparison`}
+                      aria-label={`Remove ${item.school.name} from comparison`}
                       className="flex h-8 w-8 items-center justify-center rounded-xl text-[#6B7280] outline-none hover:bg-[#F3F4F6] hover:text-[#111827]"
-                      onClick={() => toggleComparison(item.id)}
+                      onClick={() => toggleComparison(item.publicId)}
                       type="button"
                     >
                       <X size={16} />
                     </button>
                   </div>
                   <div className="mt-5 grid grid-cols-2 gap-4">
-                    <ComparisonMetric icon={<Sparkles size={16} />} label="Fit score" value={`${item.score}%`} />
-                    <ComparisonMetric icon={<CircleDollarSign size={16} />} label="Tuition" value={item.tuition} />
+                    <ComparisonMetric icon={<Sparkles size={16} />} label="Fit score" value={`${item.overallScore}%`} />
+                    <ComparisonMetric
+                      icon={<CircleDollarSign size={16} />}
+                      label="Tuition"
+                      value={formatTuition(item.program.tuitionAmount, item.program.tuitionCurrency)}
+                    />
                     <ComparisonMetric icon={<GraduationCap size={16} />} label="Program fit" value={`${item.scoreBreakdown.program}%`} />
-                    <ComparisonMetric icon={<MapPin size={16} />} label="Country" value={item.country} />
+                    <ComparisonMetric icon={<MapPin size={16} />} label="Country" value={item.school.country} />
                   </div>
                 </div>
               ))}
@@ -504,32 +493,14 @@ const RecommendationsPage = () => {
           </Card>
         ) : null}
       </div>
+
+      <GenerateRecommendationsModal
+        isOpen={isGenerateModalOpen}
+        onClose={() => setIsGenerateModalOpen(false)}
+      />
     </AppShell>
   )
 }
-
-const FilterSelect = ({
-  label,
-  onChange,
-  options,
-  value,
-}: {
-  label: string
-  onChange: (value: string) => void
-  options: string[]
-  value: string
-}) => (
-  <select
-    aria-label={label}
-    className="h-11 rounded-xl border border-[#E5E7EB] bg-white px-3 text-sm font-medium text-[#374151] outline-none transition focus:border-[#045A58] focus:ring-4 focus:ring-[#E6F4F3]"
-    onChange={(event) => onChange(event.target.value)}
-    value={value}
-  >
-    {options.map((option) => (
-      <option key={option}>{option}</option>
-    ))}
-  </select>
-)
 
 const ScoreRow = ({ label, value }: { label: string; value: number }) => (
   <div>

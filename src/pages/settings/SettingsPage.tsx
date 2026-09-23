@@ -7,16 +7,19 @@ import {
   GraduationCap,
   Loader2,
   Plus,
+  Sparkles,
   Trash2,
 } from 'lucide-react'
 import { useState, type ReactNode } from 'react'
 import { isAxiosError } from 'axios'
 import AppShell from '../../components/layout/AppShell.js'
 import DeleteConfirmationModal from '../../components/modals/DeleteConfirmationModal.js'
+import RecommendationWeightsPanel from '../../components/settings/RecommendationWeightsPanel.js'
 import Button from '../../components/ui/Button.js'
 import Card from '../../components/ui/Card.js'
 import Input from '../../components/ui/Input.js'
 import type { ApiErrorResponse } from '../../lib/api/types.js'
+import { useAuthStore } from '../../store/authStore.js'
 import {
   useCreateSettingValue,
   useDeleteSettingValue,
@@ -25,13 +28,15 @@ import {
 } from '../../features/settings/useSettings.js'
 import type { SettingGroupKey, SettingValue } from '../../features/settings/settings.api.js'
 
+type SectionKey = SettingGroupKey | 'weights'
+
 type PendingDeletion = {
   groupKey: SettingGroupKey
   groupLabel: string
   value: SettingValue
 }
 
-const sectionMeta: { description: string; icon: ReactNode; key: SettingGroupKey; label: string }[] = [
+const sectionMeta: { description: string; icon: ReactNode; key: SectionKey; label: string }[] = [
   {
     description: 'Countries available in school, program, and student preference records.',
     icon: <Globe2 size={18} />,
@@ -50,24 +55,33 @@ const sectionMeta: { description: string; icon: ReactNode; key: SettingGroupKey;
     key: 'study-levels',
     label: 'Study levels',
   },
+  {
+    description: 'Relative importance of each factor in recommendation fit scoring.',
+    icon: <Sparkles size={18} />,
+    key: 'weights',
+    label: 'Recommendation weights',
+  },
 ]
 
 const SettingsPage = () => {
-  const [activeSection, setActiveSection] = useState<SettingGroupKey>('countries')
+  const [activeSection, setActiveSection] = useState<SectionKey>('countries')
   const [newItem, setNewItem] = useState('')
   const [pendingDeletion, setPendingDeletion] = useState<PendingDeletion | null>(null)
   const [deleteError, setDeleteError] = useState<string | null>(null)
 
+  const isAdmin = useAuthStore((state) => state.user?.role === 'ADMIN')
   const { data: groups, isLoading, isError, error } = useSettingGroups()
   const createValue = useCreateSettingValue()
   const updateValue = useUpdateSettingValue()
   const deleteValue = useDeleteSettingValue()
 
   const sectionInfo = sectionMeta.find((item) => item.key === activeSection) ?? sectionMeta[0]!
-  const activeGroup = groups?.find((group) => group.key === activeSection)
+  const activeGroup =
+    activeSection === 'weights' ? undefined : groups?.find((group) => group.key === activeSection)
   const values = activeGroup?.values ?? []
 
   const addItem = () => {
+    if (activeSection === 'weights') return
     const label = newItem.trim()
     if (!label) return
 
@@ -78,6 +92,7 @@ const SettingsPage = () => {
   }
 
   const toggleItem = (value: SettingValue) => {
+    if (activeSection === 'weights') return
     updateValue.mutate({ groupKey: activeSection, valueId: value.id, data: { isActive: !value.isActive } })
   }
 
@@ -118,7 +133,10 @@ const SettingsPage = () => {
             <nav aria-label="Settings categories" className="space-y-1">
               {sectionMeta.map((item) => {
                 const isActive = activeSection === item.key
-                const count = groups?.find((group) => group.key === item.key)?.values.length
+                const count =
+                  item.key === 'weights'
+                    ? undefined
+                    : groups?.find((group) => group.key === item.key)?.values.length
 
                 return (
                   <button
@@ -140,7 +158,7 @@ const SettingsPage = () => {
                     <span>
                       <span className="block text-sm font-semibold">{item.label}</span>
                       <span className="mt-1 block text-xs leading-4 text-[#6B7280]">
-                        {count === undefined ? '…' : `${count} values`}
+                        {item.key === 'weights' ? '4 scoring factors' : count === undefined ? '…' : `${count} values`}
                       </span>
                     </span>
                   </button>
@@ -163,108 +181,116 @@ const SettingsPage = () => {
                 </div>
               </div>
 
-              <div className="border-b border-[#E5E7EB] bg-[#F9FAFB] px-5 py-4 sm:px-6">
-                <div className="flex flex-col gap-3 sm:flex-row">
-                  <Input
-                    className="h-11"
-                    id="new-setting-value"
-                    onChange={(event) => setNewItem(event.target.value)}
-                    placeholder={`Add ${sectionInfo.label.toLowerCase().replace(/s$/, '')}`}
-                    value={newItem}
-                  />
-                  <Button
-                    className="shrink-0"
-                    disabled={!newItem.trim() || createValue.isPending}
-                    leftIcon={<Plus size={17} />}
-                    onClick={addItem}
-                    size="md"
-                  >
-                    Add value
-                  </Button>
-                </div>
-              </div>
-
-              {isLoading ? (
-                <div className="flex min-h-52 items-center justify-center">
-                  <Loader2 className="animate-spin text-[#045A58]" size={26} />
-                </div>
-              ) : isError ? (
-                <div className="flex min-h-52 flex-col items-center justify-center gap-3 px-6 py-10 text-center">
-                  <AlertCircle className="text-[#DC2626]" size={22} />
-                  <p className="text-sm text-[#6B7280]">
-                    {isAxiosError<ApiErrorResponse>(error)
-                      ? (error.response?.data.error.message ?? 'Failed to load settings')
-                      : 'Failed to load settings'}
-                  </p>
-                </div>
+              {activeSection === 'weights' ? (
+                <RecommendationWeightsPanel canManage={isAdmin} />
               ) : (
-                <div className="divide-y divide-[#E5E7EB]">
-                  {values.map((value) => (
-                    <div
-                      className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6"
-                      key={value.id}
-                    >
-                      <div className="flex min-w-0 items-center gap-3">
-                        <span
-                          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${
-                            value.isActive ? 'bg-[#E6F4F3] text-[#045A58]' : 'bg-[#F3F4F6] text-[#9CA3AF]'
-                          }`}
-                        >
-                          {value.isActive ? <Check size={17} /> : <CircleDot size={17} />}
-                        </span>
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold text-[#111827]">{value.label}</p>
-                          <p className="mt-1 text-xs text-[#6B7280]">
-                            {value.isActive ? 'Available in operational forms' : 'Hidden from new records'}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-center gap-2 self-end sm:self-auto">
-                        <button
-                          aria-pressed={value.isActive}
-                          className={`relative h-6 w-11 rounded-full outline-none transition focus:ring-4 focus:ring-[#E6F4F3] ${
-                            value.isActive ? 'bg-[#045A58]' : 'bg-[#D1D5DB]'
-                          }`}
-                          onClick={() => toggleItem(value)}
-                          title={value.isActive ? 'Disable value' : 'Enable value'}
-                          type="button"
-                        >
-                          <span
-                            className={`absolute top-1 h-4 w-4 rounded-full bg-white shadow transition ${
-                              value.isActive ? 'left-6' : 'left-1'
-                            }`}
-                          />
-                        </button>
-                        <button
-                          aria-label={`Delete ${value.label}`}
-                          className="flex h-9 w-9 items-center justify-center rounded-xl text-[#6B7280] outline-none transition hover:bg-[#FEE2E2] hover:text-[#B42318] focus:ring-4 focus:ring-[#FEE2E2]"
-                          onClick={() => {
-                            setDeleteError(null)
-                            setPendingDeletion({ groupKey: activeSection, groupLabel: sectionInfo.label, value })
-                          }}
-                          title="Delete value"
-                          type="button"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
+                <>
+                  <div className="border-b border-[#E5E7EB] bg-[#F9FAFB] px-5 py-4 sm:px-6">
+                    <div className="flex flex-col gap-3 sm:flex-row">
+                      <Input
+                        className="h-11"
+                        id="new-setting-value"
+                        onChange={(event) => setNewItem(event.target.value)}
+                        placeholder={`Add ${sectionInfo.label.toLowerCase().replace(/s$/, '')}`}
+                        value={newItem}
+                      />
+                      <Button
+                        className="shrink-0"
+                        disabled={!newItem.trim() || createValue.isPending}
+                        leftIcon={<Plus size={17} />}
+                        onClick={addItem}
+                        size="md"
+                      >
+                        Add value
+                      </Button>
                     </div>
-                  ))}
-                  {values.length === 0 ? (
-                    <div className="px-6 py-10 text-center text-sm text-[#6B7280]">No values yet.</div>
-                  ) : null}
-                </div>
+                  </div>
+
+                  {isLoading ? (
+                    <div className="flex min-h-52 items-center justify-center">
+                      <Loader2 className="animate-spin text-[#045A58]" size={26} />
+                    </div>
+                  ) : isError ? (
+                    <div className="flex min-h-52 flex-col items-center justify-center gap-3 px-6 py-10 text-center">
+                      <AlertCircle className="text-[#DC2626]" size={22} />
+                      <p className="text-sm text-[#6B7280]">
+                        {isAxiosError<ApiErrorResponse>(error)
+                          ? (error.response?.data.error.message ?? 'Failed to load settings')
+                          : 'Failed to load settings'}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="divide-y divide-[#E5E7EB]">
+                      {values.map((value) => (
+                        <div
+                          className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6"
+                          key={value.id}
+                        >
+                          <div className="flex min-w-0 items-center gap-3">
+                            <span
+                              className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${
+                                value.isActive ? 'bg-[#E6F4F3] text-[#045A58]' : 'bg-[#F3F4F6] text-[#9CA3AF]'
+                              }`}
+                            >
+                              {value.isActive ? <Check size={17} /> : <CircleDot size={17} />}
+                            </span>
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-semibold text-[#111827]">{value.label}</p>
+                              <p className="mt-1 text-xs text-[#6B7280]">
+                                {value.isActive ? 'Available in operational forms' : 'Hidden from new records'}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2 self-end sm:self-auto">
+                            <button
+                              aria-pressed={value.isActive}
+                              className={`relative h-6 w-11 rounded-full outline-none transition focus:ring-4 focus:ring-[#E6F4F3] ${
+                                value.isActive ? 'bg-[#045A58]' : 'bg-[#D1D5DB]'
+                              }`}
+                              onClick={() => toggleItem(value)}
+                              title={value.isActive ? 'Disable value' : 'Enable value'}
+                              type="button"
+                            >
+                              <span
+                                className={`absolute top-1 h-4 w-4 rounded-full bg-white shadow transition ${
+                                  value.isActive ? 'left-6' : 'left-1'
+                                }`}
+                              />
+                            </button>
+                            <button
+                              aria-label={`Delete ${value.label}`}
+                              className="flex h-9 w-9 items-center justify-center rounded-xl text-[#6B7280] outline-none transition hover:bg-[#FEE2E2] hover:text-[#B42318] focus:ring-4 focus:ring-[#FEE2E2]"
+                              onClick={() => {
+                                setDeleteError(null)
+                                setPendingDeletion({ groupKey: activeSection, groupLabel: sectionInfo.label, value })
+                              }}
+                              title="Delete value"
+                              type="button"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                      {values.length === 0 ? (
+                        <div className="px-6 py-10 text-center text-sm text-[#6B7280]">No values yet.</div>
+                      ) : null}
+                    </div>
+                  )}
+                </>
               )}
             </Card>
 
-            <Card className="border-[#B9DAD8] bg-[#F2F9F8]">
-              <h2 className="text-sm font-semibold text-[#111827]">Operational impact</h2>
-              <p className="mt-1 text-sm leading-6 text-[#52605F]">
-                Disabled values remain on existing records but are hidden from new selections. A value must be
-                disabled before it can be deleted.
-              </p>
-            </Card>
+            {activeSection === 'weights' ? null : (
+              <Card className="border-[#B9DAD8] bg-[#F2F9F8]">
+                <h2 className="text-sm font-semibold text-[#111827]">Operational impact</h2>
+                <p className="mt-1 text-sm leading-6 text-[#52605F]">
+                  Disabled values remain on existing records but are hidden from new selections. A value must be
+                  disabled before it can be deleted.
+                </p>
+              </Card>
+            )}
           </div>
         </div>
       </div>
