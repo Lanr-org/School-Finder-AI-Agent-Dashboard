@@ -285,7 +285,7 @@ const DashboardPage = () => {
           <div className="flex items-center justify-between gap-4 border-b border-[#E5E7EB] px-6 py-5">
             <div>
               <h2 className="text-lg font-semibold text-[#111827]">Recently recommended schools</h2>
-              <p className="mt-1 text-sm text-[#6B7280]">Latest AI-generated placement matches</p>
+              <p className="mt-1 text-sm text-[#6B7280]">Latest scored placement matches</p>
             </div>
             <Sparkles className="text-[#045A58]" size={20} />
           </div>

@@ -124,7 +124,7 @@ const RecommendationsPage = () => {
             <p className="text-sm font-medium text-[#6B7280]">Placement review</p>
             <h1 className="mt-1 text-3xl font-semibold tracking-normal text-[#111827]">Recommendations</h1>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-[#6B7280]">
-              Review AI-generated school matches, inspect scoring evidence, compare options, and manage student shortlists.
+              Review scored school matches from stored program data, inspect scoring evidence, compare options, and manage student shortlists.
             </p>
           </div>
 
