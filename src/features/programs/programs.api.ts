@@ -67,3 +67,8 @@ export const listPrograms = async (params: ListProgramsParams): Promise<ListProg
   const res = await api.get<ApiSuccessResponse<ListProgramsResult>>('/programs', { params })
   return res.data.data
 }
+
+export const getProgram = async (programId: string): Promise<Program> => {
+  const res = await api.get<ApiSuccessResponse<Program>>(`/programs/${programId}`)
+  return res.data.data
+}

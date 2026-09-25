@@ -1,5 +1,6 @@
 import {
   BookOpen,
+  FileCheck2,
   X,
   GraduationCap,
   LayoutDashboard,
@@ -43,6 +44,7 @@ const navSections: NavSection[] = [
     label: 'Operations',
     items: [
       { icon: Users, label: 'Students', path: '/students' },
+      { icon: FileCheck2, label: 'Applications', path: '/applications', roles: ['ADMIN', 'ADVISOR'] },
       { icon: School, label: 'Schools', path: '/schools' },
       { icon: BookOpen, label: 'Programs', path: '/programs' },
       { icon: MessageSquareText, label: 'Conversations', path: '/conversations' },

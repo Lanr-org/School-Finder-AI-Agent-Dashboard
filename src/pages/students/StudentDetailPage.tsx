@@ -5,6 +5,8 @@ import {
   CalendarPlus,
   CheckCircle2,
   Clock3,
+  FileCheck2,
+  FilePlus2,
   GraduationCap,
   Loader2,
   Mail,
@@ -19,7 +21,9 @@ import {
 import { useMemo, useState } from 'react'
 import { isAxiosError } from 'axios'
 import { Link, useParams } from 'react-router-dom'
+import ApplicationDetailModal from '../../components/modals/ApplicationDetailModal.js'
 import AssignAdvisorModal from '../../components/modals/AssignAdvisorModal.js'
+import CreateApplicationModal from '../../components/modals/CreateApplicationModal.js'
 import QuickStudentEntryModal, {
   type QuickEntryMode,
   type QuickEntryResult,
@@ -34,8 +38,19 @@ import Card from '../../components/ui/Card.js'
 import type { ApiErrorResponse } from '../../lib/api/types.js'
 import { useAuthStore } from '../../store/authStore.js'
 import { useAdvisorProfiles } from '../../features/advisors/useAdvisors.js'
-import { useAssignStudentAdvisor, useStudent, useUpdateStudentStatus } from '../../features/students/useStudents.js'
-import type { StudentStatus } from '../../features/students/students.api.js'
+import {
+  useAssignStudentAdvisor,
+  useStudent,
+  useStudentStatusHistory,
+  useUpdateStudentStatus,
+} from '../../features/students/useStudents.js'
+import type { StudentStatus, StudentStatusChangeSource } from '../../features/students/students.api.js'
+import { useStudentApplications } from '../../features/applications/useApplications.js'
+import {
+  applicationStatusLabels,
+  applicationStatusTone,
+  formatIntakeLabel,
+} from '../../features/applications/applicationStatus.js'
 import { useCreateNote, useDeleteNote, useNotes } from '../../features/students/useNotes.js'
 import {
   useCancelFollowUp,
@@ -93,6 +108,17 @@ const followUpStatusTone: Record<FollowUpStatus, BadgeTone> = {
   CANCELED: 'neutral',
 }
 
+const statusChangeSourceLabels: Record<StudentStatusChangeSource, string> = {
+  LEAD_CREATED: 'Lead created',
+  MANUAL: 'Updated manually',
+  ADVISOR_ASSIGNED: 'Advisor assigned',
+  ADVISOR_UNASSIGNED: 'Advisor unassigned',
+  FOLLOW_UP_CREATED: 'Follow-up scheduled',
+  APPLICATION_CREATED: 'Application started',
+}
+
+const RECENT_HISTORY_LIMIT = 5
+
 const formatDateTime = (value: string) =>
   new Date(value).toLocaleString(undefined, { day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit' })
 
@@ -118,6 +144,11 @@ const StudentDetailPage = () => {
   const completeFollowUp = useCompleteFollowUp(studentId)
   const cancelFollowUp = useCancelFollowUp(studentId)
 
+  const { data: statusHistory } = useStudentStatusHistory(studentId)
+  const { data: applicationsResult } = useStudentApplications(studentId)
+
+  const [isCreateApplicationOpen, setIsCreateApplicationOpen] = useState(false)
+  const [selectedApplicationId, setSelectedApplicationId] = useState<string | null>(null)
   const [isAdvisorModalOpen, setIsAdvisorModalOpen] = useState(false)
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false)
   const [quickEntryMode, setQuickEntryMode] = useState<QuickEntryMode>('note')
@@ -125,6 +156,8 @@ const StudentDetailPage = () => {
 
   const notes = notesResult?.notes ?? []
   const followUps = followUpsResult?.followUps ?? []
+  const applications = applicationsResult?.applications ?? []
+  const recentStatusChanges = (statusHistory ?? []).slice(0, RECENT_HISTORY_LIMIT)
 
   const currentStatusIndex = student ? STATUS_FLOW.indexOf(student.status) : -1
 
@@ -201,7 +234,7 @@ const StudentDetailPage = () => {
               <Badge tone="neutral">{student.publicId}</Badge>
             </div>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-[#6B7280]">
-              Student profile, advisor assignment, workflow status, notes, and follow-ups.
+              Student profile, advisor assignment, workflow status, applications, notes, and follow-ups.
             </p>
           </div>
 
@@ -262,7 +295,7 @@ const StudentDetailPage = () => {
             <Card>
               <div className="mb-5 flex items-start justify-between gap-3">
                 <div>
-                  <h2 className="text-lg font-semibold text-[#111827]">Application status</h2>
+                  <h2 className="text-lg font-semibold text-[#111827]">Workflow status</h2>
                   <p className="mt-1 text-sm text-[#6B7280]">{statusLabels[student.status]}</p>
                 </div>
                 <button
@@ -305,6 +338,35 @@ const StudentDetailPage = () => {
                   })}
                 </div>
               )}
+
+              <div className="mt-6 border-t border-[#E5E7EB] pt-5">
+                <h3 className="text-sm font-semibold text-[#111827]">Recent changes</h3>
+                {recentStatusChanges.length ? (
+                  <ol className="mt-3 space-y-3">
+                    {recentStatusChanges.map((entry, index) => (
+                      <li className="flex gap-3" key={`${entry.toStatus}-${entry.changedAt}-${index}`}>
+                        <Clock3 className="mt-0.5 shrink-0 text-[#9CA3AF]" size={15} />
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-[#111827]">
+                            {statusLabels[entry.toStatus]}
+                            {entry.fromStatus ? (
+                              <span className="font-normal text-[#6B7280]"> from {statusLabels[entry.fromStatus]}</span>
+                            ) : null}
+                          </p>
+                          <p className="mt-0.5 text-xs text-[#6B7280]">
+                            {statusChangeSourceLabels[entry.source]} · {entry.changedBy?.fullName ?? 'System'} ·{' '}
+                            {formatDateTime(entry.changedAt)}
+                          </p>
+                        </div>
+                      </li>
+                    ))}
+                  </ol>
+                ) : (
+                  <p className="mt-2 text-xs leading-5 text-[#6B7280]">
+                    No recorded changes yet. Status changes are tracked from now on.
+                  </p>
+                )}
+              </div>
             </Card>
           </div>
 
@@ -357,6 +419,59 @@ const StudentDetailPage = () => {
             </Card>
           </div>
         </div>
+
+        <Card>
+          <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-[#111827]">Applications</h2>
+              <p className="mt-1 text-sm text-[#6B7280]">School applications for this student, newest first.</p>
+            </div>
+            <Button leftIcon={<FilePlus2 size={17} />} onClick={() => setIsCreateApplicationOpen(true)} size="md">
+              New application
+            </Button>
+          </div>
+
+          {applications.length ? (
+            <div className="divide-y divide-[#E5E7EB] rounded-2xl border border-[#E5E7EB]">
+              {applications.map((application) => (
+                <button
+                  className="flex w-full flex-col gap-3 p-4 text-left outline-none transition hover:bg-[#F9FAFB] focus:bg-[#F9FAFB] sm:flex-row sm:items-center sm:justify-between"
+                  key={application.publicId}
+                  onClick={() => setSelectedApplicationId(application.publicId)}
+                  type="button"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold text-[#111827]">{application.program.name}</p>
+                    <p className="mt-1 truncate text-xs text-[#6B7280]">
+                      {application.school.name} · {application.school.country} ·{' '}
+                      {application.intake
+                        ? formatIntakeLabel(application.intake.month, application.intake.year)
+                        : 'No intake selected'}
+                    </p>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-3">
+                    <span className="text-xs text-[#9CA3AF]">{application.publicId}</span>
+                    <Badge tone={applicationStatusTone[application.status]}>
+                      {applicationStatusLabels[application.status]}
+                    </Badge>
+                  </div>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-2xl border border-dashed border-[#D1D5DB] bg-[#F9FAFB] px-4 py-6 text-center">
+              <FileCheck2 className="mx-auto text-[#9CA3AF]" size={20} />
+              <p className="mt-2 text-sm font-medium text-[#374151]">No applications yet</p>
+              <button
+                className="mt-2 text-sm font-semibold text-[#045A58] outline-none hover:text-[#034A48] focus:underline"
+                onClick={() => setIsCreateApplicationOpen(true)}
+                type="button"
+              >
+                Start the first application
+              </button>
+            </div>
+          )}
+        </Card>
 
         <Card>
           <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -498,6 +613,16 @@ const StudentDetailPage = () => {
         onClose={() => setIsQuickEntryModalOpen(false)}
         onSave={saveQuickEntry}
         studentName={fullName || student.publicId}
+      />
+      <CreateApplicationModal
+        isOpen={isCreateApplicationOpen}
+        onClose={() => setIsCreateApplicationOpen(false)}
+        studentId={student.publicId}
+        studentName={fullName || student.publicId}
+      />
+      <ApplicationDetailModal
+        applicationId={selectedApplicationId}
+        onClose={() => setSelectedApplicationId(null)}
       />
     </AppShell>
   )

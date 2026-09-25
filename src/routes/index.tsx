@@ -2,6 +2,7 @@ import { Route, Routes } from 'react-router-dom'
 import AccountSettingsPage from '../pages/account/AccountSettingsPage.js'
 import ProfilePage from '../pages/account/ProfilePage.js'
 import AdvisorsPage from '../pages/advisors/AdvisorsPage.js'
+import ApplicationsPage from '../pages/applications/ApplicationsPage.js'
 import ForgotPasswordPage from '../pages/auth/ForgotPasswordPage.js'
 import LoginPage from '../pages/auth/LoginPage.js'
 import ResetPasswordPage from '../pages/auth/ResetPasswordPage.js'
@@ -50,6 +51,7 @@ const AppRoutes = () => {
         <Route path='/programs/new' element={<ProtectedRoute roles={['ADMIN', 'OPERATIONS']}><GlobalAddProgramPage /></ProtectedRoute>} />
         <Route path='/programs/:programId/edit' element={<ProtectedRoute roles={['ADMIN', 'OPERATIONS']}><EditProgramPage /></ProtectedRoute>} />
         <Route path='/programs/:programId' element={<ProtectedRoute><ProgramDetailPage /></ProtectedRoute>} />
+        <Route path='/applications' element={<ProtectedRoute roles={['ADMIN', 'ADVISOR']}><ApplicationsPage /></ProtectedRoute>} />
         <Route path='/recommendations' element={<ProtectedRoute><RecommendationsPage /></ProtectedRoute>} />
         <Route path='/schools' element={<ProtectedRoute><SchoolsPage /></ProtectedRoute>} />
         <Route path='/schools/new' element={<ProtectedRoute roles={['ADMIN', 'OPERATIONS']}><AddSchoolPage /></ProtectedRoute>} />
