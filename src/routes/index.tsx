@@ -3,6 +3,7 @@ import AccountSettingsPage from '../pages/account/AccountSettingsPage.js'
 import ProfilePage from '../pages/account/ProfilePage.js'
 import AdvisorsPage from '../pages/advisors/AdvisorsPage.js'
 import ApplicationsPage from '../pages/applications/ApplicationsPage.js'
+import AuditLogPage from '../pages/audit/AuditLogPage.js'
 import ForgotPasswordPage from '../pages/auth/ForgotPasswordPage.js'
 import LoginPage from '../pages/auth/LoginPage.js'
 import ResetPasswordPage from '../pages/auth/ResetPasswordPage.js'
@@ -64,6 +65,7 @@ const AppRoutes = () => {
         <Route path='/team/:memberId' element={<ProtectedRoute roles={['ADMIN']}><TeamMemberDetailPage /></ProtectedRoute>} />
         <Route path='/advisors' element={<ProtectedRoute><AdvisorsPage /></ProtectedRoute>} />
         <Route path='/settings' element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+        <Route path='/audit-log' element={<ProtectedRoute roles={['ADMIN']}><AuditLogPage /></ProtectedRoute>} />
         <Route path='/industry-intel' element={<ProtectedRoute><IndustryIntelPage /></ProtectedRoute>} />
         <Route path='*' element={<NotFoundPage />} />
     </Routes>

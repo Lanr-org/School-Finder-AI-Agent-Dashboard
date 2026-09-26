@@ -7,6 +7,7 @@ import {
   MessageSquareText,
   Newspaper,
   School,
+  ScrollText,
   Settings,
   Sparkles,
   UsersRound,
@@ -58,6 +59,7 @@ const navSections: NavSection[] = [
       { icon: UserRoundCheck, label: 'Advisors', path: '/advisors' },
       { icon: Newspaper, label: 'Industry Intel', path: '/industry-intel' },
       { icon: Settings, label: 'Settings', path: '/settings' },
+      { icon: ScrollText, label: 'Audit log', path: '/audit-log', roles: ['ADMIN'] },
     ],
   },
 ]
