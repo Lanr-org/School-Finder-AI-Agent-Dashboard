@@ -357,6 +357,7 @@ const StudentDetailPage = () => {
                             {statusChangeSourceLabels[entry.source]} · {entry.changedBy?.fullName ?? 'System'} ·{' '}
                             {formatDateTime(entry.changedAt)}
                           </p>
+                          {entry.note ? <p className="mt-1 text-sm leading-5 text-[#4B5563]">{entry.note}</p> : null}
                         </div>
                       </li>
                     ))}
@@ -598,10 +599,13 @@ const StudentDetailPage = () => {
         entityName={fullName || student.publicId}
         isOpen={isStatusModalOpen}
         onClose={() => setIsStatusModalOpen(false)}
-        onUpdate={(status) => {
+        onUpdate={(status, note) => {
           const option = statusOptions.find((candidate) => candidate.label === status.label)
           if (!option) return
-          updateStatus.mutate(option.value, { onSuccess: () => setIsStatusModalOpen(false) })
+          updateStatus.mutate(
+            { status: option.value, note: note || undefined },
+            { onSuccess: () => setIsStatusModalOpen(false) },
+          )
         }}
         options={statusOptions}
         workflowLabel="Student workflow"

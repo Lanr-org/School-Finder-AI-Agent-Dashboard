@@ -63,8 +63,15 @@ export const assignStudentAdvisor = async (studentId: string, advisorId: string 
   return res.data.data
 }
 
-export const updateStudentStatus = async (studentId: string, status: StudentStatus): Promise<Student> => {
-  const res = await api.patch<ApiSuccessResponse<Student>>(`/students/${studentId}/status`, { status })
+export const updateStudentStatus = async (
+  studentId: string,
+  status: StudentStatus,
+  note?: string | undefined,
+): Promise<Student> => {
+  const res = await api.patch<ApiSuccessResponse<Student>>(`/students/${studentId}/status`, {
+    status,
+    ...(note && { note }),
+  })
   return res.data.data
 }
 
@@ -80,6 +87,7 @@ export type StudentStatusHistoryEntry = {
   fromStatus: StudentStatus | null
   toStatus: StudentStatus
   source: StudentStatusChangeSource
+  note: string | null
   changedBy: { publicId: string; fullName: string } | null
   changedAt: string
 }
