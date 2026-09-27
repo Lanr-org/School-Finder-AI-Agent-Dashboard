@@ -61,7 +61,7 @@ const roleOptions: {
 
 const members: Record<string, EditableMember> = {
   'USR-1001': {
-    email: 'amina@pikinic.example',
+    email: 'amina@smetase.example',
     fullName: 'Amina Yusuf',
     id: 'USR-1001',
     lastLogin: 'Today, 8:42 AM',
@@ -71,7 +71,7 @@ const members: Record<string, EditableMember> = {
     status: 'Active',
   },
   'USR-1002': {
-    email: 'daniel@pikinic.example',
+    email: 'daniel@smetase.example',
     fullName: 'Daniel Okafor',
     id: 'USR-1002',
     lastLogin: 'Today, 9:18 AM',
@@ -81,7 +81,7 @@ const members: Record<string, EditableMember> = {
     status: 'Active',
   },
   'USR-1003': {
-    email: 'maya@pikinic.example',
+    email: 'maya@smetase.example',
     fullName: 'Maya Chen',
     id: 'USR-1003',
     lastLogin: 'Yesterday, 4:12 PM',
@@ -90,7 +90,7 @@ const members: Record<string, EditableMember> = {
     status: 'Active',
   },
   'USR-1004': {
-    email: 'tola@pikinic.example',
+    email: 'tola@smetase.example',
     fullName: 'Tola Adeyemi',
     id: 'USR-1004',
     lastLogin: 'Not yet signed in',
@@ -100,7 +100,7 @@ const members: Record<string, EditableMember> = {
     status: 'Invited',
   },
   'USR-1005': {
-    email: 'nora@pikinic.example',
+    email: 'nora@smetase.example',
     fullName: 'Nora Williams',
     id: 'USR-1005',
     lastLogin: 'Not yet signed in',
@@ -109,7 +109,7 @@ const members: Record<string, EditableMember> = {
     status: 'Invited',
   },
   'USR-1006': {
-    email: 'samuel@pikinic.example',
+    email: 'samuel@smetase.example',
     fullName: 'Samuel Eze',
     id: 'USR-1006',
     lastLogin: 'May 12, 2026',

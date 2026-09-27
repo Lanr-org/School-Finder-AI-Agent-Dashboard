@@ -72,7 +72,7 @@ const SidebarHeader = ({ onClose }: { onClose?: () => void }) => {
           <GraduationCap size={23} />
         </div>
         <div>
-          <p className="text-sm font-semibold text-[#111827]">Pikinic AI Agent</p>
+          <p className="text-sm font-semibold text-[#111827]">Smetase</p>
           <p className="text-xs font-medium text-[#6B7280]">Operations Portal</p>
         </div>
       </div>

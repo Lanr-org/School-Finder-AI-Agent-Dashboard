@@ -280,7 +280,7 @@ const MessageBubble = ({ message }: { message: ConversationMessage }) => {
   const isStudent = message.senderType === 'STUDENT'
   const isAdvisor = message.senderType === 'ADVISOR'
   const isAgent = message.senderType === 'AGENT'
-  const author = isStudent ? 'Student' : isAdvisor ? 'Advisor' : isAgent ? 'Pikinic AI' : 'System'
+  const author = isStudent ? 'Student' : isAdvisor ? 'Advisor' : isAgent ? 'Smetase AI' : 'System'
 
   return (
     <div className={`flex ${isStudent ? 'justify-start' : 'justify-end'}`}>
