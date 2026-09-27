@@ -79,7 +79,10 @@ const StudentsPage = () => {
   const [searchParams] = useSearchParams()
   const [searchInput, setSearchInput] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
-  const [status, setStatus] = useState<StudentStatus | 'ALL'>('ALL')
+  const initialStatus = searchParams.get('status')
+  const [status, setStatus] = useState<StudentStatus | 'ALL'>(
+    statusFilterOptions.includes(initialStatus as StudentStatus) ? (initialStatus as StudentStatus) : 'ALL',
+  )
   const [advisorId, setAdvisorId] = useState(searchParams.get('advisorId') ?? 'ALL')
   const [page, setPage] = useState(1)
 
