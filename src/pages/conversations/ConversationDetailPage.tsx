@@ -290,6 +290,9 @@ const MessageBubble = ({ message }: { message: ConversationMessage }) => {
           {isAdvisor ? <UserRoundCheck className="text-[#045A58]" size={15} /> : null}
           {isStudent ? <UserRound className="text-[#6B7280]" size={15} /> : null}
           <span className="text-xs font-semibold text-[#6B7280]">{author}</span>
+          <span className="rounded-full border border-[#E5E7EB] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#6B7280]">
+            {message.channel === 'WEB' ? 'Web' : 'Telegram'}
+          </span>
           <span className="text-xs text-[#9CA3AF]">{formatDateTime(message.createdAt)}</span>
         </div>
         <div
