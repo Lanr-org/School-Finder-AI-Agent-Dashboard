@@ -32,6 +32,7 @@ import UpdateWorkflowStatusModal, {
   type WorkflowStatusOption,
 } from '../../components/modals/UpdateWorkflowStatusModal.js'
 import AppShell from '../../components/layout/AppShell.js'
+import StudentJourneyCard from '../../components/students/StudentJourneyCard.js'
 import Badge from '../../components/ui/Badge.js'
 import Button from '../../components/ui/Button.js'
 import Card from '../../components/ui/Card.js'
@@ -420,6 +421,8 @@ const StudentDetailPage = () => {
             </Card>
           </div>
         </div>
+
+        <StudentJourneyCard studentId={student.publicId} />
 
         <Card>
           <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

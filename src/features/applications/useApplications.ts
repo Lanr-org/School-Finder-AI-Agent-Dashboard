@@ -43,6 +43,8 @@ const useInvalidateApplications = () => {
     void queryClient.invalidateQueries({ queryKey: ['student', studentId] })
     void queryClient.invalidateQueries({ queryKey: ['students'] })
     void queryClient.invalidateQueries({ queryKey: ['student-status-history', studentId] })
+    // Application status drives the journey stage.
+    void queryClient.invalidateQueries({ queryKey: ['student-journey', studentId] })
     if (applicationId) {
       void queryClient.invalidateQueries({ queryKey: ['application', applicationId] })
     }
