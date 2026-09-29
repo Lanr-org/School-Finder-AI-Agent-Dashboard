@@ -189,7 +189,7 @@ const ConversationDetailPage = () => {
                 />
                 <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <p className="text-xs leading-5 text-[#6B7280]">
-                    Advisor replies will be sent to the student through Telegram.
+                    Replies go to wherever the student last wrote from (web or Telegram).
                   </p>
                   <Button
                     disabled={reply.isPending || !replyText.trim()}
