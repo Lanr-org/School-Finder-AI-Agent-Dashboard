@@ -17,6 +17,7 @@ export const auditActionLabels: Record<AuditAction, string> = {
   'student.advisor_assigned': 'Advisor assigned',
   'student.advisor_unassigned': 'Advisor unassigned',
   'student.status_changed': 'Student status changed',
+  'conversation.advisor_requested': 'Advisor requested',
   'application.created': 'Application created',
   'application.status_changed': 'Application status changed',
   'school.created': 'School created',
@@ -57,6 +58,7 @@ export const auditActionGroups: { label: string; actions: AuditAction[] }[] = [
     label: 'Students',
     actions: ['student.advisor_assigned', 'student.advisor_unassigned', 'student.status_changed'],
   },
+  { label: 'Conversations', actions: ['conversation.advisor_requested'] },
   { label: 'Applications', actions: ['application.created', 'application.status_changed'] },
   {
     label: 'Schools & programs',
@@ -86,6 +88,7 @@ export const auditEntityLabels: Record<AuditEntityType, string> = {
   auth_session: 'Session',
   invitation: 'Invitation',
   student: 'Student',
+  conversation: 'Conversation',
   application: 'Application',
   school: 'School',
   program: 'Program',
@@ -99,6 +102,8 @@ export const auditEntityLink = (type: AuditEntityType, id: string | null): strin
   switch (type) {
     case 'student':
       return `/students/${id}`
+    case 'conversation':
+      return `/conversations/${id}`
     case 'school':
       return `/schools/${id}`
     case 'program':
