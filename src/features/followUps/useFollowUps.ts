@@ -21,6 +21,7 @@ const useInvalidateFollowUps = (studentId: string | undefined) => {
   return () => {
     void queryClient.invalidateQueries({ queryKey: ['follow-ups', studentId] })
     void queryClient.invalidateQueries({ queryKey: ['student', studentId] })
+    void queryClient.invalidateQueries({ queryKey: ['student-status-history', studentId] })
     void queryClient.invalidateQueries({ queryKey: ['advisor-follow-ups'] })
   }
 }

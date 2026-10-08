@@ -189,7 +189,7 @@ const ConversationDetailPage = () => {
                 />
                 <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <p className="text-xs leading-5 text-[#6B7280]">
-                    Advisor replies will be sent to the student through Telegram.
+                    Replies go to wherever the student last wrote from (web or Telegram).
                   </p>
                   <Button
                     disabled={reply.isPending || !replyText.trim()}
@@ -280,7 +280,7 @@ const MessageBubble = ({ message }: { message: ConversationMessage }) => {
   const isStudent = message.senderType === 'STUDENT'
   const isAdvisor = message.senderType === 'ADVISOR'
   const isAgent = message.senderType === 'AGENT'
-  const author = isStudent ? 'Student' : isAdvisor ? 'Advisor' : isAgent ? 'Pikinic AI' : 'System'
+  const author = isStudent ? 'Student' : isAdvisor ? 'Advisor' : isAgent ? 'Smetase AI' : 'System'
 
   return (
     <div className={`flex ${isStudent ? 'justify-start' : 'justify-end'}`}>
@@ -290,6 +290,9 @@ const MessageBubble = ({ message }: { message: ConversationMessage }) => {
           {isAdvisor ? <UserRoundCheck className="text-[#045A58]" size={15} /> : null}
           {isStudent ? <UserRound className="text-[#6B7280]" size={15} /> : null}
           <span className="text-xs font-semibold text-[#6B7280]">{author}</span>
+          <span className="rounded-full border border-[#E5E7EB] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#6B7280]">
+            {message.channel === 'WEB' ? 'Web' : 'Telegram'}
+          </span>
           <span className="text-xs text-[#9CA3AF]">{formatDateTime(message.createdAt)}</span>
         </div>
         <div

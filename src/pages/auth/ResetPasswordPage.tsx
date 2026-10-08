@@ -120,7 +120,7 @@ const ResetPasswordPage = () => {
               <GraduationCap size={23} />
             </div>
             <div>
-              <p className="text-sm font-semibold text-[#111827]">School Finder AI</p>
+              <p className="text-sm font-semibold text-[#111827]">Smetase</p>
               <p className="text-xs font-medium text-[#6B7280]">Staff Portal</p>
             </div>
           </div>

@@ -49,7 +49,7 @@ const LoginPage = () => {
               <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#E6F4F3] text-[#045A58]">
                 <GraduationCap size={22} />
               </div>
-              <span className="text-sm font-semibold">School Finder AI</span>
+              <span className="text-sm font-semibold">Smetase</span>
             </div>
 
             <div className="mb-8">

@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   assignStudentAdvisor,
   getStudent,
+  getStudentStatusHistory,
   listStudents,
   updateStudentStatus,
   type ListStudentsParams,
@@ -34,6 +35,7 @@ export const useAssignStudentAdvisor = (studentId: string | undefined) => {
       void queryClient.invalidateQueries({ queryKey: ['conversations'] })
       void queryClient.invalidateQueries({ queryKey: ['advisor-profiles'] })
       void queryClient.invalidateQueries({ queryKey: ['advisor-students'] })
+      void queryClient.invalidateQueries({ queryKey: ['student-status-history', studentId] })
     },
   })
 }
@@ -42,10 +44,19 @@ export const useUpdateStudentStatus = (studentId: string | undefined) => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (status: StudentStatus) => updateStudentStatus(studentId as string, status),
+    mutationFn: ({ status, note }: { status: StudentStatus; note?: string | undefined }) =>
+      updateStudentStatus(studentId as string, status, note),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['student', studentId] })
       void queryClient.invalidateQueries({ queryKey: ['students'] })
+      void queryClient.invalidateQueries({ queryKey: ['student-status-history', studentId] })
     },
   })
 }
+
+export const useStudentStatusHistory = (studentId: string | undefined) =>
+  useQuery({
+    queryKey: ['student-status-history', studentId],
+    queryFn: () => getStudentStatusHistory(studentId as string),
+    enabled: studentId !== undefined,
+  })

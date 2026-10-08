@@ -22,6 +22,8 @@ import Modal from '../ui/Modal.js'
 import { cn } from '../../utils/cn.js'
 import { api } from '../../lib/api/client.js'
 import { useAuthStore } from '../../store/authStore.js'
+import type { NotificationType } from '../../features/notifications/notifications.api.js'
+import { useNotificationActions, useNotifications } from '../../features/notifications/useNotifications.js'
 
 type TopbarProps = {
   onMenuClick: () => void
@@ -41,54 +43,24 @@ const initialsOf = (fullName: string) =>
     .slice(0, 2)
     .toUpperCase()
 
-type NotificationItem = {
-  description: string
-  icon: ReactNode
-  id: string
-  read: boolean
-  time: string
-  title: string
-  to: string
+const notificationIcons: Record<NotificationType, ReactNode> = {
+  ASSIGNMENT: <UserRoundCheck size={17} />,
+  CONVERSATION: <MessageSquareText size={17} />,
+  FOLLOW_UP: <AlertTriangle size={17} />,
+  RECOMMENDATION: <Bell size={17} />,
+  TEAM: <MailPlus size={17} />,
+  SYSTEM: <Bell size={17} />,
 }
 
-const initialNotifications: NotificationItem[] = [
-  {
-    description: 'Chinedu Nwosu was assigned to you for recommendation review.',
-    icon: <UserRoundCheck size={17} />,
-    id: 'notification-1',
-    read: false,
-    time: '8 minutes ago',
-    title: 'New student assignment',
-    to: '/students/STU-1048',
-  },
-  {
-    description: 'A Telegram conversation requires advisor attention.',
-    icon: <MessageSquareText size={17} />,
-    id: 'notification-2',
-    read: false,
-    time: '24 minutes ago',
-    title: 'Conversation escalated',
-    to: '/conversations/CONV-2084',
-  },
-  {
-    description: 'Three advisor follow-ups are due before the end of today.',
-    icon: <AlertTriangle size={17} />,
-    id: 'notification-3',
-    read: false,
-    time: '1 hour ago',
-    title: 'Follow-ups due',
-    to: '/advisors',
-  },
-  {
-    description: 'Tola Adeyemi is still waiting to accept the team invitation.',
-    icon: <MailPlus size={17} />,
-    id: 'notification-4',
-    read: true,
-    time: 'Yesterday',
-    title: 'Invitation pending',
-    to: '/team/USR-1004',
-  },
-]
+const timeAgo = (iso: string) => {
+  const minutes = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60_000))
+  if (minutes < 1) return 'Just now'
+  if (minutes < 60) return `${minutes} minute${minutes === 1 ? '' : 's'} ago`
+  const hours = Math.round(minutes / 60)
+  if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'} ago`
+  const days = Math.round(hours / 24)
+  return days === 1 ? 'Yesterday' : `${days} days ago`
+}
 
 const Topbar = ({ onMenuClick }: TopbarProps) => {
   const navigate = useNavigate()
@@ -97,8 +69,10 @@ const Topbar = ({ onMenuClick }: TopbarProps) => {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false)
   const [isSignOutModalOpen, setIsSignOutModalOpen] = useState(false)
   const [isSigningOut, setIsSigningOut] = useState(false)
-  const [notifications, setNotifications] = useState(initialNotifications)
-  const unreadCount = notifications.filter((notification) => !notification.read).length
+  const { data: notificationData } = useNotifications()
+  const { markRead, markAllRead, clear } = useNotificationActions()
+  const notifications = notificationData?.notifications ?? []
+  const unreadCount = notificationData?.unreadCount ?? 0
 
   const currentUser = {
     initials: authUser ? initialsOf(authUser.fullName) : '',
@@ -222,11 +196,7 @@ const Topbar = ({ onMenuClick }: TopbarProps) => {
                   {unreadCount ? (
                     <button
                       className="inline-flex shrink-0 items-center gap-1.5 text-xs font-semibold text-[#045A58] outline-none hover:text-[#034A48] focus:underline"
-                      onClick={() =>
-                        setNotifications((current) =>
-                          current.map((notification) => ({ ...notification, read: true })),
-                        )
-                      }
+                      onClick={() => markAllRead.mutate()}
                       type="button"
                     >
                       <CheckCheck size={15} />
@@ -238,48 +208,47 @@ const Topbar = ({ onMenuClick }: TopbarProps) => {
                 {notifications.length ? (
                   <>
                     <div className="max-h-[420px] overflow-y-auto">
-                      {notifications.map((notification) => (
+                      {notifications.map((notification) => {
+                        const read = notification.readAt !== null
+                        return (
                         <Link
                           className={`flex gap-3 border-b border-[#E5E7EB] px-4 py-4 transition last:border-b-0 hover:bg-[#F9FAFB] ${
-                            notification.read ? 'bg-white' : 'bg-[#F2F9F8]'
+                            read ? 'bg-white' : 'bg-[#F2F9F8]'
                           }`}
                           key={notification.id}
                           onClick={() => {
-                            setNotifications((current) =>
-                              current.map((item) =>
-                                item.id === notification.id ? { ...item, read: true } : item,
-                              ),
-                            )
+                            if (!read) markRead.mutate(notification.id)
                             setIsNotificationsOpen(false)
                           }}
-                          to={notification.to}
+                          to={notification.link ?? '/'}
                         >
                           <div
                             className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${
-                              notification.read
+                              read
                                 ? 'bg-[#F3F4F6] text-[#6B7280]'
                                 : 'bg-[#E6F4F3] text-[#045A58]'
                             }`}
                           >
-                            {notification.icon}
+                            {notificationIcons[notification.type]}
                           </div>
                           <div className="min-w-0 flex-1">
                             <div className="flex items-start justify-between gap-3">
                               <p className="text-sm font-semibold text-[#111827]">{notification.title}</p>
-                              {!notification.read ? (
+                              {!read ? (
                                 <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[#045A58]" />
                               ) : null}
                             </div>
-                            <p className="mt-1 text-sm leading-5 text-[#6B7280]">{notification.description}</p>
-                            <p className="mt-2 text-xs font-medium text-[#9CA3AF]">{notification.time}</p>
+                            <p className="mt-1 text-sm leading-5 text-[#6B7280]">{notification.body}</p>
+                            <p className="mt-2 text-xs font-medium text-[#9CA3AF]">{timeAgo(notification.createdAt)}</p>
                           </div>
                         </Link>
-                      ))}
+                        )
+                      })}
                     </div>
                     <div className="border-t border-[#E5E7EB] px-4 py-3">
                       <button
                         className="inline-flex w-full items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-[#6B7280] outline-none transition hover:bg-[#F3F4F6] hover:text-[#B42318] focus:ring-4 focus:ring-[#E6F4F3]"
-                        onClick={() => setNotifications([])}
+                        onClick={() => clear.mutate()}
                         type="button"
                       >
                         <Trash2 size={15} />

@@ -24,6 +24,8 @@ export type ConversationSummary = {
 export type ConversationMessage = {
   senderType: MessageSenderType
   content: string
+  // Where the message came from (student) or was sent to (AI/advisor).
+  channel: 'TELEGRAM' | 'WEB'
   createdAt: string
 }
 

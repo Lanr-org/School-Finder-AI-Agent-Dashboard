@@ -1,11 +1,13 @@
 import {
   BookOpen,
+  FileCheck2,
   X,
   GraduationCap,
   LayoutDashboard,
   MessageSquareText,
   Newspaper,
   School,
+  ScrollText,
   Settings,
   Sparkles,
   UsersRound,
@@ -43,6 +45,7 @@ const navSections: NavSection[] = [
     label: 'Operations',
     items: [
       { icon: Users, label: 'Students', path: '/students' },
+      { icon: FileCheck2, label: 'Applications', path: '/applications', roles: ['ADMIN', 'ADVISOR'] },
       { icon: School, label: 'Schools', path: '/schools' },
       { icon: BookOpen, label: 'Programs', path: '/programs' },
       { icon: MessageSquareText, label: 'Conversations', path: '/conversations' },
@@ -56,6 +59,7 @@ const navSections: NavSection[] = [
       { icon: UserRoundCheck, label: 'Advisors', path: '/advisors' },
       { icon: Newspaper, label: 'Industry Intel', path: '/industry-intel' },
       { icon: Settings, label: 'Settings', path: '/settings' },
+      { icon: ScrollText, label: 'Audit log', path: '/audit-log', roles: ['ADMIN'] },
     ],
   },
 ]
@@ -68,7 +72,7 @@ const SidebarHeader = ({ onClose }: { onClose?: () => void }) => {
           <GraduationCap size={23} />
         </div>
         <div>
-          <p className="text-sm font-semibold text-[#111827]">Pikinic AI Agent</p>
+          <p className="text-sm font-semibold text-[#111827]">Smetase</p>
           <p className="text-xs font-medium text-[#6B7280]">Operations Portal</p>
         </div>
       </div>

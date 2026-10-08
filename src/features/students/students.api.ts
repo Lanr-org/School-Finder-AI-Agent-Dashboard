@@ -63,7 +63,36 @@ export const assignStudentAdvisor = async (studentId: string, advisorId: string 
   return res.data.data
 }
 
-export const updateStudentStatus = async (studentId: string, status: StudentStatus): Promise<Student> => {
-  const res = await api.patch<ApiSuccessResponse<Student>>(`/students/${studentId}/status`, { status })
+export const updateStudentStatus = async (
+  studentId: string,
+  status: StudentStatus,
+  note?: string | undefined,
+): Promise<Student> => {
+  const res = await api.patch<ApiSuccessResponse<Student>>(`/students/${studentId}/status`, {
+    status,
+    ...(note && { note }),
+  })
+  return res.data.data
+}
+
+export type StudentStatusChangeSource =
+  | 'LEAD_CREATED'
+  | 'MANUAL'
+  | 'ADVISOR_ASSIGNED'
+  | 'ADVISOR_UNASSIGNED'
+  | 'FOLLOW_UP_CREATED'
+  | 'APPLICATION_CREATED'
+
+export type StudentStatusHistoryEntry = {
+  fromStatus: StudentStatus | null
+  toStatus: StudentStatus
+  source: StudentStatusChangeSource
+  note: string | null
+  changedBy: { publicId: string; fullName: string } | null
+  changedAt: string
+}
+
+export const getStudentStatusHistory = async (studentId: string): Promise<StudentStatusHistoryEntry[]> => {
+  const res = await api.get<ApiSuccessResponse<StudentStatusHistoryEntry[]>>(`/students/${studentId}/status-history`)
   return res.data.data
 }
