@@ -265,6 +265,9 @@ const SchoolDetailPage = () => {
   )
 }
 
+// Probationary sponsors and those on an action plan deserve a second look before advising.
+const isCaution = (note: string | null) => note !== null && /probationary|action plan/i.test(note)
+
 const SponsorCard = ({ school }: { school: School }) => (
   <Card>
     <div className="mb-4 flex items-center justify-between gap-3">
@@ -272,14 +275,33 @@ const SponsorCard = ({ school }: { school: School }) => (
       <ShieldCheck className="text-[#045A58]" size={20} />
     </div>
     {school.visaSponsorStatus === 'LICENSED' ? (
-      <p className="flex items-start gap-2 text-sm leading-6 text-[#166534]">
-        <BadgeCheck className="mt-0.5 shrink-0" size={17} />
-        On the official register of licensed student sponsors.
+      <p
+        className={`flex items-start gap-2 text-sm leading-6 ${
+          isCaution(school.visaSponsorNote) ? 'text-[#92400E]' : 'text-[#166534]'
+        }`}
+      >
+        {isCaution(school.visaSponsorNote) ? (
+          <AlertTriangle className="mt-0.5 shrink-0" size={17} />
+        ) : (
+          <BadgeCheck className="mt-0.5 shrink-0" size={17} />
+        )}
+        <span>
+          On the official register of licensed student sponsors
+          {school.visaSponsorNote ? ` (${school.visaSponsorNote})` : ''}.
+          {isCaution(school.visaSponsorNote) ? ' Check the latest standing before advising students.' : ''}
+        </span>
       </p>
     ) : school.visaSponsorStatus === 'NOT_LISTED' ? (
       <p className="flex items-start gap-2 text-sm leading-6 text-[#92400E]">
         <AlertTriangle className="mt-0.5 shrink-0" size={17} />
-        Not found on the official sponsor register. It may not be able to issue a CAS. Check before advising students.
+        No longer on the official sponsor register. It may not be able to issue a CAS. Check before advising
+        students.
+      </p>
+    ) : school.visaSponsorCheckedAt ? (
+      <p className="flex items-start gap-2 text-sm leading-6 text-[#6B7280]">
+        <CircleDashed className="mt-0.5 shrink-0" size={17} />
+        {school.visaSponsorNote ?? 'Not found on the register.'} Edit the school name to match the register, or
+        confirm with the school that it is licensed.
       </p>
     ) : (
       <p className="flex items-start gap-2 text-sm leading-6 text-[#6B7280]">
@@ -287,8 +309,13 @@ const SponsorCard = ({ school }: { school: School }) => (
         Not checked against the official sponsor register yet.
       </p>
     )}
-    {school.visaSponsorCheckedAt ? (
+    {school.visaSponsorRegisterName ? (
       <p className="mt-3 text-xs text-[#6B7280]">
+        Register name: <span className="font-semibold text-[#374151]">{school.visaSponsorRegisterName}</span>
+      </p>
+    ) : null}
+    {school.visaSponsorCheckedAt ? (
+      <p className="mt-1 text-xs text-[#6B7280]">
         {school.visaSponsorSource ?? 'Official register'}, checked {formatDate(school.visaSponsorCheckedAt)}
       </p>
     ) : null}

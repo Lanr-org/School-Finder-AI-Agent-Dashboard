@@ -3,6 +3,7 @@ import {
   createSchool,
   getSchool,
   listSchools,
+  syncSponsorRegister,
   updateSchool,
   type ListSchoolsParams,
   type School,
@@ -43,5 +44,16 @@ export const useUpdateSchool = (schoolId: string) => {
   return useMutation({
     mutationFn: (input: Partial<SchoolInput>) => updateSchool(schoolId, input),
     onSuccess: refresh,
+  })
+}
+
+export const useSyncSponsorRegister = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: syncSponsorRegister,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['schools'] })
+      void queryClient.invalidateQueries({ queryKey: ['school'] })
+    },
   })
 }

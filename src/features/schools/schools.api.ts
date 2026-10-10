@@ -27,6 +27,8 @@ export type School = {
   visaSponsorStatus: VisaSponsorStatus
   visaSponsorSource: string | null
   visaSponsorCheckedAt: string | null
+  visaSponsorRegisterName: string | null
+  visaSponsorNote: string | null
   createdAt: string
   updatedAt: string
 }
@@ -94,5 +96,20 @@ export const createSchool = async (input: SchoolInput): Promise<School> => {
 
 export const updateSchool = async (schoolId: string, input: Partial<SchoolInput>): Promise<School> => {
   const res = await api.patch<ApiSuccessResponse<School>>(`/schools/${schoolId}`, input)
+  return res.data.data
+}
+
+export type SponsorSyncSummary = {
+  csvUrl: string
+  checkedAt: string
+  ukSchools: number
+  licensed: number
+  notListed: number
+  unmatched: { publicId: string; name: string; note: string | null }[]
+  changed: number
+}
+
+export const syncSponsorRegister = async (): Promise<SponsorSyncSummary> => {
+  const res = await api.post<ApiSuccessResponse<SponsorSyncSummary>>('/schools/sponsor-register/sync')
   return res.data.data
 }

@@ -11,6 +11,7 @@ import {
   Pencil,
   Plus,
   Search,
+  ShieldCheck,
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -24,7 +25,8 @@ import Input from '../../components/ui/Input.js'
 import { api } from '../../lib/api/client.js'
 import type { ApiErrorResponse } from '../../lib/api/types.js'
 import { useAuthStore } from '../../store/authStore.js'
-import { useSchools } from '../../features/schools/useSchools.js'
+import { useSchools, useSyncSponsorRegister } from '../../features/schools/useSchools.js'
+import { apiErrorMessage } from '../../lib/api/errors.js'
 import type { PartnerStatus, School, SchoolType } from '../../features/schools/schools.api.js'
 
 const PAGE_SIZE = 20
@@ -63,6 +65,7 @@ const formatDate = (value: string) =>
 const SchoolsPage = () => {
   const queryClient = useQueryClient()
   const canManage = useAuthStore((state) => (state.user ? MANAGE_ROLES.includes(state.user.role) : false))
+  const syncRegister = useSyncSponsorRegister()
   const [searchInput, setSearchInput] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [type, setType] = useState<SchoolType | 'ALL'>('ALL')
@@ -117,6 +120,17 @@ const SchoolsPage = () => {
               Export directory
             </Button>
             {canManage ? (
+              <Button
+                disabled={syncRegister.isPending}
+                leftIcon={<ShieldCheck size={17} />}
+                onClick={() => syncRegister.mutate()}
+                size="md"
+                variant="secondary"
+              >
+                {syncRegister.isPending ? 'Checking register…' : 'Check UK sponsor register'}
+              </Button>
+            ) : null}
+            {canManage ? (
               <Link
                 className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-transparent bg-[#045A58] px-4 text-sm font-semibold text-white outline-none transition hover:bg-[#034A48] focus:ring-4 focus:ring-[#E6F4F3]"
                 to="/schools/new"
@@ -127,6 +141,37 @@ const SchoolsPage = () => {
             ) : null}
           </div>
         </div>
+
+        {syncRegister.isSuccess ? (
+          <Card>
+            <p className="text-sm font-semibold text-[#111827]">
+              Checked {syncRegister.data.ukSchools} UK schools against today's Home Office register:{' '}
+              {syncRegister.data.licensed} licensed
+              {syncRegister.data.notListed > 0 ? `, ${syncRegister.data.notListed} no longer listed` : ''}
+              {syncRegister.data.unmatched.length > 0 ? `, ${syncRegister.data.unmatched.length} not found by name` : ''}.
+            </p>
+            {syncRegister.data.unmatched.length > 0 ? (
+              <ul className="mt-3 space-y-1 text-sm text-[#6B7280]">
+                {syncRegister.data.unmatched.map((school) => (
+                  <li key={school.publicId}>
+                    <Link className="font-semibold text-[#045A58] hover:text-[#034A48]" to={`/schools/${school.publicId}`}>
+                      {school.name}
+                    </Link>
+                    {school.note ? ` — ${school.note}` : ''}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            <p className="mt-2 text-xs text-[#6B7280]">This check also runs by itself every morning.</p>
+          </Card>
+        ) : null}
+        {syncRegister.isError ? (
+          <Card>
+            <p className="text-sm text-[#991B1B]" role="alert">
+              {apiErrorMessage(syncRegister.error, "Couldn't reach the Home Office register. Try again later.")}
+            </p>
+          </Card>
+        ) : null}
 
         <Card className="p-0">
           <div className="border-b border-[#E5E7EB] px-5 py-5 sm:px-6">
