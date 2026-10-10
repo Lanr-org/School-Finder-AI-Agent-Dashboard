@@ -1,26 +1,45 @@
-import { ArrowLeft, BookOpen, Building2, MapPin } from 'lucide-react'
+import { AlertCircle, ArrowLeft, Building2, Link2, Loader2, MapPin } from 'lucide-react'
 import { Link, useParams } from 'react-router-dom'
 import ProgramForm from '../../components/forms/ProgramForm.js'
 import AppShell from '../../components/layout/AppShell.js'
 import UnsavedChangesModal from '../../components/modals/UnsavedChangesModal.js'
 import Badge from '../../components/ui/Badge.js'
 import Card from '../../components/ui/Card.js'
+import { useCreateProgram } from '../../features/programs/usePrograms.js'
+import { useSchool } from '../../features/schools/useSchools.js'
 import useUnsavedChanges from '../../hooks/useUnsavedChanges.js'
-
-const school = {
-  city: 'Toronto',
-  country: 'Canada',
-  id: 'SCH-2048',
-  name: 'Northbridge College',
-  programCount: 28,
-  status: 'Active',
-}
+import { apiErrorMessage } from '../../lib/api/errors.js'
 
 const AddProgramPage = () => {
   const { schoolId } = useParams()
-  const displayId = schoolId ?? school.id
-  const schoolPath = `/schools/${displayId}`
+  const schoolPath = `/schools/${schoolId ?? ''}`
   const unsavedChanges = useUnsavedChanges()
+  const { data: school, isLoading, isError, error } = useSchool(schoolId)
+  const createProgram = useCreateProgram()
+
+  if (isLoading) {
+    return (
+      <AppShell>
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <Loader2 className="animate-spin text-[#045A58]" size={32} />
+        </div>
+      </AppShell>
+    )
+  }
+
+  if (isError || !school) {
+    return (
+      <AppShell>
+        <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3 text-center">
+          <AlertCircle className="text-[#DC2626]" size={28} />
+          <p className="text-sm text-[#6B7280]">{apiErrorMessage(error, 'Failed to load this school')}</p>
+          <Link className="text-sm font-semibold text-[#045A58] hover:text-[#034A48]" to="/schools">
+            Back to Schools
+          </Link>
+        </div>
+      </AppShell>
+    )
+  }
 
   return (
     <AppShell>
@@ -35,22 +54,25 @@ const AddProgramPage = () => {
           </Link>
           <div className="mt-4 flex flex-wrap items-center gap-3">
             <h1 className="text-3xl font-semibold tracking-normal text-[#111827]">Add program</h1>
-            <Badge tone="neutral">{displayId}</Badge>
+            <Badge tone="neutral">{school.publicId}</Badge>
           </div>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-[#6B7280]">
-            Add a structured program record to this school for advisor search, student matching, and application planning.
+            Copy the facts from the university's own course page, and paste its link so anyone can check them.
           </p>
         </div>
 
         <div className="grid gap-6 xl:grid-cols-[1fr_320px]">
           <ProgramForm
+            errorMessage={createProgram.isError ? apiErrorMessage(createProgram.error) : null}
+            isSubmitting={createProgram.isPending}
             onCancel={() => unsavedChanges.requestNavigation(schoolPath)}
             onDirty={unsavedChanges.markDirty}
-            onSubmit={(event) => {
-              event.preventDefault()
-              unsavedChanges.navigateAfterSave(schoolPath)
-            }}
-            school={{ id: displayId, mode: 'fixed', name: school.name }}
+            onSubmit={(input) =>
+              createProgram.mutate(input, {
+                onSuccess: (program) => unsavedChanges.navigateAfterSave(`/programs/${program.publicId}`),
+              })
+            }
+            school={{ id: school.publicId, mode: 'fixed', name: school.name }}
           />
 
           <aside className="space-y-6 xl:sticky xl:top-26 xl:self-start">
@@ -62,24 +84,15 @@ const AddProgramPage = () => {
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-normal text-[#9CA3AF]">Adding to</p>
                   <h2 className="mt-1 text-lg font-semibold text-[#111827]">{school.name}</h2>
-                </div>
-              </div>
-              <div className="mt-5 space-y-4 border-t border-[#E5E7EB] pt-5">
-                <SummaryItem icon={<MapPin size={16} />} label="Location" value={`${school.city}, ${school.country}`} />
-                <SummaryItem icon={<BookOpen size={16} />} label="Current programs" value={String(school.programCount)} />
-                <div className="flex items-center justify-between gap-4">
-                  <span className="text-sm text-[#6B7280]">Record status</span>
-                  <Badge tone="success">{school.status}</Badge>
+                  <p className="mt-2 inline-flex items-center gap-1.5 text-sm text-[#6B7280]">
+                    <MapPin size={14} />
+                    {school.city}, {school.country}
+                  </p>
                 </div>
               </div>
             </Card>
 
-            <Card>
-              <h2 className="text-lg font-semibold text-[#111827]">Program ownership</h2>
-              <p className="mt-2 text-sm leading-6 text-[#6B7280]">
-                This program will belong to {school.name}. It will also appear in the global Programs directory.
-              </p>
-            </Card>
+            <SourceTipCard />
           </aside>
         </div>
       </div>
@@ -92,22 +105,23 @@ const AddProgramPage = () => {
   )
 }
 
-const SummaryItem = ({
-  icon,
-  label,
-  value,
-}: {
-  icon: React.ReactNode
-  label: string
-  value: string
-}) => (
-  <div className="flex items-center justify-between gap-4">
-    <span className="inline-flex items-center gap-2 text-sm text-[#6B7280]">
-      {icon}
-      {label}
-    </span>
-    <span className="text-sm font-semibold text-[#111827]">{value}</span>
-  </div>
+export const SourceTipCard = () => (
+  <Card>
+    <div className="flex items-start gap-3">
+      <Link2 className="mt-0.5 shrink-0 text-[#045A58]" size={19} />
+      <div>
+        <h2 className="text-lg font-semibold text-[#111827]">Use the official page</h2>
+        <p className="mt-2 text-sm leading-6 text-[#6B7280]">
+          Take fees and requirements from the university's course page, not from Edvoy, ApplyBoard or old notes. Use
+          the international (overseas) fee, and the requirements listed for Nigerian applicants where the page has
+          them.
+        </p>
+        <p className="mt-2 text-sm leading-6 text-[#6B7280]">
+          After saving, open the programme and mark it verified once you've checked every field.
+        </p>
+      </div>
+    </div>
+  </Card>
 )
 
 export default AddProgramPage

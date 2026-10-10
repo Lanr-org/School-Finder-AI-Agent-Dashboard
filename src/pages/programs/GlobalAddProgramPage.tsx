@@ -1,22 +1,24 @@
-import { ArrowLeft, BookOpen, Building2, Search } from 'lucide-react'
+import { ArrowLeft, Loader2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import ProgramForm from '../../components/forms/ProgramForm.js'
 import AppShell from '../../components/layout/AppShell.js'
 import UnsavedChangesModal from '../../components/modals/UnsavedChangesModal.js'
 import Badge from '../../components/ui/Badge.js'
-import Card from '../../components/ui/Card.js'
+import { useCreateProgram } from '../../features/programs/usePrograms.js'
+import { useSchools } from '../../features/schools/useSchools.js'
 import useUnsavedChanges from '../../hooks/useUnsavedChanges.js'
-
-const schoolOptions = [
-  { id: 'SCH-2048', name: 'Northbridge College' },
-  { id: 'SCH-2047', name: 'Maple Coast University' },
-  { id: 'SCH-2046', name: 'Westhaven University' },
-  { id: 'SCH-2045', name: 'Harbour Institute' },
-  { id: 'SCH-2043', name: 'Linden Technical Institute' },
-]
+import { apiErrorMessage } from '../../lib/api/errors.js'
+import { SourceTipCard } from './AddProgramPage.js'
 
 const GlobalAddProgramPage = () => {
   const unsavedChanges = useUnsavedChanges()
+  const createProgram = useCreateProgram()
+  // The API caps a page at 100; enough for the first catalogue. Swap for a search box past that.
+  const { data, isLoading } = useSchools({ limit: 100, recordStatus: 'ACTIVE' })
+  const schoolOptions = (data?.schools ?? []).map((school) => ({
+    id: school.publicId,
+    name: `${school.name} (${school.city})`,
+  }))
 
   return (
     <AppShell>
@@ -34,52 +36,32 @@ const GlobalAddProgramPage = () => {
             <Badge tone="brand">Global directory</Badge>
           </div>
           <p className="mt-2 max-w-3xl text-sm leading-6 text-[#6B7280]">
-            Select the parent school and add a structured program record to the shared academic directory.
+            Pick the school, then copy the facts from the university's own course page.
           </p>
         </div>
 
         <div className="grid gap-6 xl:grid-cols-[1fr_320px]">
-          <ProgramForm
-            onCancel={() => unsavedChanges.requestNavigation('/programs')}
-            onDirty={unsavedChanges.markDirty}
-            onSubmit={(event) => {
-              event.preventDefault()
-              unsavedChanges.navigateAfterSave('/programs')
-            }}
-            school={{ mode: 'select', options: schoolOptions }}
-          />
+          {isLoading ? (
+            <div className="flex min-h-[40vh] items-center justify-center">
+              <Loader2 className="animate-spin text-[#045A58]" size={32} />
+            </div>
+          ) : (
+            <ProgramForm
+              errorMessage={createProgram.isError ? apiErrorMessage(createProgram.error) : null}
+              isSubmitting={createProgram.isPending}
+              onCancel={() => unsavedChanges.requestNavigation('/programs')}
+              onDirty={unsavedChanges.markDirty}
+              onSubmit={(input) =>
+                createProgram.mutate(input, {
+                  onSuccess: (program) => unsavedChanges.navigateAfterSave(`/programs/${program.publicId}`),
+                })
+              }
+              school={{ mode: 'select', options: schoolOptions }}
+            />
+          )}
 
           <aside className="space-y-6 xl:sticky xl:top-26 xl:self-start">
-            <Card>
-              <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#E6F4F3] text-[#045A58]">
-                  <Building2 size={19} />
-                </div>
-                <div>
-                  <h2 className="text-lg font-semibold text-[#111827]">School assignment</h2>
-                  <p className="mt-1 text-sm leading-5 text-[#6B7280]">Required for every program record.</p>
-                </div>
-              </div>
-              <p className="mt-5 border-t border-[#E5E7EB] pt-5 text-sm leading-6 text-[#374151]">
-                The selected school becomes the program owner. The program will also appear under that school&apos;s Related programs section.
-              </p>
-            </Card>
-
-            <Card>
-              <div className="flex items-start gap-3">
-                <Search className="mt-0.5 shrink-0 text-[#045A58]" size={19} />
-                <div>
-                  <h2 className="text-lg font-semibold text-[#111827]">Directory visibility</h2>
-                  <p className="mt-2 text-sm leading-6 text-[#6B7280]">
-                    Program details support global filtering, advisor comparison, and student recommendation matching.
-                  </p>
-                </div>
-              </div>
-              <div className="mt-5 flex items-center gap-2 border-t border-[#E5E7EB] pt-4 text-sm font-medium text-[#6B7280]">
-                <BookOpen size={16} />
-                Shared program record
-              </div>
-            </Card>
+            <SourceTipCard />
           </aside>
         </div>
       </div>
