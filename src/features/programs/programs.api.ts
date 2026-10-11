@@ -50,6 +50,8 @@ export type Program = {
   verifiedBy: StaffRef | null
   evidence: Record<string, string> | null
   lastCheckedAt: string | null
+  // Plain-words result of the last automatic page check, e.g. "All 16 quotes still on the page".
+  sourceCheckNote: string | null
   createdAt: string
   updatedAt: string
 }
@@ -154,6 +156,11 @@ export const updateProgram = async (programId: string, input: Partial<ProgramInp
 
 export const extractProgram = async (input: { url?: string; pageText?: string }): Promise<ProgramExtractResult> => {
   const res = await api.post<ApiSuccessResponse<ProgramExtractResult>>('/programs/extract', input)
+  return res.data.data
+}
+
+export const checkProgramSource = async (programId: string): Promise<Program> => {
+  const res = await api.post<ApiSuccessResponse<Program>>(`/programs/${programId}/source-check`)
   return res.data.data
 }
 

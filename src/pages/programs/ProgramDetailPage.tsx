@@ -7,6 +7,7 @@ import {
   Building2,
   CalendarClock,
   CalendarDays,
+  CheckCircle2,
   CircleDollarSign,
   Clock3,
   ExternalLink,
@@ -15,6 +16,7 @@ import {
   GraduationCap,
   Loader2,
   Pencil,
+  RefreshCw,
   School,
   ShieldCheck,
   Sparkles,
@@ -37,6 +39,7 @@ import {
   nextDeadline,
 } from "../../features/programs/programs.format.js";
 import {
+  useCheckProgramSource,
   useProgram,
   useReportOutdated,
   useVerifyProgram,
@@ -330,6 +333,10 @@ const ProgramDetailPage = () => {
   );
 };
 
+// The weekly check's own wording for a clean result (see programSourceCheck.ts in the API).
+const isPassingCheck = (note: string) =>
+  /^All \d+ quotes? still on the page$|^Page still online/.test(note);
+
 const VerificationCard = ({
   canManage,
   program,
@@ -338,6 +345,7 @@ const VerificationCard = ({
   program: Program;
 }) => {
   const verify = useVerifyProgram(program.publicId);
+  const checkSource = useCheckProgramSource(program.publicId);
   const evidence = Object.entries(program.evidence ?? {});
 
   return (
@@ -398,6 +406,45 @@ const VerificationCard = ({
           label="Last automatic check"
           value={formatDate(program.lastCheckedAt)}
         />
+        {program.sourceCheckNote ? (
+          <p
+            className={`flex items-start gap-2 text-sm leading-6 sm:col-span-2 ${
+              isPassingCheck(program.sourceCheckNote)
+                ? "text-[#166534]"
+                : "text-[#92400E]"
+            }`}
+          >
+            {isPassingCheck(program.sourceCheckNote) ? (
+              <CheckCircle2 className="mt-1 shrink-0" size={15} />
+            ) : (
+              <AlertTriangle className="mt-1 shrink-0" size={15} />
+            )}
+            {program.sourceCheckNote}
+          </p>
+        ) : null}
+        {canManage && program.sourceUrl ? (
+          <div className="sm:col-span-2">
+            <Button
+              disabled={checkSource.isPending}
+              leftIcon={
+                <RefreshCw
+                  className={checkSource.isPending ? "animate-spin" : ""}
+                  size={16}
+                />
+              }
+              onClick={() => checkSource.mutate()}
+              size="sm"
+              variant="secondary"
+            >
+              {checkSource.isPending ? "Checking the page…" : "Check the page now"}
+            </Button>
+            {checkSource.isError ? (
+              <p className="mt-2 text-sm text-[#991B1B]" role="alert">
+                {apiErrorMessage(checkSource.error)}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
       </div>
 
       {evidence.length > 0 ? (
