@@ -28,7 +28,7 @@ import Card from "../../components/ui/Card.js";
 import Modal from "../../components/ui/Modal.js";
 import type { Program } from "../../features/programs/programs.api.js";
 import {
-  EVIDENCE_LABEL,
+  evidenceLabel,
   STUDY_LEVEL_LABEL,
   VERIFICATION_LABEL,
   formatDate,
@@ -411,7 +411,7 @@ const VerificationCard = ({
               key={field}
             >
               <p className="text-xs font-semibold text-[#6B7280]">
-                {EVIDENCE_LABEL[field] ?? field}
+                {evidenceLabel(field)}
               </p>
               <p className="mt-1 text-sm leading-6 text-[#374151]">“{quote}”</p>
             </blockquote>

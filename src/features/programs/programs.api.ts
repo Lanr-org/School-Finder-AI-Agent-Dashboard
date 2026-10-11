@@ -71,6 +71,32 @@ export type ProgramInput = {
   operationNotes: string | null
   sourceUrl: string | null
   feesAcademicYear: string | null
+  // { field: "exact quote from the course page" }, sent when the form was filled from the page.
+  evidence?: Record<string, string>
+}
+
+// What the AI read from a course page. Every value has a quote in `evidence` that the server
+// found on the page; `dropped` lists values it could not confirm.
+export type ProgramDraft = Partial<{
+  name: string
+  studyLevel: StudyLevel
+  qualification: string
+  duration: string
+  tuitionAmount: number
+  tuitionCurrency: string
+  feesAcademicYear: string
+  intakes: { month: IntakeMonth; year: number }[]
+  academicRequirements: string
+  englishRequirements: string
+  scholarshipAvailability: string
+}>
+
+export type ProgramExtractResult = {
+  sourceUrl: string | null
+  draft: ProgramDraft
+  evidence: Record<string, string>
+  dropped: string[]
+  warnings: string[]
 }
 
 export type ProgramDataReport = {
@@ -123,6 +149,11 @@ export const createProgram = async (input: ProgramInput): Promise<Program> => {
 
 export const updateProgram = async (programId: string, input: Partial<ProgramInput>): Promise<Program> => {
   const res = await api.patch<ApiSuccessResponse<Program>>(`/programs/${programId}`, input)
+  return res.data.data
+}
+
+export const extractProgram = async (input: { url?: string; pageText?: string }): Promise<ProgramExtractResult> => {
+  const res = await api.post<ApiSuccessResponse<ProgramExtractResult>>('/programs/extract', input)
   return res.data.data
 }
 

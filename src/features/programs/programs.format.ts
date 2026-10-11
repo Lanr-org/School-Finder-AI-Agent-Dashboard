@@ -44,4 +44,14 @@ export const EVIDENCE_LABEL: Record<string, string> = {
   englishRequirements: 'English requirements',
   duration: 'Duration',
   qualification: 'Qualification',
+  name: 'Program name',
+  studyLevel: 'Study level',
+  tuitionCurrency: 'Currency',
+  scholarshipAvailability: 'Scholarships',
+}
+
+// Intake quotes are stored per row ("intakes.0", "intakes.1", ...).
+export const evidenceLabel = (field: string) => {
+  const intake = /^intakes\.(\d+)$/.exec(field)
+  return intake ? `Intake ${Number(intake[1]) + 1}` : (EVIDENCE_LABEL[field] ?? field)
 }

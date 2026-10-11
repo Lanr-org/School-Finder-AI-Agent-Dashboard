@@ -1,9 +1,12 @@
 import { ArrowLeft, Loader2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useState } from 'react'
+import FillFromPageCard from '../../components/forms/FillFromPageCard.js'
 import ProgramForm from '../../components/forms/ProgramForm.js'
 import AppShell from '../../components/layout/AppShell.js'
 import UnsavedChangesModal from '../../components/modals/UnsavedChangesModal.js'
 import Badge from '../../components/ui/Badge.js'
+import type { ProgramExtractResult } from '../../features/programs/programs.api.js'
 import { useCreateProgram } from '../../features/programs/usePrograms.js'
 import { useSchools } from '../../features/schools/useSchools.js'
 import useUnsavedChanges from '../../hooks/useUnsavedChanges.js'
@@ -13,6 +16,14 @@ import { SourceTipCard } from './AddProgramPage.js'
 const GlobalAddProgramPage = () => {
   const unsavedChanges = useUnsavedChanges()
   const createProgram = useCreateProgram()
+  const [prefill, setPrefill] = useState<ProgramExtractResult | null>(null)
+  // The form is uncontrolled; a new key re-mounts it with the draft's values.
+  const [formKey, setFormKey] = useState(0)
+  const applyDraft = (result: ProgramExtractResult) => {
+    setPrefill(result)
+    setFormKey((key) => key + 1)
+    unsavedChanges.markDirty()
+  }
   // The API caps a page at 100; enough for the first catalogue. Swap for a search box past that.
   const { data, isLoading } = useSchools({ limit: 100, recordStatus: 'ACTIVE' })
   const schoolOptions = (data?.schools ?? []).map((school) => ({
@@ -46,18 +57,23 @@ const GlobalAddProgramPage = () => {
               <Loader2 className="animate-spin text-[#045A58]" size={32} />
             </div>
           ) : (
-            <ProgramForm
-              errorMessage={createProgram.isError ? apiErrorMessage(createProgram.error) : null}
-              isSubmitting={createProgram.isPending}
-              onCancel={() => unsavedChanges.requestNavigation('/programs')}
-              onDirty={unsavedChanges.markDirty}
-              onSubmit={(input) =>
-                createProgram.mutate(input, {
-                  onSuccess: (program) => unsavedChanges.navigateAfterSave(`/programs/${program.publicId}`),
-                })
-              }
-              school={{ mode: 'select', options: schoolOptions }}
-            />
+            <div className="min-w-0 space-y-6">
+              <FillFromPageCard onDraft={applyDraft} />
+              <ProgramForm
+                key={formKey}
+                prefill={prefill}
+                errorMessage={createProgram.isError ? apiErrorMessage(createProgram.error) : null}
+                isSubmitting={createProgram.isPending}
+                onCancel={() => unsavedChanges.requestNavigation('/programs')}
+                onDirty={unsavedChanges.markDirty}
+                onSubmit={(input) =>
+                  createProgram.mutate(input, {
+                    onSuccess: (program) => unsavedChanges.navigateAfterSave(`/programs/${program.publicId}`),
+                  })
+                }
+                school={{ mode: 'select', options: schoolOptions }}
+              />
+            </div>
           )}
 
           <aside className="space-y-6 xl:sticky xl:top-26 xl:self-start">

@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   createProgram,
+  extractProgram,
   getProgram,
   listPrograms,
   listReports,
@@ -50,6 +51,10 @@ export const useUpdateProgram = (programId: string) => {
     onSuccess: refresh,
   })
 }
+
+// Reads a course page into a draft; nothing is saved, so no cache to refresh.
+export const useExtractProgram = () =>
+  useMutation({ mutationFn: (input: { url?: string; pageText?: string }) => extractProgram(input) })
 
 export const useVerifyProgram = (programId: string) => {
   const refresh = useRefreshPrograms()

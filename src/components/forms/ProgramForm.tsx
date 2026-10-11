@@ -6,12 +6,14 @@ import {
   GraduationCap,
   Link2,
   Plus,
+  Quote,
   Trash2,
 } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import type {
   IntakeMonth,
   Program,
+  ProgramExtractResult,
   ProgramInput,
   StudyLevel,
 } from '../../features/programs/programs.api.js'
@@ -21,6 +23,8 @@ import { FormError, FormSection, SelectField, TextareaField, selectClasses, text
 
 type ProgramFormProps = {
   initialValues?: Program | undefined
+  // A draft read from the course page: pre-fills empty fields and shows the quote under each.
+  prefill?: ProgramExtractResult | null | undefined
   errorMessage?: string | null | undefined
   isSubmitting?: boolean
   onCancel: () => void
@@ -88,9 +92,17 @@ const newIntakeRow = (row: Omit<IntakeRow, 'key'>): IntakeRow => ({ key: nextInt
 
 const toDateInput = (value: string | null) => (value ? value.slice(0, 10) : '')
 
+const FromPage = ({ quote }: { quote: string | undefined }) =>
+  quote ? (
+    <p className="mt-2 flex items-start gap-1.5 text-xs leading-5 text-[#6B7280]">
+      <Quote className="mt-0.5 shrink-0 text-[#045A58]" size={12} />
+      <span>From the page: “{quote}”</span>
+    </p>
+  ) : null
 
 const ProgramForm = ({
   initialValues,
+  prefill,
   errorMessage,
   isSubmitting = false,
   onCancel,
@@ -99,14 +111,24 @@ const ProgramForm = ({
   school,
   submitLabel = 'Add program',
 }: ProgramFormProps) => {
+  const draft = prefill?.draft
+  const quotes = prefill?.evidence ?? {}
+  const intakeQuotes = [
+    ...new Set(Object.entries(quotes).flatMap(([field, quote]) => (field.startsWith('intakes.') ? [quote] : []))),
+  ]
+
   const [intakes, setIntakes] = useState<IntakeRow[]>(() =>
-    (initialValues?.intakes ?? []).map((intake) =>
-      newIntakeRow({
-        month: intake.month,
-        year: String(intake.year),
-        applicationDeadline: toDateInput(intake.applicationDeadline),
-      }),
-    ),
+    initialValues
+      ? initialValues.intakes.map((intake) =>
+          newIntakeRow({
+            month: intake.month,
+            year: String(intake.year),
+            applicationDeadline: toDateInput(intake.applicationDeadline),
+          }),
+        )
+      : (draft?.intakes ?? []).map((intake) =>
+          newIntakeRow({ month: intake.month, year: String(intake.year), applicationDeadline: '' }),
+        ),
   )
 
   const updateIntake = (key: number, patch: Partial<IntakeRow>) => {
@@ -140,6 +162,7 @@ const ProgramForm = ({
       operationNotes: textOrNull(form, 'operationNotes'),
       sourceUrl: textOrNull(form, 'sourceUrl'),
       feesAcademicYear: textOrNull(form, 'feesAcademicYear'),
+      ...(prefill ? { evidence: prefill.evidence } : {}),
     })
   }
 
@@ -152,7 +175,7 @@ const ProgramForm = ({
       >
         <div className="grid gap-5 sm:grid-cols-[1fr_180px]">
           <Input
-            defaultValue={initialValues?.sourceUrl ?? ''}
+            defaultValue={initialValues?.sourceUrl ?? prefill?.sourceUrl ?? ''}
             helperText="Required before the programme can be marked verified."
             id="source-url"
             label="Course page link"
@@ -160,15 +183,18 @@ const ProgramForm = ({
             placeholder="https://www.manchester.ac.uk/study/masters/courses/list/..."
             type="url"
           />
-          <Input
-            defaultValue={initialValues?.feesAcademicYear ?? ''}
-            helperText="The year the fees apply to."
-            id="fees-academic-year"
-            label="Fees for year"
-            name="feesAcademicYear"
-            pattern="\d{4}/\d{2}"
-            placeholder="2026/27"
-          />
+          <div>
+            <Input
+              defaultValue={initialValues?.feesAcademicYear ?? draft?.feesAcademicYear ?? ''}
+              helperText="The year the fees apply to."
+              id="fees-academic-year"
+              label="Fees for year"
+              name="feesAcademicYear"
+              pattern="\d{4}/\d{2}"
+              placeholder="2026/27"
+            />
+            <FromPage quote={quotes['feesAcademicYear']} />
+          </div>
         </div>
       </FormSection>
 
@@ -180,31 +206,38 @@ const ProgramForm = ({
         <div className="grid gap-5 sm:grid-cols-2">
           <div className="sm:col-span-2">
             <Input
-              defaultValue={initialValues?.name}
+              defaultValue={initialValues?.name ?? draft?.name}
               id="program-name"
               label="Program name"
               name="name"
               placeholder="e.g. Data Science"
               required
             />
+            <FromPage quote={quotes['name']} />
           </div>
-          <SelectField
-            defaultValue={initialValues?.studyLevel}
-            id="study-level"
-            label="Study level"
-            name="studyLevel"
-            options={STUDY_LEVELS}
-            placeholder="Select level"
-            required
-          />
-          <Input
-            defaultValue={initialValues?.qualification}
-            id="qualification"
-            label="Qualification"
-            name="qualification"
-            placeholder="e.g. MSc, BEng (Hons), MBA"
-            required
-          />
+          <div>
+            <SelectField
+              defaultValue={initialValues?.studyLevel ?? draft?.studyLevel}
+              id="study-level"
+              label="Study level"
+              name="studyLevel"
+              options={STUDY_LEVELS}
+              placeholder="Select level"
+              required
+            />
+            <FromPage quote={quotes['studyLevel']} />
+          </div>
+          <div>
+            <Input
+              defaultValue={initialValues?.qualification ?? draft?.qualification}
+              id="qualification"
+              label="Qualification"
+              name="qualification"
+              placeholder="e.g. MSc, BEng (Hons), MBA"
+              required
+            />
+            <FromPage quote={quotes['qualification']} />
+          </div>
           <div>
             <Input
               defaultValue={initialValues?.category}
@@ -221,14 +254,17 @@ const ProgramForm = ({
               ))}
             </datalist>
           </div>
-          <Input
-            defaultValue={initialValues?.duration}
-            id="duration"
-            label="Duration"
-            name="duration"
-            placeholder="e.g. 1 year"
-            required
-          />
+          <div>
+            <Input
+              defaultValue={initialValues?.duration ?? draft?.duration}
+              id="duration"
+              label="Duration"
+              name="duration"
+              placeholder="e.g. 1 year"
+              required
+            />
+            <FromPage quote={quotes['duration']} />
+          </div>
           <div className="sm:col-span-2">
             {school.mode === 'fixed' ? (
               <>
@@ -248,33 +284,39 @@ const ProgramForm = ({
         title="Tuition and funding"
       >
         <div className="grid gap-5 sm:grid-cols-2">
-          <Input
-            defaultValue={initialValues?.tuitionAmount}
-            id="tuition-amount"
-            label="International tuition per year"
-            min="1"
-            name="tuitionAmount"
-            placeholder="31000"
-            required
-            step="any"
-            type="number"
-          />
-          <SelectField
-            defaultValue={initialValues?.tuitionCurrency ?? 'GBP'}
-            id="tuition-currency"
-            label="Currency"
-            name="tuitionCurrency"
-            options={CURRENCIES.map((currency) => ({ value: currency, label: currency }))}
-            required
-          />
+          <div className="sm:col-span-2">
+            <div className="grid gap-5 sm:grid-cols-2">
+              <Input
+                defaultValue={initialValues?.tuitionAmount ?? draft?.tuitionAmount}
+                id="tuition-amount"
+                label="International tuition per year"
+                min="1"
+                name="tuitionAmount"
+                placeholder="31000"
+                required
+                step="any"
+                type="number"
+              />
+              <SelectField
+                defaultValue={initialValues?.tuitionCurrency ?? draft?.tuitionCurrency ?? 'GBP'}
+                id="tuition-currency"
+                label="Currency"
+                name="tuitionCurrency"
+                options={CURRENCIES.map((currency) => ({ value: currency, label: currency }))}
+                required
+              />
+            </div>
+            <FromPage quote={quotes['tuitionAmount']} />
+          </div>
           <div className="sm:col-span-2">
             <Input
-              defaultValue={initialValues?.scholarshipAvailability ?? ''}
+              defaultValue={initialValues?.scholarshipAvailability ?? draft?.scholarshipAvailability ?? ''}
               id="scholarship"
               label="Scholarships"
               name="scholarshipAvailability"
               placeholder="e.g. Up to £5,000 for Nigerian students, or None"
             />
+            <FromPage quote={quotes['scholarshipAvailability']} />
           </div>
         </div>
       </FormSection>
@@ -357,6 +399,9 @@ const ProgramForm = ({
           >
             Add intake
           </Button>
+          {intakeQuotes.map((quote) => (
+            <FromPage key={quote} quote={quote} />
+          ))}
         </div>
       </FormSection>
 
@@ -366,22 +411,28 @@ const ProgramForm = ({
         title="Entry requirements"
       >
         <div className="grid gap-5">
-          <TextareaField
-            defaultValue={initialValues?.academicRequirements ?? undefined}
-            id="academic-requirements"
-            label="Academic requirements"
-            name="academicRequirements"
-            placeholder="e.g. Nigerian applicants: Second Class Upper (2:1) bachelor's degree in a related subject."
-            rows={4}
-          />
-          <TextareaField
-            defaultValue={initialValues?.englishRequirements ?? undefined}
-            id="english-requirements"
-            label="English requirements"
-            name="englishRequirements"
-            placeholder="e.g. IELTS 6.5 overall with no less than 6.0 in each component. WAEC English C6 accepted."
-            rows={4}
-          />
+          <div>
+            <TextareaField
+              defaultValue={initialValues?.academicRequirements ?? draft?.academicRequirements ?? undefined}
+              id="academic-requirements"
+              label="Academic requirements"
+              name="academicRequirements"
+              placeholder="e.g. Nigerian applicants: Second Class Upper (2:1) bachelor's degree in a related subject."
+              rows={4}
+            />
+            <FromPage quote={quotes['academicRequirements']} />
+          </div>
+          <div>
+            <TextareaField
+              defaultValue={initialValues?.englishRequirements ?? draft?.englishRequirements ?? undefined}
+              id="english-requirements"
+              label="English requirements"
+              name="englishRequirements"
+              placeholder="e.g. IELTS 6.5 overall with no less than 6.0 in each component. WAEC English C6 accepted."
+              rows={4}
+            />
+            <FromPage quote={quotes['englishRequirements']} />
+          </div>
         </div>
       </FormSection>
 
