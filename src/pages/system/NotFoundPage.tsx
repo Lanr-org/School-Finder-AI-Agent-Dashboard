@@ -14,6 +14,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import AppShell from '../../components/layout/AppShell.js'
 import Button from '../../components/ui/Button.js'
 import Card from '../../components/ui/Card.js'
+import { useAuthStore } from '../../store/authStore.js'
 
 const workspaceLinks = [
   { icon: <LayoutDashboard size={18} />, label: 'Dashboard', to: '/' },
@@ -24,7 +25,7 @@ const workspaceLinks = [
 ]
 
 const NotFoundPage = () => {
-  const isAuthenticated = Boolean(localStorage.getItem('token'))
+  const isAuthenticated = useAuthStore((state) => state.status === 'authenticated')
   const location = useLocation()
 
   const content = (
