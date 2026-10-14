@@ -3,7 +3,6 @@ import {
   ArrowLeft,
   ArrowRight,
   CheckCircle2,
-  GraduationCap,
   LoaderCircle,
   Mail,
   ShieldCheck,
@@ -16,6 +15,7 @@ import Card from '../../components/ui/Card.js'
 import Input from '../../components/ui/Input.js'
 import { api } from '../../lib/api/client.js'
 import type { ApiErrorResponse } from '../../lib/api/types.js'
+import Logo from '../../components/brand/Logo.js'
 
 type RequestState = 'idle' | 'submitting' | 'sent'
 
@@ -46,13 +46,8 @@ const ForgotPasswordPage = () => {
       <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-6xl items-center justify-center">
         <div className="w-full max-w-[480px]">
           <div className="mb-6 flex items-center justify-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#E6F4F3] text-[#045A58]">
-              <GraduationCap size={23} />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-[#111827]">Smetase</p>
-              <p className="text-xs font-medium text-[#6B7280]">Staff Portal</p>
-            </div>
+            <Logo height={26} />
+            <p className="border-l border-[#E5E7EB] pl-3 text-xs font-medium text-[#6B7280]">Staff Portal</p>
           </div>
 
           <Card
@@ -77,7 +72,7 @@ const ForgotPasswordPage = () => {
                 </div>
 
                 <Link
-                  className="mt-6 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-transparent bg-[#045A58] px-5 text-sm font-semibold text-white outline-none transition hover:bg-[#034A48] focus:ring-4 focus:ring-[#E6F4F3]"
+                  className="mt-6 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl border border-transparent bg-[#2B4BFF] px-5 text-sm font-semibold text-white outline-none transition hover:bg-[#1E36D8] focus:ring-4 focus:ring-[#ECEFFF]"
                   to="/login"
                 >
                   Return to sign in
@@ -85,7 +80,7 @@ const ForgotPasswordPage = () => {
                 </Link>
 
                 <button
-                  className="mt-4 text-sm font-semibold text-[#045A58] transition hover:text-[#034A48]"
+                  className="mt-4 text-sm font-semibold text-[#2B4BFF] transition hover:text-[#1E36D8]"
                   onClick={() => setRequestState('idle')}
                   type="button"
                 >
@@ -95,7 +90,7 @@ const ForgotPasswordPage = () => {
             ) : (
               <section className="p-6 sm:p-10">
                 <Link
-                  className="inline-flex items-center gap-2 text-sm font-semibold text-[#045A58] transition hover:text-[#034A48]"
+                  className="inline-flex items-center gap-2 text-sm font-semibold text-[#2B4BFF] transition hover:text-[#1E36D8]"
                   to="/login"
                 >
                   <ArrowLeft size={16} />
@@ -103,10 +98,10 @@ const ForgotPasswordPage = () => {
                 </Link>
 
                 <div className="mb-7 mt-7">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#E6F4F3] text-[#045A58]">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#ECEFFF] text-[#2B4BFF]">
                     <Mail size={21} />
                   </div>
-                  <p className="mb-2 mt-5 text-sm font-medium text-[#045A58]">Account recovery</p>
+                  <p className="mb-2 mt-5 text-sm font-medium text-[#2B4BFF]">Account recovery</p>
                   <h1 className="text-2xl font-semibold tracking-normal text-[#111827]">Reset your password</h1>
                   <p className="mt-3 text-sm leading-6 text-[#6B7280]">
                     Enter your company email. We will send a secure, time-limited password reset link.
@@ -151,9 +146,9 @@ const ForgotPasswordPage = () => {
                   </Button>
                 </form>
 
-                <div className="mt-6 flex items-start gap-3 rounded-xl border border-[#B9DAD8] bg-[#F2F9F8] p-4">
-                  <ShieldCheck className="mt-0.5 shrink-0 text-[#045A58]" size={18} />
-                  <p className="text-xs leading-5 text-[#52605F]">
+                <div className="mt-6 flex items-start gap-3 rounded-xl border border-[#C2CBFF] bg-[#F5F7FF] p-4">
+                  <ShieldCheck className="mt-0.5 shrink-0 text-[#2B4BFF]" size={18} />
+                  <p className="text-xs leading-5 text-[#525866]">
                     For security, this page does not confirm whether an email address belongs to a staff account.
                   </p>
                 </div>

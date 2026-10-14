@@ -32,7 +32,7 @@ const AddProgramPage = () => {
     return (
       <AppShell>
         <div className="flex min-h-[60vh] items-center justify-center">
-          <Loader2 className="animate-spin text-[#045A58]" size={32} />
+          <Loader2 className="animate-spin text-[#2B4BFF]" size={32} />
         </div>
       </AppShell>
     )
@@ -44,7 +44,7 @@ const AddProgramPage = () => {
         <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3 text-center">
           <AlertCircle className="text-[#DC2626]" size={28} />
           <p className="text-sm text-[#6B7280]">{apiErrorMessage(error, 'Failed to load this school')}</p>
-          <Link className="text-sm font-semibold text-[#045A58] hover:text-[#034A48]" to="/schools">
+          <Link className="text-sm font-semibold text-[#2B4BFF] hover:text-[#1E36D8]" to="/schools">
             Back to Schools
           </Link>
         </div>
@@ -57,7 +57,7 @@ const AddProgramPage = () => {
       <div className="space-y-6">
         <div>
           <Link
-            className="inline-flex items-center gap-2 text-sm font-semibold text-[#045A58] transition hover:text-[#034A48]"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-[#2B4BFF] transition hover:text-[#1E36D8]"
             to={schoolPath}
           >
             <ArrowLeft size={16} />
@@ -94,7 +94,7 @@ const AddProgramPage = () => {
           <aside className="space-y-6 xl:sticky xl:top-26 xl:self-start">
             <Card>
               <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#E6F4F3] text-[#045A58]">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#ECEFFF] text-[#2B4BFF]">
                   <Building2 size={19} />
                 </div>
                 <div>
@@ -124,7 +124,7 @@ const AddProgramPage = () => {
 export const SourceTipCard = () => (
   <Card>
     <div className="flex items-start gap-3">
-      <Link2 className="mt-0.5 shrink-0 text-[#045A58]" size={19} />
+      <Link2 className="mt-0.5 shrink-0 text-[#2B4BFF]" size={19} />
       <div>
         <h2 className="text-lg font-semibold text-[#111827]">Use the official page</h2>
         <p className="mt-2 text-sm leading-6 text-[#6B7280]">

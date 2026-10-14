@@ -165,7 +165,7 @@ const EditTeamMemberPage = () => {
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div>
             <Link
-              className="inline-flex items-center gap-2 text-sm font-semibold text-[#045A58] transition hover:text-[#034A48]"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-[#2B4BFF] transition hover:text-[#1E36D8]"
               to={detailPath}
             >
               <ArrowLeft size={16} />
@@ -246,7 +246,7 @@ const EditTeamMemberPage = () => {
                       <label
                         className={`cursor-pointer rounded-xl border p-4 transition ${
                           isSelected
-                            ? 'border-[#045A58] bg-[#F2F9F8] ring-1 ring-[#045A58]'
+                            ? 'border-[#2B4BFF] bg-[#F5F7FF] ring-1 ring-[#2B4BFF]'
                             : 'border-[#E5E7EB] bg-white hover:border-[#BFCAC9] hover:bg-[#F9FAFB]'
                         }`}
                         key={role.name}
@@ -262,7 +262,7 @@ const EditTeamMemberPage = () => {
                         <div className="flex items-start justify-between gap-3">
                           <div
                             className={`flex h-10 w-10 items-center justify-center rounded-xl ${
-                              isSelected ? 'bg-[#045A58] text-white' : 'bg-[#E6F4F3] text-[#045A58]'
+                              isSelected ? 'bg-[#2B4BFF] text-white' : 'bg-[#ECEFFF] text-[#2B4BFF]'
                             }`}
                           >
                             {role.icon}
@@ -270,7 +270,7 @@ const EditTeamMemberPage = () => {
                           <span
                             className={`flex h-5 w-5 items-center justify-center rounded-full border ${
                               isSelected
-                                ? 'border-[#045A58] bg-[#045A58] text-white'
+                                ? 'border-[#2B4BFF] bg-[#2B4BFF] text-white'
                                 : 'border-[#D1D5DB] text-transparent'
                             }`}
                           >
@@ -299,14 +299,14 @@ const EditTeamMemberPage = () => {
                     <label
                       className={`flex min-h-16 cursor-pointer items-start gap-3 rounded-xl border p-4 transition ${
                         isChecked
-                          ? 'border-[#B9DAD8] bg-[#F2F9F8]'
+                          ? 'border-[#C2CBFF] bg-[#F5F7FF]'
                           : 'border-[#E5E7EB] bg-white hover:bg-[#F9FAFB]'
                       }`}
                       key={permission}
                     >
                       <input
                         checked={isChecked}
-                        className="mt-0.5 h-4 w-4 shrink-0 accent-[#045A58]"
+                        className="mt-0.5 h-4 w-4 shrink-0 accent-[#2B4BFF]"
                         name="permissions"
                         onChange={() => togglePermission(permission)}
                         type="checkbox"
@@ -337,19 +337,19 @@ const EditTeamMemberPage = () => {
                 Role changes replace the available permission set. Review individual permissions before saving.
               </p>
               <div className="mt-4 flex items-center gap-3 rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] p-4">
-                <CheckCircle2 className="shrink-0 text-[#045A58]" size={18} />
+                <CheckCircle2 className="shrink-0 text-[#2B4BFF]" size={18} />
                 <p className="text-sm font-medium text-[#374151]">
                   {selectedPermissions.length} of {availablePermissions.length} permissions selected
                 </p>
               </div>
             </Card>
 
-            <Card className="border-[#B9DAD8] bg-[#F2F9F8]">
+            <Card className="border-[#C2CBFF] bg-[#F5F7FF]">
               <div className="flex items-start gap-3">
-                <KeyRound className="mt-0.5 shrink-0 text-[#045A58]" size={19} />
+                <KeyRound className="mt-0.5 shrink-0 text-[#2B4BFF]" size={19} />
                 <div>
                   <h2 className="text-sm font-semibold text-[#111827]">Password security</h2>
-                  <p className="mt-1 text-sm leading-6 text-[#52605F]">
+                  <p className="mt-1 text-sm leading-6 text-[#525866]">
                     Passwords and account status are not edited here. Access status is managed separately from the account detail page.
                   </p>
                 </div>
@@ -391,7 +391,7 @@ const FormSection = ({
 }) => (
   <Card>
     <div className="mb-6 flex items-start gap-3 border-b border-[#E5E7EB] pb-5">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#E6F4F3] text-[#045A58]">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#ECEFFF] text-[#2B4BFF]">
         {icon}
       </div>
       <div>

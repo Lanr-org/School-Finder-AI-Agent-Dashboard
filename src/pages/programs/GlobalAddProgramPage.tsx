@@ -36,7 +36,7 @@ const GlobalAddProgramPage = () => {
       <div className="space-y-6">
         <div>
           <Link
-            className="inline-flex items-center gap-2 text-sm font-semibold text-[#045A58] transition hover:text-[#034A48]"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-[#2B4BFF] transition hover:text-[#1E36D8]"
             to="/programs"
           >
             <ArrowLeft size={16} />
@@ -54,7 +54,7 @@ const GlobalAddProgramPage = () => {
         <div className="grid gap-6 xl:grid-cols-[1fr_320px]">
           {isLoading ? (
             <div className="flex min-h-[40vh] items-center justify-center">
-              <Loader2 className="animate-spin text-[#045A58]" size={32} />
+              <Loader2 className="animate-spin text-[#2B4BFF]" size={32} />
             </div>
           ) : (
             <div className="min-w-0 space-y-6">

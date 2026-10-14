@@ -63,7 +63,7 @@ const InviteTeamMemberPage = () => {
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div>
             <Link
-              className="inline-flex items-center gap-2 text-sm font-semibold text-[#045A58] transition hover:text-[#034A48]"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-[#2B4BFF] transition hover:text-[#1E36D8]"
               to="/team"
             >
               <ArrowLeft size={16} />
@@ -143,7 +143,7 @@ const InviteTeamMemberPage = () => {
                       <label
                         className={`relative cursor-pointer rounded-xl border p-4 transition ${
                           isSelected
-                            ? 'border-[#045A58] bg-[#F2F9F8] ring-1 ring-[#045A58]'
+                            ? 'border-[#2B4BFF] bg-[#F5F7FF] ring-1 ring-[#2B4BFF]'
                             : 'border-[#E5E7EB] bg-white hover:border-[#BFCAC9] hover:bg-[#F9FAFB]'
                         }`}
                         key={role.name}
@@ -159,7 +159,7 @@ const InviteTeamMemberPage = () => {
                         <div className="flex items-start justify-between gap-3">
                           <div
                             className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
-                              isSelected ? 'bg-[#045A58] text-white' : 'bg-[#E6F4F3] text-[#045A58]'
+                              isSelected ? 'bg-[#2B4BFF] text-white' : 'bg-[#ECEFFF] text-[#2B4BFF]'
                             }`}
                           >
                             {role.icon}
@@ -167,7 +167,7 @@ const InviteTeamMemberPage = () => {
                           <span
                             className={`flex h-5 w-5 items-center justify-center rounded-full border ${
                               isSelected
-                                ? 'border-[#045A58] bg-[#045A58] text-white'
+                                ? 'border-[#2B4BFF] bg-[#2B4BFF] text-white'
                                 : 'border-[#D1D5DB] bg-white text-transparent'
                             }`}
                           >
@@ -193,7 +193,7 @@ const InviteTeamMemberPage = () => {
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
                   {selectedRoleDetails.permissions.map((permission) => (
                     <div className="flex items-center gap-2 text-sm text-[#374151]" key={permission}>
-                      <CheckCircle2 className="shrink-0 text-[#045A58]" size={16} />
+                      <CheckCircle2 className="shrink-0 text-[#2B4BFF]" size={16} />
                       {permission}
                     </div>
                   ))}
@@ -222,12 +222,12 @@ const InviteTeamMemberPage = () => {
               </ol>
             </Card>
 
-            <Card className="border-[#B9DAD8] bg-[#F2F9F8]">
+            <Card className="border-[#C2CBFF] bg-[#F5F7FF]">
               <div className="flex items-start gap-3">
-                <ShieldCheck className="mt-0.5 shrink-0 text-[#045A58]" size={19} />
+                <ShieldCheck className="mt-0.5 shrink-0 text-[#2B4BFF]" size={19} />
                 <div>
                   <h2 className="text-sm font-semibold text-[#111827]">Password security</h2>
-                  <p className="mt-1 text-sm leading-6 text-[#52605F]">
+                  <p className="mt-1 text-sm leading-6 text-[#525866]">
                     Administrators do not create, store, or view another team member's password.
                   </p>
                 </div>
@@ -269,7 +269,7 @@ const FormSection = ({
 }) => (
   <Card>
     <div className="mb-6 flex items-start gap-3 border-b border-[#E5E7EB] pb-5">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#E6F4F3] text-[#045A58]">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#ECEFFF] text-[#2B4BFF]">
         {icon}
       </div>
       <div>
@@ -283,14 +283,14 @@ const FormSection = ({
 
 const ChecklistItem = ({ label }: { label: string }) => (
   <div className="flex items-center gap-3">
-    <CheckCircle2 className="shrink-0 text-[#045A58]" size={18} />
+    <CheckCircle2 className="shrink-0 text-[#2B4BFF]" size={18} />
     <span className="text-sm font-medium text-[#374151]">{label}</span>
   </div>
 )
 
 const ProcessStep = ({ label, number }: { label: string; number: string }) => (
   <li className="flex items-start gap-3">
-    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#E6F4F3] text-xs font-semibold text-[#045A58]">
+    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#ECEFFF] text-xs font-semibold text-[#2B4BFF]">
       {number}
     </span>
     <span className="pt-0.5 text-sm leading-5 text-[#6B7280]">{label}</span>

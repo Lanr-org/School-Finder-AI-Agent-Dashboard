@@ -42,7 +42,7 @@ const NotFoundPage = () => {
     <div className="min-h-screen bg-[#F5F6F8] px-4 py-8 text-[#111827] sm:px-6 lg:px-8">
       <div className="mx-auto w-full max-w-5xl">
         <div className="mb-8 flex items-center justify-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#E6F4F3] text-[#045A58]">
+          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#ECEFFF] text-[#2B4BFF]">
             <GraduationCap size={23} />
           </div>
           <div>
@@ -71,13 +71,13 @@ const NotFoundContent = ({
         <div className="grid lg:grid-cols-[minmax(0,1.15fr)_minmax(300px,0.85fr)]">
           <section className="p-6 sm:p-8 lg:p-10">
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#E6F4F3] text-[#045A58]">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#ECEFFF] text-[#2B4BFF]">
                 <RouteOff size={23} />
               </div>
               <span className="text-5xl font-semibold tracking-normal text-[#D1D5DB]">404</span>
             </div>
 
-            <p className="mt-7 text-sm font-medium text-[#045A58]">Route not found</p>
+            <p className="mt-7 text-sm font-medium text-[#2B4BFF]">Route not found</p>
             <h1 className="mt-2 text-3xl font-semibold tracking-normal text-[#111827]">
               This workspace path does not exist
             </h1>
@@ -101,7 +101,7 @@ const NotFoundContent = ({
               </Button>
               {isAuthenticated ? (
                 <Link
-                  className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-transparent bg-[#045A58] px-4 text-sm font-semibold text-white outline-none transition hover:bg-[#034A48] focus:ring-4 focus:ring-[#E6F4F3]"
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-transparent bg-[#2B4BFF] px-4 text-sm font-semibold text-white outline-none transition hover:bg-[#1E36D8] focus:ring-4 focus:ring-[#ECEFFF]"
                   to="/"
                 >
                   <LayoutDashboard size={17} />
@@ -109,7 +109,7 @@ const NotFoundContent = ({
                 </Link>
               ) : (
                 <Link
-                  className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-transparent bg-[#045A58] px-4 text-sm font-semibold text-white outline-none transition hover:bg-[#034A48] focus:ring-4 focus:ring-[#E6F4F3]"
+                  className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-transparent bg-[#2B4BFF] px-4 text-sm font-semibold text-white outline-none transition hover:bg-[#1E36D8] focus:ring-4 focus:ring-[#ECEFFF]"
                   to="/login"
                 >
                   <LogIn size={17} />
@@ -134,7 +134,7 @@ const NotFoundContent = ({
               </>
             ) : (
               <div className="flex h-full min-h-64 flex-col justify-center">
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#E6F4F3] text-[#045A58]">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#ECEFFF] text-[#2B4BFF]">
                   <LogIn size={20} />
                 </div>
                 <h2 className="mt-5 text-lg font-semibold text-[#111827]">Staff access required</h2>
@@ -152,10 +152,10 @@ const NotFoundContent = ({
 
 const RecoveryLink = ({ icon, label, to }: { icon: ReactNode; label: string; to: string }) => (
   <Link
-    className="flex min-h-12 items-center gap-3 rounded-xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm font-semibold text-[#374151] outline-none transition hover:border-[#B9DAD8] hover:bg-[#F2F9F8] hover:text-[#045A58] focus:ring-4 focus:ring-[#E6F4F3]"
+    className="flex min-h-12 items-center gap-3 rounded-xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm font-semibold text-[#374151] outline-none transition hover:border-[#C2CBFF] hover:bg-[#F5F7FF] hover:text-[#2B4BFF] focus:ring-4 focus:ring-[#ECEFFF]"
     to={to}
   >
-    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#E6F4F3] text-[#045A58]">
+    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#ECEFFF] text-[#2B4BFF]">
       {icon}
     </span>
     {label}

@@ -61,7 +61,7 @@ const ProgramDetailPage = () => {
     return (
       <AppShell>
         <div className="flex min-h-[60vh] items-center justify-center">
-          <Loader2 className="animate-spin text-[#045A58]" size={32} />
+          <Loader2 className="animate-spin text-[#2B4BFF]" size={32} />
         </div>
       </AppShell>
     );
@@ -76,7 +76,7 @@ const ProgramDetailPage = () => {
             {apiErrorMessage(error, "Failed to load this program")}
           </p>
           <Link
-            className="text-sm font-semibold text-[#045A58] hover:text-[#034A48]"
+            className="text-sm font-semibold text-[#2B4BFF] hover:text-[#1E36D8]"
             to="/programs"
           >
             Back to Programs
@@ -94,7 +94,7 @@ const ProgramDetailPage = () => {
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div>
             <Link
-              className="inline-flex items-center gap-2 text-sm font-semibold text-[#045A58] transition hover:text-[#034A48]"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-[#2B4BFF] transition hover:text-[#1E36D8]"
               to="/programs"
             >
               <ArrowLeft size={16} />
@@ -136,7 +136,7 @@ const ProgramDetailPage = () => {
             </Button>
             {canManage ? (
               <Link
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-transparent bg-[#045A58] px-4 text-sm font-semibold text-white outline-none transition hover:bg-[#034A48] focus:ring-4 focus:ring-[#E6F4F3]"
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-transparent bg-[#2B4BFF] px-4 text-sm font-semibold text-white outline-none transition hover:bg-[#1E36D8] focus:ring-4 focus:ring-[#ECEFFF]"
                 to={`/programs/${program.publicId}/edit`}
               >
                 <Pencil size={17} />
@@ -187,7 +187,7 @@ const ProgramDetailPage = () => {
                     From the official course page.
                   </p>
                 </div>
-                <FileCheck2 className="text-[#045A58]" size={20} />
+                <FileCheck2 className="text-[#2B4BFF]" size={20} />
               </div>
 
               <div className="space-y-4">
@@ -214,7 +214,7 @@ const ProgramDetailPage = () => {
                     Internal context for advisors and operations staff.
                   </p>
                 </div>
-                <Sparkles className="text-[#045A58]" size={20} />
+                <Sparkles className="text-[#2B4BFF]" size={20} />
               </div>
               <p className="whitespace-pre-line text-sm leading-6 text-[#374151]">
                 {program.operationNotes ?? "No notes yet."}
@@ -233,15 +233,15 @@ const ProgramDetailPage = () => {
                     Program ownership.
                   </p>
                 </div>
-                <Building2 className="text-[#045A58]" size={20} />
+                <Building2 className="text-[#2B4BFF]" size={20} />
               </div>
 
               <Link
-                className="block rounded-2xl border border-[#E5E7EB] bg-[#F9FAFB] p-4 outline-none transition hover:border-[#B7D8D6] hover:bg-[#E6F4F3] focus:ring-4 focus:ring-[#E6F4F3]"
+                className="block rounded-2xl border border-[#E5E7EB] bg-[#F9FAFB] p-4 outline-none transition hover:border-[#B7D8D6] hover:bg-[#ECEFFF] focus:ring-4 focus:ring-[#ECEFFF]"
                 to={`/schools/${program.school.publicId}`}
               >
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-[#045A58]">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-[#2B4BFF]">
                     <School size={18} />
                   </div>
                   <div>
@@ -266,7 +266,7 @@ const ProgramDetailPage = () => {
                     When students can start.
                   </p>
                 </div>
-                <CalendarDays className="text-[#045A58]" size={20} />
+                <CalendarDays className="text-[#2B4BFF]" size={20} />
               </div>
 
               {program.intakes.length === 0 ? (
@@ -300,7 +300,7 @@ const ProgramDetailPage = () => {
                     International fees.
                   </p>
                 </div>
-                <CircleDollarSign className="text-[#045A58]" size={20} />
+                <CircleDollarSign className="text-[#2B4BFF]" size={20} />
               </div>
 
               <div className="rounded-2xl border border-[#E5E7EB] bg-[#F9FAFB] p-4">
@@ -357,7 +357,7 @@ const VerificationCard = ({
             Where these facts come from, and when a person last confirmed them.
           </p>
         </div>
-        <ShieldCheck className="text-[#045A58]" size={20} />
+        <ShieldCheck className="text-[#2B4BFF]" size={20} />
       </div>
 
       {program.verificationStatus === "VERIFIED" ? (
@@ -384,7 +384,7 @@ const VerificationCard = ({
           </p>
           {program.sourceUrl ? (
             <a
-              className="mt-1 inline-flex max-w-full items-center gap-1.5 break-all text-sm font-semibold text-[#045A58] hover:text-[#034A48]"
+              className="mt-1 inline-flex max-w-full items-center gap-1.5 break-all text-sm font-semibold text-[#2B4BFF] hover:text-[#1E36D8]"
               href={program.sourceUrl}
               rel="noopener noreferrer"
               target="_blank"
@@ -570,7 +570,7 @@ const ReportOutdatedModal = ({
                 What looks wrong?
               </label>
               <textarea
-                className="w-full resize-y rounded-xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm leading-6 text-[#111827] outline-none transition placeholder:text-[#9CA3AF] focus:border-[#045A58] focus:ring-4 focus:ring-[#E6F4F3]"
+                className="w-full resize-y rounded-xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm leading-6 text-[#111827] outline-none transition placeholder:text-[#9CA3AF] focus:border-[#2B4BFF] focus:ring-4 focus:ring-[#ECEFFF]"
                 id="report-message"
                 maxLength={2000}
                 minLength={5}
@@ -619,7 +619,7 @@ const SummaryCard = ({ icon: Icon, label, value }: SummaryCardProps) => (
         <p className="text-sm font-medium text-[#6B7280]">{label}</p>
         <p className="mt-3 text-lg font-semibold text-[#111827]">{value}</p>
       </div>
-      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#E6F4F3] text-[#045A58]">
+      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#ECEFFF] text-[#2B4BFF]">
         <Icon size={20} />
       </div>
     </div>
@@ -645,7 +645,7 @@ const RequirementItem = ({
   value: string | null;
 }) => (
   <div className="flex items-start gap-3 rounded-2xl border border-[#E5E7EB] bg-[#F9FAFB] p-4">
-    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-[#045A58]">
+    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-[#2B4BFF]">
       {icon}
     </div>
     <div>

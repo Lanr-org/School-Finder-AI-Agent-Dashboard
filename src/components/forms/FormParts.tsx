@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import Card from '../ui/Card.js'
 
 export const selectClasses =
-  'h-12 w-full rounded-xl border border-[#E5E7EB] bg-white px-4 text-sm text-[#111827] outline-none transition focus:border-[#045A58] focus:ring-4 focus:ring-[#E6F4F3]'
+  'h-12 w-full rounded-xl border border-[#E5E7EB] bg-white px-4 text-sm text-[#111827] outline-none transition focus:border-[#2B4BFF] focus:ring-4 focus:ring-[#ECEFFF]'
 
 type FormSectionProps = {
   children: ReactNode
@@ -14,7 +14,7 @@ type FormSectionProps = {
 export const FormSection = ({ children, description, icon, title }: FormSectionProps) => (
   <Card>
     <div className="mb-6 flex items-start gap-3 border-b border-[#E5E7EB] pb-5">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#E6F4F3] text-[#045A58]">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#ECEFFF] text-[#2B4BFF]">
         {icon}
       </div>
       <div>
@@ -71,7 +71,7 @@ export const TextareaField = ({ defaultValue, id, label, name, placeholder, rows
       {label}
     </label>
     <textarea
-      className="w-full resize-y rounded-xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm leading-6 text-[#111827] outline-none transition placeholder:text-[#9CA3AF] focus:border-[#045A58] focus:ring-4 focus:ring-[#E6F4F3]"
+      className="w-full resize-y rounded-xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm leading-6 text-[#111827] outline-none transition placeholder:text-[#9CA3AF] focus:border-[#2B4BFF] focus:ring-4 focus:ring-[#ECEFFF]"
       defaultValue={defaultValue}
       id={id}
       name={name}

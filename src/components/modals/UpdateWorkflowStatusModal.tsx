@@ -74,8 +74,8 @@ const UpdateWorkflowStatusModal = ({
                 <label
                   className={`cursor-pointer rounded-xl border p-4 transition ${
                     isSelected
-                      ? 'border-[#045A58] bg-[#F2F9F8] ring-1 ring-[#045A58]'
-                      : 'border-[#E5E7EB] bg-white hover:border-[#B9DAD8] hover:bg-[#F9FAFB]'
+                      ? 'border-[#2B4BFF] bg-[#F5F7FF] ring-1 ring-[#2B4BFF]'
+                      : 'border-[#E5E7EB] bg-white hover:border-[#C2CBFF] hover:bg-[#F9FAFB]'
                   }`}
                   key={option.label}
                 >
@@ -98,7 +98,7 @@ const UpdateWorkflowStatusModal = ({
                     <span
                       className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
                         isSelected
-                          ? 'border-[#045A58] bg-[#045A58] text-white'
+                          ? 'border-[#2B4BFF] bg-[#2B4BFF] text-white'
                           : 'border-[#D1D5DB] text-transparent'
                       }`}
                     >
@@ -119,7 +119,7 @@ const UpdateWorkflowStatusModal = ({
             Internal note <span className="font-normal text-[#9CA3AF]">(optional)</span>
           </label>
           <textarea
-            className="mt-2 min-h-24 w-full resize-y rounded-xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm leading-6 text-[#111827] outline-none transition placeholder:text-[#9CA3AF] focus:border-[#045A58] focus:ring-4 focus:ring-[#E6F4F3]"
+            className="mt-2 min-h-24 w-full resize-y rounded-xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm leading-6 text-[#111827] outline-none transition placeholder:text-[#9CA3AF] focus:border-[#2B4BFF] focus:ring-4 focus:ring-[#ECEFFF]"
             id="workflow-status-note"
             onChange={(event) => setNote(event.target.value)}
             placeholder="Add context for this status change."
@@ -128,13 +128,13 @@ const UpdateWorkflowStatusModal = ({
         </div>
 
         {selectedOption && statusChanged ? (
-          <div className="mt-5 flex items-start gap-3 rounded-xl border border-[#B9DAD8] bg-[#F2F9F8] p-4">
-            <ClipboardList className="mt-0.5 shrink-0 text-[#045A58]" size={18} />
+          <div className="mt-5 flex items-start gap-3 rounded-xl border border-[#C2CBFF] bg-[#F5F7FF] p-4">
+            <ClipboardList className="mt-0.5 shrink-0 text-[#2B4BFF]" size={18} />
             <div>
               <p className="text-sm font-semibold text-[#111827]">
                 Status will change to {selectedOption.label}
               </p>
-              <p className="mt-1 text-sm leading-5 text-[#52605F]">{selectedOption.description}</p>
+              <p className="mt-1 text-sm leading-5 text-[#525866]">{selectedOption.description}</p>
             </div>
           </div>
         ) : null}

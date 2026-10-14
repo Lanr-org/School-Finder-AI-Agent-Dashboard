@@ -129,14 +129,14 @@ const ProgramsPage = () => {
           {canManage ? (
             <div className="flex flex-wrap gap-3">
               <Link
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[#E5E7EB] bg-white px-4 text-sm font-semibold text-[#111827] outline-none transition hover:border-[#D1D5DB] hover:bg-[#F9FAFB] focus:ring-4 focus:ring-[#E6F4F3]"
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[#E5E7EB] bg-white px-4 text-sm font-semibold text-[#111827] outline-none transition hover:border-[#D1D5DB] hover:bg-[#F9FAFB] focus:ring-4 focus:ring-[#ECEFFF]"
                 to="/programs/reports"
               >
                 <Flag size={17} />
                 Outdated-data reports
               </Link>
               <Link
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-transparent bg-[#045A58] px-4 text-sm font-semibold text-white outline-none transition hover:bg-[#034A48] focus:ring-4 focus:ring-[#E6F4F3]"
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-transparent bg-[#2B4BFF] px-4 text-sm font-semibold text-white outline-none transition hover:bg-[#1E36D8] focus:ring-4 focus:ring-[#ECEFFF]"
                 to="/programs/new"
               >
                 <Plus size={17} />
@@ -206,7 +206,7 @@ const ProgramsPage = () => {
 
           {isLoading ? (
             <div className="flex min-h-72 flex-col items-center justify-center gap-3 px-6 py-12 text-center">
-              <Loader2 className="animate-spin text-[#045A58]" size={24} />
+              <Loader2 className="animate-spin text-[#2B4BFF]" size={24} />
               <p className="text-sm text-[#6B7280]">Loading programs…</p>
             </div>
           ) : isError ? (
@@ -238,12 +238,12 @@ const ProgramsPage = () => {
                     <tr className="transition hover:bg-[#F9FAFB]" key={program.publicId}>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#E6F4F3] text-[#045A58]">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#ECEFFF] text-[#2B4BFF]">
                             <BookOpen size={18} />
                           </div>
                           <div>
                             <Link
-                              className="text-sm font-semibold text-[#111827] outline-none transition hover:text-[#045A58] focus:underline"
+                              className="text-sm font-semibold text-[#111827] outline-none transition hover:text-[#2B4BFF] focus:underline"
                               to={`/programs/${program.publicId}`}
                             >
                               {program.name}
@@ -260,7 +260,7 @@ const ProgramsPage = () => {
                       </td>
                       <td className="px-6 py-4">
                         <Link
-                          className="inline-flex items-center gap-2 text-sm font-semibold text-[#045A58] outline-none hover:text-[#034A48] focus:underline"
+                          className="inline-flex items-center gap-2 text-sm font-semibold text-[#2B4BFF] outline-none hover:text-[#1E36D8] focus:underline"
                           to={`/schools/${program.school.publicId}`}
                         >
                           <School size={16} />
@@ -298,7 +298,7 @@ const ProgramsPage = () => {
                         {canManage ? (
                           <Link
                             aria-label={`Edit ${program.name}`}
-                            className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-[#6B7280] outline-none transition hover:bg-[#E6F4F3] hover:text-[#045A58] focus:ring-4 focus:ring-[#E6F4F3]"
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-[#6B7280] outline-none transition hover:bg-[#ECEFFF] hover:text-[#2B4BFF] focus:ring-4 focus:ring-[#ECEFFF]"
                             title="Edit program"
                             to={`/programs/${program.publicId}/edit`}
                           >
@@ -315,7 +315,7 @@ const ProgramsPage = () => {
             </div>
           ) : (
             <div className="flex min-h-72 flex-col items-center justify-center px-6 py-12 text-center">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#E6F4F3] text-[#045A58]">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#ECEFFF] text-[#2B4BFF]">
                 <BookOpen size={21} />
               </div>
               <h3 className="mt-4 text-base font-semibold text-[#111827]">No programs match these filters</h3>
@@ -388,7 +388,7 @@ const FilterSelect = ({ id, label, onChange, options, value }: FilterSelectProps
       {label}
     </label>
     <select
-      className="h-11 w-full rounded-xl border border-[#E5E7EB] bg-white px-3 text-sm font-medium text-[#374151] outline-none transition focus:border-[#045A58] focus:ring-4 focus:ring-[#E6F4F3]"
+      className="h-11 w-full rounded-xl border border-[#E5E7EB] bg-white px-3 text-sm font-medium text-[#374151] outline-none transition focus:border-[#2B4BFF] focus:ring-4 focus:ring-[#ECEFFF]"
       id={id}
       onChange={(event) => onChange(event.target.value)}
       value={value}

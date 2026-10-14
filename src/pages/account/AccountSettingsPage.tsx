@@ -115,7 +115,7 @@ const AccountSettingsPage = () => {
           </div>
 
           <Link
-            className="inline-flex h-10 w-fit items-center justify-center gap-2 rounded-xl border border-[#E5E7EB] bg-white px-4 text-sm font-semibold text-[#111827] outline-none transition hover:bg-[#F9FAFB] focus:ring-4 focus:ring-[#E6F4F3]"
+            className="inline-flex h-10 w-fit items-center justify-center gap-2 rounded-xl border border-[#E5E7EB] bg-white px-4 text-sm font-semibold text-[#111827] outline-none transition hover:bg-[#F9FAFB] focus:ring-4 focus:ring-[#ECEFFF]"
             to="/profile"
           >
             <UserRound size={17} />
@@ -351,7 +351,7 @@ const AccountSettingsPage = () => {
           <aside className="space-y-6 xl:sticky xl:top-26 xl:self-start">
             <Card>
               <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#E6F4F3] text-[#045A58]">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#ECEFFF] text-[#2B4BFF]">
                   <ShieldCheck size={19} />
                 </div>
                 <div>
@@ -400,12 +400,12 @@ const AccountSettingsPage = () => {
               </Button>
             </Card>
 
-            <Card className="border-[#B9DAD8] bg-[#F2F9F8]">
+            <Card className="border-[#C2CBFF] bg-[#F5F7FF]">
               <div className="flex items-start gap-3">
-                <KeyRound className="mt-0.5 shrink-0 text-[#045A58]" size={19} />
+                <KeyRound className="mt-0.5 shrink-0 text-[#2B4BFF]" size={19} />
                 <div>
                   <h2 className="text-sm font-semibold text-[#111827]">Security boundary</h2>
-                  <p className="mt-1 text-sm leading-6 text-[#52605F]">
+                  <p className="mt-1 text-sm leading-6 text-[#525866]">
                     Only you can change your password here. Administrators cannot view or set it.
                   </p>
                 </div>
@@ -434,7 +434,7 @@ const SettingsSection = ({
   <Card>
     <div className="mb-6 flex flex-col gap-4 border-b border-[#E5E7EB] pb-5 sm:flex-row sm:items-start sm:justify-between">
       <div className="flex items-start gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#E6F4F3] text-[#045A58]">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#ECEFFF] text-[#2B4BFF]">
           {icon}
         </div>
         <div>
@@ -467,8 +467,8 @@ const NotificationSetting = ({
     <button
       aria-label={`${checked ? 'Disable' : 'Enable'} ${label}`}
       aria-pressed={checked}
-      className={`relative mt-0.5 h-6 w-11 shrink-0 rounded-full outline-none transition focus:ring-4 focus:ring-[#E6F4F3] ${
-        checked ? 'bg-[#045A58]' : 'bg-[#D1D5DB]'
+      className={`relative mt-0.5 h-6 w-11 shrink-0 rounded-full outline-none transition focus:ring-4 focus:ring-[#ECEFFF] ${
+        checked ? 'bg-[#2B4BFF]' : 'bg-[#D1D5DB]'
       }`}
       onClick={onChange}
       type="button"
@@ -493,7 +493,7 @@ const PasswordVisibilityButton = ({
 }) => (
   <button
     aria-label={label}
-    className="flex h-8 w-8 items-center justify-center rounded-lg outline-none transition hover:bg-[#F3F4F6] hover:text-[#111827] focus:ring-4 focus:ring-[#E6F4F3]"
+    className="flex h-8 w-8 items-center justify-center rounded-lg outline-none transition hover:bg-[#F3F4F6] hover:text-[#111827] focus:ring-4 focus:ring-[#ECEFFF]"
     onClick={onClick}
     title={label}
     type="button"
@@ -514,13 +514,13 @@ const SessionItem = ({
   time: string
 }) => (
   <div className="flex items-start gap-3">
-    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#F3F4F6] text-[#045A58]">
+    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#F3F4F6] text-[#2B4BFF]">
       {icon}
     </div>
     <div className="min-w-0">
       <p className="text-sm font-semibold text-[#111827]">{label}</p>
       <p className="mt-1 text-xs leading-5 text-[#6B7280]">{detail}</p>
-      <p className="text-xs font-medium text-[#045A58]">{time}</p>
+      <p className="text-xs font-medium text-[#2B4BFF]">{time}</p>
     </div>
   </div>
 )

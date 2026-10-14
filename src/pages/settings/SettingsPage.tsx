@@ -142,7 +142,7 @@ const SettingsPage = () => {
                   <button
                     className={`flex w-full items-start gap-3 rounded-xl px-3 py-3 text-left transition ${
                       isActive
-                        ? 'bg-[#E6F4F3] text-[#045A58]'
+                        ? 'bg-[#ECEFFF] text-[#2B4BFF]'
                         : 'text-[#6B7280] hover:bg-[#F5F6F8] hover:text-[#111827]'
                     }`}
                     key={item.key}
@@ -171,7 +171,7 @@ const SettingsPage = () => {
             <Card className="p-0">
               <div className="border-b border-[#E5E7EB] px-5 py-5 sm:px-6">
                 <div className="flex items-start gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#E6F4F3] text-[#045A58]">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#ECEFFF] text-[#2B4BFF]">
                     {sectionInfo.icon}
                   </div>
                   <div>
@@ -208,7 +208,7 @@ const SettingsPage = () => {
 
                   {isLoading ? (
                     <div className="flex min-h-52 items-center justify-center">
-                      <Loader2 className="animate-spin text-[#045A58]" size={26} />
+                      <Loader2 className="animate-spin text-[#2B4BFF]" size={26} />
                     </div>
                   ) : isError ? (
                     <div className="flex min-h-52 flex-col items-center justify-center gap-3 px-6 py-10 text-center">
@@ -229,7 +229,7 @@ const SettingsPage = () => {
                           <div className="flex min-w-0 items-center gap-3">
                             <span
                               className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${
-                                value.isActive ? 'bg-[#E6F4F3] text-[#045A58]' : 'bg-[#F3F4F6] text-[#9CA3AF]'
+                                value.isActive ? 'bg-[#ECEFFF] text-[#2B4BFF]' : 'bg-[#F3F4F6] text-[#9CA3AF]'
                               }`}
                             >
                               {value.isActive ? <Check size={17} /> : <CircleDot size={17} />}
@@ -245,8 +245,8 @@ const SettingsPage = () => {
                           <div className="flex items-center gap-2 self-end sm:self-auto">
                             <button
                               aria-pressed={value.isActive}
-                              className={`relative h-6 w-11 rounded-full outline-none transition focus:ring-4 focus:ring-[#E6F4F3] ${
-                                value.isActive ? 'bg-[#045A58]' : 'bg-[#D1D5DB]'
+                              className={`relative h-6 w-11 rounded-full outline-none transition focus:ring-4 focus:ring-[#ECEFFF] ${
+                                value.isActive ? 'bg-[#2B4BFF]' : 'bg-[#D1D5DB]'
                               }`}
                               onClick={() => toggleItem(value)}
                               title={value.isActive ? 'Disable value' : 'Enable value'}
@@ -283,9 +283,9 @@ const SettingsPage = () => {
             </Card>
 
             {activeSection === 'weights' ? null : (
-              <Card className="border-[#B9DAD8] bg-[#F2F9F8]">
+              <Card className="border-[#C2CBFF] bg-[#F5F7FF]">
                 <h2 className="text-sm font-semibold text-[#111827]">Operational impact</h2>
-                <p className="mt-1 text-sm leading-6 text-[#52605F]">
+                <p className="mt-1 text-sm leading-6 text-[#525866]">
                   Disabled values remain on existing records but are hidden from new selections. A value must be
                   disabled before it can be deleted.
                 </p>

@@ -36,7 +36,7 @@ import {
 const PAGE_SIZE = 20
 
 const selectClassName =
-  'h-11 rounded-xl border border-[#E5E7EB] bg-white px-3 text-sm font-medium text-[#374151] outline-none transition focus:border-[#045A58] focus:ring-4 focus:ring-[#E6F4F3]'
+  'h-11 rounded-xl border border-[#E5E7EB] bg-white px-3 text-sm font-medium text-[#374151] outline-none transition focus:border-[#2B4BFF] focus:ring-4 focus:ring-[#ECEFFF]'
 
 const formatDate = (value: string) =>
   new Date(value).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })
@@ -122,7 +122,7 @@ const ApplicationsPage = () => {
                     <p className="mt-3 text-3xl font-semibold tracking-normal text-[#111827]">{stat.value ?? '—'}</p>
                     <p className="mt-2 text-xs font-medium text-[#6B7280]">{stat.note}</p>
                   </div>
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#E6F4F3] text-[#045A58]">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#ECEFFF] text-[#2B4BFF]">
                     <Icon size={20} />
                   </div>
                 </div>
@@ -191,7 +191,7 @@ const ApplicationsPage = () => {
 
           {isLoading ? (
             <div className="flex min-h-72 items-center justify-center">
-              <Loader2 className="animate-spin text-[#045A58]" size={28} />
+              <Loader2 className="animate-spin text-[#2B4BFF]" size={28} />
             </div>
           ) : isError ? (
             <div className="flex min-h-72 flex-col items-center justify-center gap-3 px-6 py-12 text-center">
@@ -223,7 +223,7 @@ const ApplicationsPage = () => {
                     >
                       <td className="px-6 py-4">
                         <Link
-                          className="font-semibold text-[#111827] outline-none transition hover:text-[#045A58] focus:underline"
+                          className="font-semibold text-[#111827] outline-none transition hover:text-[#2B4BFF] focus:underline"
                           onClick={(event) => event.stopPropagation()}
                           to={`/students/${application.student.publicId}`}
                         >
@@ -257,7 +257,7 @@ const ApplicationsPage = () => {
             </div>
           ) : (
             <div className="flex min-h-72 flex-col items-center justify-center px-6 py-12 text-center">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#E6F4F3] text-[#045A58]">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#ECEFFF] text-[#2B4BFF]">
                 <FileCheck2 size={19} />
               </div>
               <h3 className="mt-4 text-sm font-semibold text-[#111827]">No applications found</h3>

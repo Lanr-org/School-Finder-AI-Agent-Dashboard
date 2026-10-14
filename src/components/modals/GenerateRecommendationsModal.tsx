@@ -70,16 +70,16 @@ const GenerateRecommendationsModal = ({ isOpen, onClose }: GenerateRecommendatio
               return (
                 <button
                   aria-pressed={isSelected}
-                  className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left outline-none transition focus:ring-4 focus:ring-[#E6F4F3] ${
+                  className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left outline-none transition focus:ring-4 focus:ring-[#ECEFFF] ${
                     isSelected
-                      ? 'border-[#045A58] bg-[#F2F9F8] ring-1 ring-[#045A58]'
-                      : 'border-[#E5E7EB] bg-white hover:border-[#B9DAD8] hover:bg-[#F9FAFB]'
+                      ? 'border-[#2B4BFF] bg-[#F5F7FF] ring-1 ring-[#2B4BFF]'
+                      : 'border-[#E5E7EB] bg-white hover:border-[#C2CBFF] hover:bg-[#F9FAFB]'
                   }`}
                   key={student.publicId}
                   onClick={() => setSelectedStudentId(student.publicId)}
                   type="button"
                 >
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#E6F4F3] text-sm font-semibold text-[#045A58]">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#ECEFFF] text-sm font-semibold text-[#2B4BFF]">
                     {student.contact.firstName[0]}
                     {student.contact.lastName?.[0] ?? ''}
                   </div>
@@ -95,7 +95,7 @@ const GenerateRecommendationsModal = ({ isOpen, onClose }: GenerateRecommendatio
           </div>
         ) : (
           <div className="flex min-h-40 flex-col items-center justify-center text-center">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#E6F4F3] text-[#045A58]">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#ECEFFF] text-[#2B4BFF]">
               <Users size={19} />
             </div>
             <h3 className="mt-4 text-sm font-semibold text-[#111827]">No matching students</h3>

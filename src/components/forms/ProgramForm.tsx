@@ -95,7 +95,7 @@ const toDateInput = (value: string | null) => (value ? value.slice(0, 10) : '')
 const FromPage = ({ quote }: { quote: string | undefined }) =>
   quote ? (
     <p className="mt-2 flex items-start gap-1.5 text-xs leading-5 text-[#6B7280]">
-      <Quote className="mt-0.5 shrink-0 text-[#045A58]" size={12} />
+      <Quote className="mt-0.5 shrink-0 text-[#2B4BFF]" size={12} />
       <span>From the page: “{quote}”</span>
     </p>
   ) : null

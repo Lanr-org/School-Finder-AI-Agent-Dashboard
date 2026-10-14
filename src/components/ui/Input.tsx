@@ -45,7 +45,7 @@ const Input = ({
             rightSlot ? 'pr-12' : undefined,
             error
               ? 'border-[#DC2626] focus:border-[#DC2626] focus:ring-[#FEE2E2]'
-              : 'border-[#E5E7EB] focus:border-[#045A58] focus:ring-[#E6F4F3]',
+              : 'border-[#E5E7EB] focus:border-[#2B4BFF] focus:ring-[#ECEFFF]',
             className,
           )}
           id={id}

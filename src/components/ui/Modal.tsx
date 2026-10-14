@@ -70,7 +70,7 @@ const Modal = ({ children, description, isOpen, onClose, size = 'md', title }: M
           </div>
           <button
             aria-label="Close dialog"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[#6B7280] outline-none transition hover:bg-[#F3F4F6] hover:text-[#111827] focus:ring-4 focus:ring-[#E6F4F3]"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[#6B7280] outline-none transition hover:bg-[#F3F4F6] hover:text-[#111827] focus:ring-4 focus:ring-[#ECEFFF]"
             onClick={onClose}
             type="button"
           >

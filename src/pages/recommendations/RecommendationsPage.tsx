@@ -151,7 +151,7 @@ const RecommendationsPage = () => {
                     </p>
                     <p className="mt-2 text-xs font-medium text-[#6B7280]">{stat.note}</p>
                   </div>
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#E6F4F3] text-[#045A58]">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#ECEFFF] text-[#2B4BFF]">
                     <Icon size={20} />
                   </div>
                 </div>
@@ -184,7 +184,7 @@ const RecommendationsPage = () => {
                   Advisor
                 </label>
                 <select
-                  className="h-11 rounded-xl border border-[#E5E7EB] bg-white px-3 text-sm font-medium text-[#374151] outline-none transition focus:border-[#045A58] focus:ring-4 focus:ring-[#E6F4F3]"
+                  className="h-11 rounded-xl border border-[#E5E7EB] bg-white px-3 text-sm font-medium text-[#374151] outline-none transition focus:border-[#2B4BFF] focus:ring-4 focus:ring-[#ECEFFF]"
                   id="advisor-filter"
                   onChange={(event) => setAdvisorId(event.target.value)}
                   value={advisorId}
@@ -200,7 +200,7 @@ const RecommendationsPage = () => {
                   Country
                 </label>
                 <select
-                  className="h-11 rounded-xl border border-[#E5E7EB] bg-white px-3 text-sm font-medium text-[#374151] outline-none transition focus:border-[#045A58] focus:ring-4 focus:ring-[#E6F4F3]"
+                  className="h-11 rounded-xl border border-[#E5E7EB] bg-white px-3 text-sm font-medium text-[#374151] outline-none transition focus:border-[#2B4BFF] focus:ring-4 focus:ring-[#ECEFFF]"
                   id="country-filter"
                   onChange={(event) => setCountry(event.target.value)}
                   value={country}
@@ -218,7 +218,7 @@ const RecommendationsPage = () => {
 
           {isLoading ? (
             <div className="flex min-h-72 items-center justify-center">
-              <Loader2 className="animate-spin text-[#045A58]" size={28} />
+              <Loader2 className="animate-spin text-[#2B4BFF]" size={28} />
             </div>
           ) : isError ? (
             <div className="flex min-h-72 flex-col items-center justify-center gap-3 px-6 py-12 text-center">
@@ -239,7 +239,7 @@ const RecommendationsPage = () => {
                     <div className="grid gap-6 2xl:grid-cols-[220px_minmax(0,1fr)_260px_180px]">
                       <div>
                         <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#E6F4F3] text-sm font-semibold text-[#045A58]">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#ECEFFF] text-sm font-semibold text-[#2B4BFF]">
                             {recommendation.studentName
                               .split(' ')
                               .map((name) => name[0])
@@ -248,7 +248,7 @@ const RecommendationsPage = () => {
                           </div>
                           <div>
                             <Link
-                              className="text-sm font-semibold text-[#111827] outline-none transition hover:text-[#045A58] focus:underline"
+                              className="text-sm font-semibold text-[#111827] outline-none transition hover:text-[#2B4BFF] focus:underline"
                               to={`/students/${recommendation.studentId}`}
                             >
                               {recommendation.studentName}
@@ -273,7 +273,7 @@ const RecommendationsPage = () => {
                           </div>
                           <div className="mt-3 h-2 rounded-full bg-[#E5E7EB]">
                             <div
-                              className="h-2 rounded-full bg-[#045A58]"
+                              className="h-2 rounded-full bg-[#2B4BFF]"
                               style={{ width: `${recommendation.overallScore}%` }}
                             />
                           </div>
@@ -284,13 +284,13 @@ const RecommendationsPage = () => {
                         <div className="flex flex-wrap items-start justify-between gap-3">
                           <div>
                             <Link
-                              className="text-base font-semibold text-[#111827] outline-none transition hover:text-[#045A58] focus:underline"
+                              className="text-base font-semibold text-[#111827] outline-none transition hover:text-[#2B4BFF] focus:underline"
                               to={`/schools/${recommendation.school.publicId}`}
                             >
                               {recommendation.school.name}
                             </Link>
                             <Link
-                              className="mt-1 block text-sm font-medium text-[#045A58] outline-none hover:text-[#034A48] focus:underline"
+                              className="mt-1 block text-sm font-medium text-[#2B4BFF] outline-none hover:text-[#1E36D8] focus:underline"
                               to={`/programs/${recommendation.program.publicId}`}
                             >
                               {recommendation.program.name}
@@ -360,8 +360,8 @@ const RecommendationsPage = () => {
                           className={cn(
                             'inline-flex h-10 items-center justify-center gap-2 rounded-xl border px-4 text-sm font-semibold outline-none transition focus:ring-4',
                             recommendation.shortlisted
-                              ? 'border-[#B7D8D6] bg-[#E6F4F3] text-[#045A58] focus:ring-[#E6F4F3]'
-                              : 'border-[#E5E7EB] bg-white text-[#111827] hover:bg-[#F9FAFB] focus:ring-[#E6F4F3]',
+                              ? 'border-[#B7D8D6] bg-[#ECEFFF] text-[#2B4BFF] focus:ring-[#ECEFFF]'
+                              : 'border-[#E5E7EB] bg-white text-[#111827] hover:bg-[#F9FAFB] focus:ring-[#ECEFFF]',
                           )}
                           disabled={createShortlist.isPending || deleteShortlist.isPending}
                           onClick={() => toggleShortlist(recommendation)}
@@ -374,8 +374,8 @@ const RecommendationsPage = () => {
                           className={cn(
                             'inline-flex h-10 items-center justify-center gap-2 rounded-xl border px-4 text-sm font-semibold outline-none transition focus:ring-4',
                             isCompared
-                              ? 'border-[#045A58] bg-[#045A58] text-white focus:ring-[#E6F4F3]'
-                              : 'border-[#E5E7EB] bg-white text-[#111827] hover:bg-[#F9FAFB] focus:ring-[#E6F4F3]',
+                              ? 'border-[#2B4BFF] bg-[#2B4BFF] text-white focus:ring-[#ECEFFF]'
+                              : 'border-[#E5E7EB] bg-white text-[#111827] hover:bg-[#F9FAFB] focus:ring-[#ECEFFF]',
                             !isCompared && comparisonIds.length >= 2 && 'cursor-not-allowed opacity-50',
                           )}
                           disabled={!isCompared && comparisonIds.length >= 2}
@@ -393,7 +393,7 @@ const RecommendationsPage = () => {
             </div>
           ) : (
             <div className="flex min-h-72 flex-col items-center justify-center px-6 py-12 text-center">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#E6F4F3] text-[#045A58]">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#ECEFFF] text-[#2B4BFF]">
                 <Sparkles size={21} />
               </div>
               <h3 className="mt-4 text-base font-semibold text-[#111827]">No recommendations match these filters</h3>
@@ -466,7 +466,7 @@ const RecommendationsPage = () => {
                   <div className="flex items-start justify-between gap-4">
                     <div>
                       <p className="text-base font-semibold text-[#111827]">{item.school.name}</p>
-                      <p className="mt-1 text-sm text-[#045A58]">{item.program.name}</p>
+                      <p className="mt-1 text-sm text-[#2B4BFF]">{item.program.name}</p>
                     </div>
                     <button
                       aria-label={`Remove ${item.school.name} from comparison`}
@@ -509,7 +509,7 @@ const ScoreRow = ({ label, value }: { label: string; value: number }) => (
       <span className="text-sm font-semibold text-[#111827]">{value}</span>
     </div>
     <div className="h-1.5 rounded-full bg-[#E5E7EB]">
-      <div className="h-1.5 rounded-full bg-[#045A58]" style={{ width: `${value}%` }} />
+      <div className="h-1.5 rounded-full bg-[#2B4BFF]" style={{ width: `${value}%` }} />
     </div>
   </div>
 )
@@ -524,7 +524,7 @@ const ComparisonMetric = ({
   value: string
 }) => (
   <div className="rounded-2xl border border-[#E5E7EB] bg-[#F9FAFB] p-4">
-    <div className="flex items-center gap-2 text-[#045A58]">
+    <div className="flex items-center gap-2 text-[#2B4BFF]">
       {icon}
       <span className="text-xs font-semibold uppercase tracking-normal text-[#6B7280]">{label}</span>
     </div>

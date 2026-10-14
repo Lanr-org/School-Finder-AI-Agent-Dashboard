@@ -17,7 +17,7 @@ const AddSchoolPage = () => {
       <div className="space-y-6">
         <div>
           <Link
-            className="inline-flex items-center gap-2 text-sm font-semibold text-[#045A58] transition hover:text-[#034A48]"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-[#2B4BFF] transition hover:text-[#1E36D8]"
             to="/schools"
           >
             <ArrowLeft size={16} />
@@ -45,7 +45,7 @@ const AddSchoolPage = () => {
           <aside className="space-y-6 xl:sticky xl:top-26 xl:self-start">
             <Card>
               <div className="flex items-start gap-3">
-                <ShieldCheck className="mt-0.5 shrink-0 text-[#045A58]" size={19} />
+                <ShieldCheck className="mt-0.5 shrink-0 text-[#2B4BFF]" size={19} />
                 <div>
                   <h2 className="text-lg font-semibold text-[#111827]">Visa sponsor check</h2>
                   <p className="mt-2 text-sm leading-6 text-[#6B7280]">

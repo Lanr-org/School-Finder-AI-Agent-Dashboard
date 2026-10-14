@@ -2,7 +2,6 @@ import {
   BookOpen,
   FileCheck2,
   X,
-  GraduationCap,
   LayoutDashboard,
   MessageSquareText,
   Newspaper,
@@ -18,6 +17,7 @@ import type { LucideIcon } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 import { cn } from '../../utils/cn.js'
 import { useAuthStore } from '../../store/authStore.js'
+import Logo from '../brand/Logo.js'
 
 type NavItem = {
   icon: LucideIcon
@@ -68,19 +68,16 @@ const SidebarHeader = ({ onClose }: { onClose?: () => void }) => {
   return (
     <div className="mb-8 flex items-center justify-between gap-3 px-2">
       <div className="flex items-center gap-3">
-        <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#E6F4F3] text-[#045A58]">
-          <GraduationCap size={23} />
-        </div>
         <div>
-          <p className="text-sm font-semibold text-[#111827]">Smetase</p>
-          <p className="text-xs font-medium text-[#6B7280]">Operations Portal</p>
+          <Logo height={22} />
+          <p className="mt-1.5 text-xs font-medium text-[#6B7280]">Operations Portal</p>
         </div>
       </div>
 
       {onClose ? (
         <button
           aria-label="Close navigation"
-          className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#E5E7EB] bg-white text-[#6B7280] outline-none transition hover:border-[#D1D5DB] hover:bg-[#F9FAFB] hover:text-[#111827] focus:ring-4 focus:ring-[#E6F4F3] lg:hidden"
+          className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#E5E7EB] bg-white text-[#6B7280] outline-none transition hover:border-[#D1D5DB] hover:bg-[#F9FAFB] hover:text-[#111827] focus:ring-4 focus:ring-[#ECEFFF] lg:hidden"
           onClick={onClose}
           type="button"
         >
@@ -119,7 +116,7 @@ const SidebarContent = ({ onNavigate }: { onNavigate?: () => void }) => {
                       cn(
                         'flex h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium transition',
                         isActive
-                          ? 'bg-[#E6F4F3] text-[#045A58]'
+                          ? 'bg-[#ECEFFF] text-[#2B4BFF]'
                           : 'text-[#6B7280] hover:bg-[#F5F6F8] hover:text-[#111827]',
                       )
                     }

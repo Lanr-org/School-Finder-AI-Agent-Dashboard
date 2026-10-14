@@ -83,7 +83,7 @@ const ProfilePage = () => {
         {isLoading ? (
           <Card>
             <div className="flex min-h-40 flex-col items-center justify-center gap-3 text-center">
-              <Loader2 className="animate-spin text-[#045A58]" size={24} />
+              <Loader2 className="animate-spin text-[#2B4BFF]" size={24} />
               <p className="text-sm text-[#6B7280]">Loading profile…</p>
             </div>
           </Card>
@@ -114,7 +114,7 @@ const ProfileContent = ({ user }: { user: CurrentUser }) => {
       <div className="space-y-6">
         <Card>
           <div className="flex items-start gap-4">
-            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[20px] bg-[#E6F4F3] text-xl font-semibold text-[#045A58]">
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[20px] bg-[#ECEFFF] text-xl font-semibold text-[#2B4BFF]">
               {initialsOf(user.fullName)}
             </div>
             <div className="min-w-0">
@@ -143,7 +143,7 @@ const ProfileContent = ({ user }: { user: CurrentUser }) => {
 
         <Card>
           <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#E6F4F3] text-[#045A58]">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#ECEFFF] text-[#2B4BFF]">
               <CalendarClock size={19} />
             </div>
             <div>
@@ -169,7 +169,7 @@ const ProfileContent = ({ user }: { user: CurrentUser }) => {
       <div className="space-y-6">
         <Card>
           <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#E6F4F3] text-[#045A58]">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#ECEFFF] text-[#2B4BFF]">
               <ShieldCheck size={19} />
             </div>
             <div>
@@ -196,19 +196,19 @@ const ProfileContent = ({ user }: { user: CurrentUser }) => {
                 className="flex min-h-12 items-center gap-3 rounded-xl border border-[#E5E7EB] px-4 py-3"
                 key={permission}
               >
-                <CheckCircle2 className="shrink-0 text-[#045A58]" size={17} />
+                <CheckCircle2 className="shrink-0 text-[#2B4BFF]" size={17} />
                 <span className="text-sm font-medium text-[#374151]">{permission}</span>
               </div>
             ))}
           </div>
         </Card>
 
-        <Card className="border-[#B9DAD8] bg-[#F2F9F8]">
+        <Card className="border-[#C2CBFF] bg-[#F5F7FF]">
           <div className="flex items-start gap-3">
-            <KeyRound className="mt-0.5 shrink-0 text-[#045A58]" size={19} />
+            <KeyRound className="mt-0.5 shrink-0 text-[#2B4BFF]" size={19} />
             <div>
               <h2 className="text-sm font-semibold text-[#111827]">Personal account boundaries</h2>
-              <p className="mt-1 text-sm leading-6 text-[#52605F]">
+              <p className="mt-1 text-sm leading-6 text-[#525866]">
                 Your role, permissions, and account status are read-only here. Personal preferences and password changes belong in Account settings.
               </p>
             </div>
@@ -221,7 +221,7 @@ const ProfileContent = ({ user }: { user: CurrentUser }) => {
 
 const ProfileItem = ({ icon, label, value }: { icon: ReactNode; label: string; value: string }) => (
   <div className="flex items-start gap-3">
-    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#F3F4F6] text-[#045A58]">
+    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#F3F4F6] text-[#2B4BFF]">
       {icon}
     </div>
     <div className="min-w-0">

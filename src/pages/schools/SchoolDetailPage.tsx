@@ -49,7 +49,7 @@ const PARTNER_LABEL: Record<PartnerStatus, string> = {
 }
 
 const linkButtonClasses =
-  'inline-flex h-10 items-center justify-center gap-2 rounded-xl border px-4 text-sm font-semibold outline-none transition focus:ring-4 focus:ring-[#E6F4F3]'
+  'inline-flex h-10 items-center justify-center gap-2 rounded-xl border px-4 text-sm font-semibold outline-none transition focus:ring-4 focus:ring-[#ECEFFF]'
 
 const SchoolDetailPage = () => {
   const { schoolId } = useParams()
@@ -61,7 +61,7 @@ const SchoolDetailPage = () => {
     return (
       <AppShell>
         <div className="flex min-h-[60vh] items-center justify-center">
-          <Loader2 className="animate-spin text-[#045A58]" size={32} />
+          <Loader2 className="animate-spin text-[#2B4BFF]" size={32} />
         </div>
       </AppShell>
     )
@@ -73,7 +73,7 @@ const SchoolDetailPage = () => {
         <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3 text-center">
           <AlertCircle className="text-[#DC2626]" size={28} />
           <p className="text-sm text-[#6B7280]">{apiErrorMessage(error, 'Failed to load this school')}</p>
-          <Link className="text-sm font-semibold text-[#045A58] hover:text-[#034A48]" to="/schools">
+          <Link className="text-sm font-semibold text-[#2B4BFF] hover:text-[#1E36D8]" to="/schools">
             Back to Schools
           </Link>
         </div>
@@ -90,7 +90,7 @@ const SchoolDetailPage = () => {
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div>
             <Link
-              className="inline-flex items-center gap-2 text-sm font-semibold text-[#045A58] transition hover:text-[#034A48]"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-[#2B4BFF] transition hover:text-[#1E36D8]"
               to="/schools"
             >
               <ArrowLeft size={16} />
@@ -119,7 +119,7 @@ const SchoolDetailPage = () => {
                 Add program
               </Link>
               <Link
-                className={`${linkButtonClasses} border-transparent bg-[#045A58] text-white hover:bg-[#034A48]`}
+                className={`${linkButtonClasses} border-transparent bg-[#2B4BFF] text-white hover:bg-[#1E36D8]`}
                 to={`/schools/${school.publicId}/edit`}
               >
                 <Pencil size={17} />
@@ -152,7 +152,7 @@ const SchoolDetailPage = () => {
                   <h2 className="text-lg font-semibold text-[#111827]">Programs</h2>
                   <p className="mt-1 text-sm text-[#6B7280]">Every programme recorded for this school.</p>
                 </div>
-                <BookOpen className="text-[#045A58]" size={20} />
+                <BookOpen className="text-[#2B4BFF]" size={20} />
               </div>
               {programs.length === 0 ? (
                 <p className="px-6 py-8 text-sm text-[#6B7280]">No programmes yet.</p>
@@ -198,7 +198,7 @@ const SchoolDetailPage = () => {
             <Card>
               <div className="mb-5 flex items-center justify-between gap-3">
                 <h2 className="text-lg font-semibold text-[#111827]">Internal assessment</h2>
-                <Star className="text-[#045A58]" size={20} />
+                <Star className="text-[#2B4BFF]" size={20} />
               </div>
               <div className="space-y-4">
                 <NoteItem label="Visa notes" value={school.visaFriendlinessNotes} />
@@ -219,13 +219,13 @@ const SchoolDetailPage = () => {
             <Card>
               <div className="mb-5 flex items-center justify-between gap-3">
                 <h2 className="text-lg font-semibold text-[#111827]">Contact and website</h2>
-                <Globe2 className="text-[#045A58]" size={20} />
+                <Globe2 className="text-[#2B4BFF]" size={20} />
               </div>
               <div className="space-y-4">
                 <ContactItem icon={Globe2} label="Website">
                   {school.website ? (
                     <a
-                      className="inline-flex items-center gap-1.5 break-all font-semibold text-[#045A58] hover:text-[#034A48]"
+                      className="inline-flex items-center gap-1.5 break-all font-semibold text-[#2B4BFF] hover:text-[#1E36D8]"
                       href={school.website}
                       rel="noopener noreferrer"
                       target="_blank"
@@ -249,7 +249,7 @@ const SchoolDetailPage = () => {
             <Card>
               <div className="mb-5 flex items-center justify-between gap-3">
                 <h2 className="text-lg font-semibold text-[#111827]">Location</h2>
-                <MapPin className="text-[#045A58]" size={20} />
+                <MapPin className="text-[#2B4BFF]" size={20} />
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <DetailItem label="Address" value={school.streetAddress ?? '—'} />
@@ -272,7 +272,7 @@ const SponsorCard = ({ school }: { school: School }) => (
   <Card>
     <div className="mb-4 flex items-center justify-between gap-3">
       <h2 className="text-lg font-semibold text-[#111827]">Student visa sponsor</h2>
-      <ShieldCheck className="text-[#045A58]" size={20} />
+      <ShieldCheck className="text-[#2B4BFF]" size={20} />
     </div>
     {school.visaSponsorStatus === 'LICENSED' ? (
       <p
@@ -335,7 +335,7 @@ const SummaryCard = ({ icon: Icon, label, value }: SummaryCardProps) => (
         <p className="text-sm font-medium text-[#6B7280]">{label}</p>
         <p className="mt-3 text-lg font-semibold text-[#111827]">{value}</p>
       </div>
-      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#E6F4F3] text-[#045A58]">
+      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#ECEFFF] text-[#2B4BFF]">
         <Icon size={20} />
       </div>
     </div>

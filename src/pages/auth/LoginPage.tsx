@@ -1,4 +1,4 @@
-import { AlertCircle, ArrowRight, GraduationCap, LockKeyhole, Mail } from 'lucide-react'
+import { AlertCircle, ArrowRight, LockKeyhole, Mail } from 'lucide-react'
 import { isAxiosError } from 'axios'
 import { useState } from 'react'
 import type { FormEvent } from 'react'
@@ -9,6 +9,7 @@ import Input from '../../components/ui/Input.js'
 import { api } from '../../lib/api/client.js'
 import type { ApiErrorResponse } from '../../lib/api/types.js'
 import { useAuthStore, type AuthUser } from '../../store/authStore.js'
+import Logo from '../../components/brand/Logo.js'
 
 const LoginPage = () => {
   const navigate = useNavigate()
@@ -45,15 +46,12 @@ const LoginPage = () => {
       <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-6xl items-center justify-center">
         <Card className="w-full overflow-hidden rounded-[24px] shadow-[0_20px_60px_rgba(17,24,39,0.08)] lg:w-[440px]" padded={false}>
           <section className="p-6 sm:p-10">
-            <div className="mb-8 flex items-center gap-3 lg:hidden">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#E6F4F3] text-[#045A58]">
-                <GraduationCap size={22} />
-              </div>
-              <span className="text-sm font-semibold">Smetase</span>
+            <div className="mb-8">
+              <Logo height={26} />
             </div>
 
             <div className="mb-8">
-              <p className="mb-3 text-sm font-medium text-[#045A58]">Staff Portal</p>
+              <p className="mb-3 text-sm font-medium text-[#2B4BFF]">Staff Portal</p>
               <h2 className="text-2xl font-semibold tracking-normal text-[#111827]">Sign in to your workspace</h2>
               <p className="mt-3 text-sm leading-6 text-[#6B7280]">
                 Use your company email and password to access student and school operations.
@@ -84,7 +82,7 @@ const LoginPage = () => {
                   <label className="block text-sm font-medium text-[#111827]" htmlFor="password">
                     Password
                   </label>
-                  <Link className="text-sm font-medium text-[#045A58] hover:text-[#034A48]" to="/forgot-password">
+                  <Link className="text-sm font-medium text-[#2B4BFF] hover:text-[#1E36D8]" to="/forgot-password">
                     Forgot password?
                   </Link>
                 </div>

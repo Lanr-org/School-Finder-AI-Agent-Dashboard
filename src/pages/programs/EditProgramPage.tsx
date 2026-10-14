@@ -49,7 +49,7 @@ const EditProgramPage = () => {
     return (
       <AppShell>
         <div className="flex min-h-[60vh] items-center justify-center">
-          <Loader2 className="animate-spin text-[#045A58]" size={32} />
+          <Loader2 className="animate-spin text-[#2B4BFF]" size={32} />
         </div>
       </AppShell>
     )
@@ -61,7 +61,7 @@ const EditProgramPage = () => {
         <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3 text-center">
           <AlertCircle className="text-[#DC2626]" size={28} />
           <p className="text-sm text-[#6B7280]">{apiErrorMessage(error, 'Failed to load this program')}</p>
-          <Link className="text-sm font-semibold text-[#045A58] hover:text-[#034A48]" to="/programs">
+          <Link className="text-sm font-semibold text-[#2B4BFF] hover:text-[#1E36D8]" to="/programs">
             Back to Programs
           </Link>
         </div>
@@ -83,7 +83,7 @@ const EditProgramPage = () => {
       <div className="space-y-6">
         <div>
           <Link
-            className="inline-flex items-center gap-2 text-sm font-semibold text-[#045A58] transition hover:text-[#034A48]"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-[#2B4BFF] transition hover:text-[#1E36D8]"
             to={detailPath}
           >
             <ArrowLeft size={16} />
@@ -132,7 +132,7 @@ const EditProgramPage = () => {
             {program.verificationStatus === 'VERIFIED' ? (
               <Card>
                 <div className="flex items-start gap-3">
-                  <BadgeCheck className="mt-0.5 shrink-0 text-[#045A58]" size={19} />
+                  <BadgeCheck className="mt-0.5 shrink-0 text-[#2B4BFF]" size={19} />
                   <div>
                     <h2 className="text-lg font-semibold text-[#111827]">This programme is verified</h2>
                     <p className="mt-2 text-sm leading-6 text-[#6B7280]">
@@ -146,7 +146,7 @@ const EditProgramPage = () => {
 
             <Card>
               <div className="flex items-start gap-3">
-                <Building2 className="mt-0.5 shrink-0 text-[#045A58]" size={19} />
+                <Building2 className="mt-0.5 shrink-0 text-[#2B4BFF]" size={19} />
                 <div>
                   <h2 className="text-lg font-semibold text-[#111827]">School ownership</h2>
                   <p className="mt-2 text-sm leading-6 text-[#6B7280]">

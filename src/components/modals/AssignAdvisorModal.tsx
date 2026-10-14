@@ -94,12 +94,12 @@ const AssignAdvisorModal = ({
               return (
                 <button
                   aria-pressed={isSelected}
-                  className={`w-full rounded-xl border p-4 text-left outline-none transition focus:ring-4 focus:ring-[#E6F4F3] ${
+                  className={`w-full rounded-xl border p-4 text-left outline-none transition focus:ring-4 focus:ring-[#ECEFFF] ${
                     isSelected
-                      ? 'border-[#045A58] bg-[#F2F9F8] ring-1 ring-[#045A58]'
+                      ? 'border-[#2B4BFF] bg-[#F5F7FF] ring-1 ring-[#2B4BFF]'
                       : isDisabled
                         ? 'cursor-not-allowed border-[#E5E7EB] bg-[#F9FAFB] opacity-65'
-                        : 'border-[#E5E7EB] bg-white hover:border-[#B9DAD8] hover:bg-[#F9FAFB]'
+                        : 'border-[#E5E7EB] bg-white hover:border-[#C2CBFF] hover:bg-[#F9FAFB]'
                   }`}
                   disabled={isDisabled}
                   key={advisor.advisorId}
@@ -107,7 +107,7 @@ const AssignAdvisorModal = ({
                   type="button"
                 >
                   <div className="flex items-start gap-3">
-                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#E6F4F3] text-sm font-semibold text-[#045A58]">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#ECEFFF] text-sm font-semibold text-[#2B4BFF]">
                       {advisor.fullName
                         .split(' ')
                         .map((name) => name[0])
@@ -140,7 +140,7 @@ const AssignAdvisorModal = ({
                                   ? 'bg-[#DC2626]'
                                   : workloadPercentage >= 85
                                     ? 'bg-[#D97706]'
-                                    : 'bg-[#045A58]'
+                                    : 'bg-[#2B4BFF]'
                               }`}
                               style={{ width: `${workloadPercentage}%` }}
                             />
@@ -158,7 +158,7 @@ const AssignAdvisorModal = ({
                     <span
                       className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${
                         isSelected
-                          ? 'border-[#045A58] bg-[#045A58] text-white'
+                          ? 'border-[#2B4BFF] bg-[#2B4BFF] text-white'
                           : 'border-[#D1D5DB] text-transparent'
                       }`}
                     >
@@ -171,7 +171,7 @@ const AssignAdvisorModal = ({
           </div>
         ) : (
           <div className="flex min-h-52 flex-col items-center justify-center text-center">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#E6F4F3] text-[#045A58]">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#ECEFFF] text-[#2B4BFF]">
               <Users size={19} />
             </div>
             <h3 className="mt-4 text-sm font-semibold text-[#111827]">No matching advisors</h3>

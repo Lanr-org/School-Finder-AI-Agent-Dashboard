@@ -83,8 +83,8 @@ const QuickStudentEntryModal = ({
     >
       <form onSubmit={handleSubmit}>
         <div className="max-h-[520px] overflow-y-auto px-5 py-5 sm:px-6">
-          <div className="mb-5 flex items-start gap-3 rounded-xl border border-[#B9DAD8] bg-[#F2F9F8] p-4">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#E6F4F3] text-[#045A58]">
+          <div className="mb-5 flex items-start gap-3 rounded-xl border border-[#C2CBFF] bg-[#F5F7FF] p-4">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#ECEFFF] text-[#2B4BFF]">
               {isNote ? <StickyNote size={18} /> : <CalendarPlus size={18} />}
             </div>
             <div>
@@ -94,7 +94,7 @@ const QuickStudentEntryModal = ({
                   {isNote ? 'Internal only' : 'Advisor action'}
                 </Badge>
               </div>
-              <p className="mt-1 text-sm leading-5 text-[#52605F]">
+              <p className="mt-1 text-sm leading-5 text-[#525866]">
                 {isNote
                   ? 'Notes support advisor handoffs and are never sent to the student.'
                   : 'The assigned advisor will see this item in their follow-up workload.'}
@@ -182,7 +182,7 @@ const SelectField = ({
       {label}
     </label>
     <select
-      className="h-12 w-full rounded-xl border border-[#E5E7EB] bg-white px-4 text-sm text-[#111827] outline-none transition focus:border-[#045A58] focus:ring-4 focus:ring-[#E6F4F3]"
+      className="h-12 w-full rounded-xl border border-[#E5E7EB] bg-white px-4 text-sm text-[#111827] outline-none transition focus:border-[#2B4BFF] focus:ring-4 focus:ring-[#ECEFFF]"
       id={id}
       onChange={(event) => onChange(event.target.value)}
       value={value}
@@ -216,7 +216,7 @@ const TextareaField = ({
       {label}
     </label>
     <textarea
-      className="min-h-28 w-full resize-y rounded-xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm leading-6 text-[#111827] outline-none transition placeholder:text-[#9CA3AF] focus:border-[#045A58] focus:ring-4 focus:ring-[#E6F4F3]"
+      className="min-h-28 w-full resize-y rounded-xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm leading-6 text-[#111827] outline-none transition placeholder:text-[#9CA3AF] focus:border-[#2B4BFF] focus:ring-4 focus:ring-[#ECEFFF]"
       id={id}
       onChange={(event) => onChange(event.target.value)}
       placeholder={placeholder}

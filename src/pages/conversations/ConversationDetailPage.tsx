@@ -64,7 +64,7 @@ const ConversationDetailPage = () => {
     return (
       <AppShell>
         <div className="flex min-h-96 items-center justify-center">
-          <Loader2 className="animate-spin text-[#045A58]" size={28} />
+          <Loader2 className="animate-spin text-[#2B4BFF]" size={28} />
         </div>
       </AppShell>
     )
@@ -80,7 +80,7 @@ const ConversationDetailPage = () => {
               ? (error.response?.data.error.message ?? 'Failed to load conversation')
               : 'Failed to load conversation'}
           </p>
-          <Link className="text-sm font-semibold text-[#045A58] hover:text-[#034A48]" to="/conversations">
+          <Link className="text-sm font-semibold text-[#2B4BFF] hover:text-[#1E36D8]" to="/conversations">
             Back to conversations
           </Link>
         </div>
@@ -104,7 +104,7 @@ const ConversationDetailPage = () => {
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div>
             <Link
-              className="inline-flex items-center gap-2 text-sm font-semibold text-[#045A58] transition hover:text-[#034A48]"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-[#2B4BFF] transition hover:text-[#1E36D8]"
               to="/conversations"
             >
               <ArrowLeft size={16} />
@@ -181,7 +181,7 @@ const ConversationDetailPage = () => {
                   Reply to student
                 </label>
                 <textarea
-                  className="min-h-24 w-full resize-y rounded-xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm leading-6 text-[#111827] outline-none transition placeholder:text-[#9CA3AF] focus:border-[#045A58] focus:ring-4 focus:ring-[#E6F4F3]"
+                  className="min-h-24 w-full resize-y rounded-xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm leading-6 text-[#111827] outline-none transition placeholder:text-[#9CA3AF] focus:border-[#2B4BFF] focus:ring-4 focus:ring-[#ECEFFF]"
                   id="advisor-reply"
                   onChange={(event) => setReplyText(event.target.value)}
                   placeholder="Write an advisor reply..."
@@ -207,7 +207,7 @@ const ConversationDetailPage = () => {
           <aside className="space-y-6 xl:sticky xl:top-26 xl:self-start">
             <Card>
               <div className="flex items-start gap-3">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#E6F4F3] text-sm font-semibold text-[#045A58]">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#ECEFFF] text-sm font-semibold text-[#2B4BFF]">
                   {conversation.student.firstName[0]}
                   {conversation.student.lastName?.[0] ?? ''}
                 </div>
@@ -223,7 +223,7 @@ const ConversationDetailPage = () => {
               </div>
 
               <Link
-                className="mt-5 inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-[#E5E7EB] bg-white px-4 text-sm font-semibold text-[#111827] outline-none transition hover:bg-[#F9FAFB] focus:ring-4 focus:ring-[#E6F4F3]"
+                className="mt-5 inline-flex h-10 w-full items-center justify-center gap-2 rounded-xl border border-[#E5E7EB] bg-white px-4 text-sm font-semibold text-[#111827] outline-none transition hover:bg-[#F9FAFB] focus:ring-4 focus:ring-[#ECEFFF]"
                 to={`/students/${conversation.student.publicId}`}
               >
                 <UserRound size={16} />
@@ -237,14 +237,14 @@ const ConversationDetailPage = () => {
                   <h2 className="text-lg font-semibold text-[#111827]">Assignment</h2>
                   <p className="mt-1 text-sm text-[#6B7280]">Advisor ownership and workflow.</p>
                 </div>
-                <UserRoundCheck className="text-[#045A58]" size={20} />
+                <UserRoundCheck className="text-[#2B4BFF]" size={20} />
               </div>
 
               <label className="mb-2 block text-sm font-medium text-[#111827]" htmlFor="conversation-advisor">
                 Assigned advisor
               </label>
               <select
-                className="h-11 w-full rounded-xl border border-[#E5E7EB] bg-white px-3 text-sm font-medium text-[#374151] outline-none transition focus:border-[#045A58] focus:ring-4 focus:ring-[#E6F4F3] disabled:cursor-not-allowed disabled:opacity-60"
+                className="h-11 w-full rounded-xl border border-[#E5E7EB] bg-white px-3 text-sm font-medium text-[#374151] outline-none transition focus:border-[#2B4BFF] focus:ring-4 focus:ring-[#ECEFFF] disabled:cursor-not-allowed disabled:opacity-60"
                 disabled={!isAdmin || assignAdvisor.isPending}
                 id="conversation-advisor"
                 onChange={(event) => assignAdvisor.mutate(event.target.value === '' ? null : event.target.value)}
@@ -286,8 +286,8 @@ const MessageBubble = ({ message }: { message: ConversationMessage }) => {
     <div className={`flex ${isStudent ? 'justify-start' : 'justify-end'}`}>
       <div className={`max-w-[min(100%,42rem)] ${isStudent ? '' : 'text-right'}`}>
         <div className={`mb-2 flex items-center gap-2 ${isStudent ? '' : 'justify-end'}`}>
-          {isAgent ? <Bot className="text-[#045A58]" size={15} /> : null}
-          {isAdvisor ? <UserRoundCheck className="text-[#045A58]" size={15} /> : null}
+          {isAgent ? <Bot className="text-[#2B4BFF]" size={15} /> : null}
+          {isAdvisor ? <UserRoundCheck className="text-[#2B4BFF]" size={15} /> : null}
           {isStudent ? <UserRound className="text-[#6B7280]" size={15} /> : null}
           <span className="text-xs font-semibold text-[#6B7280]">{author}</span>
           <span className="rounded-full border border-[#E5E7EB] px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#6B7280]">
@@ -300,8 +300,8 @@ const MessageBubble = ({ message }: { message: ConversationMessage }) => {
             isStudent
               ? 'rounded-tl-md border border-[#E5E7EB] bg-white text-[#374151]'
               : isAdvisor
-                ? 'rounded-tr-md bg-[#045A58] text-white'
-                : 'rounded-tr-md border border-[#B7D8D6] bg-[#E6F4F3] text-[#174544]'
+                ? 'rounded-tr-md bg-[#2B4BFF] text-white'
+                : 'rounded-tr-md border border-[#B7D8D6] bg-[#ECEFFF] text-[#174544]'
           }`}
         >
           {message.content}
@@ -313,7 +313,7 @@ const MessageBubble = ({ message }: { message: ConversationMessage }) => {
 
 const ContactItem = ({ icon, value }: { icon: ReactNode; value: string }) => (
   <div className="flex min-w-0 items-center gap-3 text-sm text-[#374151]">
-    <span className="shrink-0 text-[#045A58]">{icon}</span>
+    <span className="shrink-0 text-[#2B4BFF]">{icon}</span>
     <span className="break-all">{value}</span>
   </div>
 )

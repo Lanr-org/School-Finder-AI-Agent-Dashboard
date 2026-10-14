@@ -28,7 +28,7 @@ const ProgramReportsPage = () => {
       <div className="space-y-6">
         <div>
           <Link
-            className="inline-flex items-center gap-2 text-sm font-semibold text-[#045A58] transition hover:text-[#034A48]"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-[#2B4BFF] transition hover:text-[#1E36D8]"
             to="/programs"
           >
             <ArrowLeft size={16} />
@@ -47,7 +47,7 @@ const ProgramReportsPage = () => {
               <button
                 aria-selected={status === tab.value}
                 className={`h-9 rounded-xl px-4 text-sm font-semibold transition ${
-                  status === tab.value ? 'bg-[#E6F4F3] text-[#045A58]' : 'text-[#6B7280] hover:bg-[#F9FAFB]'
+                  status === tab.value ? 'bg-[#ECEFFF] text-[#2B4BFF]' : 'text-[#6B7280] hover:bg-[#F9FAFB]'
                 }`}
                 key={tab.value}
                 onClick={() => {
@@ -64,7 +64,7 @@ const ProgramReportsPage = () => {
 
           {isLoading ? (
             <div className="flex min-h-60 items-center justify-center">
-              <Loader2 className="animate-spin text-[#045A58]" size={24} />
+              <Loader2 className="animate-spin text-[#2B4BFF]" size={24} />
             </div>
           ) : isError ? (
             <div className="flex min-h-60 flex-col items-center justify-center gap-3 px-6 text-center">
@@ -84,7 +84,7 @@ const ProgramReportsPage = () => {
                 <li className="flex flex-col gap-3 px-5 py-5 sm:flex-row sm:items-start sm:justify-between sm:px-6" key={report.id}>
                   <div className="min-w-0">
                     <Link
-                      className="text-sm font-semibold text-[#111827] hover:text-[#045A58]"
+                      className="text-sm font-semibold text-[#111827] hover:text-[#2B4BFF]"
                       to={`/programs/${report.program.publicId}`}
                     >
                       {report.program.name}

@@ -69,7 +69,7 @@ const FillFromPageCard = ({ onDraft }: FillFromPageCardProps) => {
   return (
     <Card>
       <div className="flex items-start gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#E6F4F3] text-[#045A58]">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#ECEFFF] text-[#2B4BFF]">
           <Sparkles size={19} />
         </div>
         <div className="min-w-0 flex-1">
@@ -112,7 +112,7 @@ const FillFromPageCard = ({ onDraft }: FillFromPageCardProps) => {
                 Or paste the page text
               </label>
               <textarea
-                className="w-full resize-y rounded-xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm leading-6 text-[#111827] outline-none transition placeholder:text-[#9CA3AF] focus:border-[#045A58] focus:ring-4 focus:ring-[#E6F4F3]"
+                className="w-full resize-y rounded-xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm leading-6 text-[#111827] outline-none transition placeholder:text-[#9CA3AF] focus:border-[#2B4BFF] focus:ring-4 focus:ring-[#ECEFFF]"
                 id="extract-text"
                 onChange={(event) => setPageText(event.target.value)}
                 placeholder="On the course page press Ctrl+A, then Ctrl+C, and paste here. Open the fees and entry requirements sections first if they are folded."
@@ -138,7 +138,7 @@ const FillFromPageCard = ({ onDraft }: FillFromPageCardProps) => {
             </div>
           ) : (
             <button
-              className="mt-3 text-sm font-semibold text-[#045A58] hover:text-[#034A48]"
+              className="mt-3 text-sm font-semibold text-[#2B4BFF] hover:text-[#1E36D8]"
               onClick={() => setShowPaste(true)}
               type="button"
             >
@@ -156,7 +156,7 @@ const FillFromPageCard = ({ onDraft }: FillFromPageCardProps) => {
           {result ? (
             <div className="mt-4 space-y-2 border-t border-[#E5E7EB] pt-4 text-sm leading-6">
               <p className="flex items-start gap-2 text-[#111827]">
-                <CheckCircle2 className="mt-1 shrink-0 text-[#045A58]" size={15} />
+                <CheckCircle2 className="mt-1 shrink-0 text-[#2B4BFF]" size={15} />
                 {filled > 0
                   ? `Filled ${filled} ${filled === 1 ? 'field' : 'fields'} from the page. Check each against its quote before saving.`
                   : 'Nothing on this page could be confirmed. Fill the form by hand.'}

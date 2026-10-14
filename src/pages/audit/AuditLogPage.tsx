@@ -26,7 +26,7 @@ import {
 const PAGE_SIZE = 20
 
 const selectClassName =
-  'h-11 rounded-xl border border-[#E5E7EB] bg-white px-3 text-sm font-medium text-[#374151] outline-none transition focus:border-[#045A58] focus:ring-4 focus:ring-[#E6F4F3]'
+  'h-11 rounded-xl border border-[#E5E7EB] bg-white px-3 text-sm font-medium text-[#374151] outline-none transition focus:border-[#2B4BFF] focus:ring-4 focus:ring-[#ECEFFF]'
 
 const formatDateTime = (value: string) =>
   new Date(value).toLocaleString(undefined, {
@@ -189,7 +189,7 @@ const AuditLogPage = () => {
 
           {isLoading ? (
             <div className="flex min-h-72 items-center justify-center">
-              <Loader2 className="animate-spin text-[#045A58]" size={28} />
+              <Loader2 className="animate-spin text-[#2B4BFF]" size={28} />
             </div>
           ) : isError ? (
             <div className="flex min-h-72 flex-col items-center justify-center gap-3 px-6 py-12 text-center">
@@ -249,7 +249,7 @@ const AuditLogPage = () => {
                             <p className="text-xs text-[#6B7280]">{auditEntityLabels[log.entity.type]}</p>
                             {link ? (
                               <Link
-                                className="font-semibold text-[#045A58] outline-none hover:text-[#034A48] focus:underline"
+                                className="font-semibold text-[#2B4BFF] outline-none hover:text-[#1E36D8] focus:underline"
                                 onClick={(event) => event.stopPropagation()}
                                 to={link}
                               >
@@ -281,7 +281,7 @@ const AuditLogPage = () => {
             </div>
           ) : (
             <div className="flex min-h-72 flex-col items-center justify-center px-6 py-12 text-center">
-              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#E6F4F3] text-[#045A58]">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#ECEFFF] text-[#2B4BFF]">
                 <ScrollText size={19} />
               </div>
               <h3 className="mt-4 text-sm font-semibold text-[#111827]">No audit entries found</h3>

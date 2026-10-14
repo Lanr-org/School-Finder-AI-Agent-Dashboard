@@ -42,7 +42,7 @@ const EditSchoolPage = () => {
     return (
       <AppShell>
         <div className="flex min-h-[60vh] items-center justify-center">
-          <Loader2 className="animate-spin text-[#045A58]" size={32} />
+          <Loader2 className="animate-spin text-[#2B4BFF]" size={32} />
         </div>
       </AppShell>
     )
@@ -54,7 +54,7 @@ const EditSchoolPage = () => {
         <div className="flex min-h-[60vh] flex-col items-center justify-center gap-3 text-center">
           <AlertCircle className="text-[#DC2626]" size={28} />
           <p className="text-sm text-[#6B7280]">{apiErrorMessage(error, 'Failed to load this school')}</p>
-          <Link className="text-sm font-semibold text-[#045A58] hover:text-[#034A48]" to="/schools">
+          <Link className="text-sm font-semibold text-[#2B4BFF] hover:text-[#1E36D8]" to="/schools">
             Back to Schools
           </Link>
         </div>
@@ -67,7 +67,7 @@ const EditSchoolPage = () => {
       <div className="space-y-6">
         <div>
           <Link
-            className="inline-flex items-center gap-2 text-sm font-semibold text-[#045A58] transition hover:text-[#034A48]"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-[#2B4BFF] transition hover:text-[#1E36D8]"
             to={detailPath}
           >
             <ArrowLeft size={16} />

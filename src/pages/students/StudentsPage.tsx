@@ -136,7 +136,7 @@ const StudentsPage = () => {
           </div>
 
           <Link
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-transparent bg-[#045A58] px-4 text-sm font-semibold text-white outline-none transition hover:bg-[#034A48] focus:ring-4 focus:ring-[#E6F4F3]"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-transparent bg-[#2B4BFF] px-4 text-sm font-semibold text-white outline-none transition hover:bg-[#1E36D8] focus:ring-4 focus:ring-[#ECEFFF]"
             to="/students/new"
           >
             <Plus size={17} />
@@ -181,7 +181,7 @@ const StudentsPage = () => {
                 Lead status
               </label>
               <select
-                className="h-11 rounded-xl border border-[#E5E7EB] bg-white px-4 text-sm font-medium text-[#374151] outline-none transition focus:border-[#045A58] focus:ring-4 focus:ring-[#E6F4F3]"
+                className="h-11 rounded-xl border border-[#E5E7EB] bg-white px-4 text-sm font-medium text-[#374151] outline-none transition focus:border-[#2B4BFF] focus:ring-4 focus:ring-[#ECEFFF]"
                 id="status-filter"
                 onChange={(event) => setStatus(event.target.value as StudentStatus | 'ALL')}
                 value={status}
@@ -198,7 +198,7 @@ const StudentsPage = () => {
                 Assigned advisor
               </label>
               <select
-                className="h-11 rounded-xl border border-[#E5E7EB] bg-white px-4 text-sm font-medium text-[#374151] outline-none transition focus:border-[#045A58] focus:ring-4 focus:ring-[#E6F4F3]"
+                className="h-11 rounded-xl border border-[#E5E7EB] bg-white px-4 text-sm font-medium text-[#374151] outline-none transition focus:border-[#2B4BFF] focus:ring-4 focus:ring-[#ECEFFF]"
                 id="advisor-filter"
                 onChange={(event) => setAdvisorId(event.target.value)}
                 value={advisorId}
@@ -215,7 +215,7 @@ const StudentsPage = () => {
 
           {isLoading ? (
             <div className="flex min-h-72 items-center justify-center">
-              <Loader2 className="animate-spin text-[#045A58]" size={28} />
+              <Loader2 className="animate-spin text-[#2B4BFF]" size={28} />
             </div>
           ) : isError ? (
             <div className="flex min-h-72 flex-col items-center justify-center gap-3 px-6 py-12 text-center">
@@ -246,7 +246,7 @@ const StudentsPage = () => {
                     <tr className="transition hover:bg-[#F9FAFB]" key={student.publicId}>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#E6F4F3] text-sm font-semibold text-[#045A58]">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#ECEFFF] text-sm font-semibold text-[#2B4BFF]">
                             {student.contact.firstName[0]}
                             {student.contact.lastName?.[0] ?? ''}
                           </div>
@@ -287,7 +287,7 @@ const StudentsPage = () => {
                       <td className="px-6 py-4">
                         {student.assignedAdvisor ? (
                           <span className="inline-flex items-center gap-2 text-sm font-medium text-[#111827]">
-                            <UserRoundCheck className="text-[#045A58]" size={16} />
+                            <UserRoundCheck className="text-[#2B4BFF]" size={16} />
                             {student.assignedAdvisor.fullName}
                           </span>
                         ) : (
@@ -302,7 +302,7 @@ const StudentsPage = () => {
                       </td>
                       <td className="px-6 py-4 text-right">
                         <Link
-                          className="inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-transparent bg-transparent px-3 text-sm font-semibold text-[#045A58] outline-none transition hover:bg-[#E6F4F3] hover:text-[#034A48] focus:ring-4 focus:ring-[#E6F4F3]"
+                          className="inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-transparent bg-transparent px-3 text-sm font-semibold text-[#2B4BFF] outline-none transition hover:bg-[#ECEFFF] hover:text-[#1E36D8] focus:ring-4 focus:ring-[#ECEFFF]"
                           to={`/students/${student.publicId}`}
                         >
                           <Eye size={16} />
@@ -316,7 +316,7 @@ const StudentsPage = () => {
             </div>
           ) : (
             <div className="flex min-h-72 flex-col items-center justify-center px-6 py-12 text-center">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#E6F4F3] text-[#045A58]">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#ECEFFF] text-[#2B4BFF]">
                 <Users size={21} />
               </div>
               <h3 className="mt-4 text-base font-semibold text-[#111827]">No students match this view</h3>

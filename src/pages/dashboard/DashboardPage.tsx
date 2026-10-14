@@ -108,7 +108,7 @@ const DashboardContent = ({ summary }: { summary: DashboardSummary }) => {
                   <p className="mt-3 text-3xl font-semibold tracking-normal text-[#111827]">{metric.value}</p>
                   <p className="mt-2 text-xs font-medium text-[#6B7280]">{metric.detail}</p>
                 </div>
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#E6F4F3] text-[#045A58]">
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#ECEFFF] text-[#2B4BFF]">
                   <Icon size={20} />
                 </div>
               </div>
@@ -167,7 +167,7 @@ const DashboardContent = ({ summary }: { summary: DashboardSummary }) => {
               )}
             </div>
             <div className="h-2 rounded-full bg-[#F3F4F6]">
-              <div className="h-2 rounded-full bg-[#045A58]" style={{ width: `${assignedShare}%` }} />
+              <div className="h-2 rounded-full bg-[#2B4BFF]" style={{ width: `${assignedShare}%` }} />
             </div>
             <p className="text-sm leading-6 text-[#6B7280]">{assignedShare}% of open leads have an advisor.</p>
           </div>
@@ -181,7 +181,7 @@ const DashboardContent = ({ summary }: { summary: DashboardSummary }) => {
               <h2 className="text-lg font-semibold text-[#111827]">Top destinations</h2>
               <p className="mt-1 text-sm text-[#6B7280]">Lead interest by country</p>
             </div>
-            <School className="text-[#045A58]" size={20} />
+            <School className="text-[#2B4BFF]" size={20} />
           </div>
 
           {summary.topDestinations.length ? (
@@ -194,7 +194,7 @@ const DashboardContent = ({ summary }: { summary: DashboardSummary }) => {
                   </div>
                   <div className="h-2 rounded-full bg-[#F3F4F6]">
                     <div
-                      className="h-2 rounded-full bg-[#045A58]"
+                      className="h-2 rounded-full bg-[#2B4BFF]"
                       style={{ width: `${Math.round(destination.percent)}%` }}
                     />
                   </div>
@@ -213,11 +213,11 @@ const DashboardContent = ({ summary }: { summary: DashboardSummary }) => {
               <p className="mt-1 text-sm text-[#6B7280]">Active students and follow-ups</p>
             </div>
             {summary.scope === 'ALL' ? (
-              <Link className="text-sm font-semibold text-[#045A58] hover:text-[#034A48]" to="/advisors">
+              <Link className="text-sm font-semibold text-[#2B4BFF] hover:text-[#1E36D8]" to="/advisors">
                 View all
               </Link>
             ) : (
-              <Users className="text-[#045A58]" size={20} />
+              <Users className="text-[#2B4BFF]" size={20} />
             )}
           </div>
 
@@ -253,7 +253,7 @@ const DashboardContent = ({ summary }: { summary: DashboardSummary }) => {
               <h2 className="text-lg font-semibold text-[#111827]">Pending follow-ups</h2>
               <p className="mt-1 text-sm text-[#6B7280]">Student actions due soonest</p>
             </div>
-            <Clock3 className="text-[#045A58]" size={20} />
+            <Clock3 className="text-[#2B4BFF]" size={20} />
           </div>
 
           {summary.pendingFollowUps === null ? (
@@ -290,7 +290,7 @@ const DashboardContent = ({ summary }: { summary: DashboardSummary }) => {
             <h2 className="text-lg font-semibold text-[#111827]">Recently recommended schools</h2>
             <p className="mt-1 text-sm text-[#6B7280]">Top match from each of the latest recommendation runs</p>
           </div>
-          <Sparkles className="text-[#045A58]" size={20} />
+          <Sparkles className="text-[#2B4BFF]" size={20} />
         </div>
 
         {summary.recentRecommendations === null ? (
@@ -313,17 +313,17 @@ const DashboardContent = ({ summary }: { summary: DashboardSummary }) => {
                 {summary.recentRecommendations.map((recommendation) => (
                   <tr className="hover:bg-[#F9FAFB]" key={recommendation.studentId}>
                     <td className="px-6 py-4 text-sm font-semibold text-[#111827]">
-                      <Link className="hover:text-[#045A58]" to={`/students/${recommendation.studentId}`}>
+                      <Link className="hover:text-[#2B4BFF]" to={`/students/${recommendation.studentId}`}>
                         {recommendation.studentName}
                       </Link>
                     </td>
                     <td className="px-6 py-4 text-sm text-[#6B7280]">
-                      <Link className="hover:text-[#045A58]" to={`/programs/${recommendation.program.publicId}`}>
+                      <Link className="hover:text-[#2B4BFF]" to={`/programs/${recommendation.program.publicId}`}>
                         {recommendation.program.name}
                       </Link>
                     </td>
                     <td className="px-6 py-4 text-sm text-[#111827]">
-                      <Link className="hover:text-[#045A58]" to={`/schools/${recommendation.school.publicId}`}>
+                      <Link className="hover:text-[#2B4BFF]" to={`/schools/${recommendation.school.publicId}`}>
                         {recommendation.school.name}
                       </Link>
                     </td>
@@ -380,7 +380,7 @@ const DashboardPage = () => {
 
         {isLoading ? (
           <Card className="flex min-h-72 items-center justify-center">
-            <Loader2 className="animate-spin text-[#045A58]" size={28} />
+            <Loader2 className="animate-spin text-[#2B4BFF]" size={28} />
           </Card>
         ) : isError || !data ? (
           <Card className="flex min-h-72 flex-col items-center justify-center gap-3 text-center">

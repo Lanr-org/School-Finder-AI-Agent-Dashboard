@@ -183,7 +183,7 @@ const StudentDetailPage = () => {
     return (
       <AppShell>
         <div className="flex min-h-[60vh] items-center justify-center">
-          <Loader2 className="animate-spin text-[#045A58]" size={32} />
+          <Loader2 className="animate-spin text-[#2B4BFF]" size={32} />
         </div>
       </AppShell>
     )
@@ -199,7 +199,7 @@ const StudentDetailPage = () => {
               ? (error.response?.data.error.message ?? 'Failed to load this student')
               : 'Failed to load this student'}
           </p>
-          <Link className="text-sm font-semibold text-[#045A58] hover:text-[#034A48]" to="/students">
+          <Link className="text-sm font-semibold text-[#2B4BFF] hover:text-[#1E36D8]" to="/students">
             Back to Students / Leads
           </Link>
         </div>
@@ -223,7 +223,7 @@ const StudentDetailPage = () => {
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div>
             <Link
-              className="inline-flex items-center gap-2 text-sm font-semibold text-[#045A58] transition hover:text-[#034A48]"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-[#2B4BFF] transition hover:text-[#1E36D8]"
               to="/students"
             >
               <ArrowLeft size={16} />
@@ -260,7 +260,7 @@ const StudentDetailPage = () => {
           <div className="space-y-6">
             <Card>
               <div className="flex items-start gap-4">
-                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[20px] bg-[#E6F4F3] text-lg font-semibold text-[#045A58]">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[20px] bg-[#ECEFFF] text-lg font-semibold text-[#2B4BFF]">
                   {initials || '—'}
                 </div>
                 <div className="min-w-0">
@@ -278,7 +278,7 @@ const StudentDetailPage = () => {
 
                   return (
                     <div className="flex items-start gap-3" key={item.label}>
-                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#F3F4F6] text-[#045A58]">
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#F3F4F6] text-[#2B4BFF]">
                         <Icon size={17} />
                       </div>
                       <div>
@@ -301,7 +301,7 @@ const StudentDetailPage = () => {
                 </div>
                 <button
                   aria-label="Update student workflow status"
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[#045A58] outline-none transition hover:bg-[#E6F4F3] focus:ring-4 focus:ring-[#E6F4F3]"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[#2B4BFF] outline-none transition hover:bg-[#ECEFFF] focus:ring-4 focus:ring-[#ECEFFF]"
                   onClick={() => setIsStatusModalOpen(true)}
                   title="Update status"
                   type="button"
@@ -326,7 +326,7 @@ const StudentDetailPage = () => {
                       >
                         <div className="flex items-center gap-3">
                           <CheckCircle2
-                            className={stepState === 'Pending' ? 'text-[#9CA3AF]' : 'text-[#045A58]'}
+                            className={stepState === 'Pending' ? 'text-[#9CA3AF]' : 'text-[#2B4BFF]'}
                             size={18}
                           />
                           <span className="text-sm font-semibold text-[#111827]">{statusLabels[step]}</span>
@@ -375,7 +375,7 @@ const StudentDetailPage = () => {
           <div className="space-y-6">
             <div className="grid gap-6 lg:grid-cols-3">
               <Card>
-                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-2xl bg-[#E6F4F3] text-[#045A58]">
+                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-2xl bg-[#ECEFFF] text-[#2B4BFF]">
                   <School size={19} />
                 </div>
                 <p className="text-sm font-medium text-[#6B7280]">Destination</p>
@@ -384,14 +384,14 @@ const StudentDetailPage = () => {
                 </p>
               </Card>
               <Card>
-                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-2xl bg-[#E6F4F3] text-[#045A58]">
+                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-2xl bg-[#ECEFFF] text-[#2B4BFF]">
                   <BookOpen size={19} />
                 </div>
                 <p className="text-sm font-medium text-[#6B7280]">Study level</p>
                 <p className="mt-2 text-lg font-semibold text-[#111827]">{student.studyLevel ?? 'Not specified'}</p>
               </Card>
               <Card>
-                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-2xl bg-[#E6F4F3] text-[#045A58]">
+                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-2xl bg-[#ECEFFF] text-[#2B4BFF]">
                   <GraduationCap size={19} />
                 </div>
                 <p className="text-sm font-medium text-[#6B7280]">Budget and intake</p>
@@ -467,7 +467,7 @@ const StudentDetailPage = () => {
               <FileCheck2 className="mx-auto text-[#9CA3AF]" size={20} />
               <p className="mt-2 text-sm font-medium text-[#374151]">No applications yet</p>
               <button
-                className="mt-2 text-sm font-semibold text-[#045A58] outline-none hover:text-[#034A48] focus:underline"
+                className="mt-2 text-sm font-semibold text-[#2B4BFF] outline-none hover:text-[#1E36D8] focus:underline"
                 onClick={() => setIsCreateApplicationOpen(true)}
                 type="button"
               >
@@ -542,7 +542,7 @@ const StudentDetailPage = () => {
                         <Badge tone={followUpStatusTone[followUp.status]}>{followUp.status}</Badge>
                         <span className="text-xs font-semibold text-[#374151]">{followUp.priority}</span>
                       </div>
-                      <p className="mt-2 text-xs font-medium text-[#045A58]">Due {formatDateTime(followUp.dueAt)}</p>
+                      <p className="mt-2 text-xs font-medium text-[#2B4BFF]">Due {formatDateTime(followUp.dueAt)}</p>
                       <p className="mt-2 text-sm leading-5 text-[#4B5563]">{followUp.description}</p>
                       {followUp.status === 'PENDING' || followUp.status === 'OVERDUE' ? (
                         <div className="mt-3 flex gap-2">
@@ -572,7 +572,7 @@ const StudentDetailPage = () => {
                   <CalendarPlus className="mx-auto text-[#9CA3AF]" size={20} />
                   <p className="mt-2 text-sm font-medium text-[#374151]">No follow-up scheduled</p>
                   <button
-                    className="mt-2 text-sm font-semibold text-[#045A58] outline-none hover:text-[#034A48] focus:underline"
+                    className="mt-2 text-sm font-semibold text-[#2B4BFF] outline-none hover:text-[#1E36D8] focus:underline"
                     onClick={() => openQuickEntry('follow-up')}
                     type="button"
                   >
