@@ -124,7 +124,7 @@ const Topbar = ({ onMenuClick }: TopbarProps) => {
         <div className="flex h-20 items-center gap-4 px-4 sm:px-6 lg:px-8">
         <button
           aria-label="Open navigation"
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#E5E7EB] bg-white text-[#6B7280] outline-none transition hover:border-[#D1D5DB] hover:bg-[#F9FAFB] hover:text-[#111827] focus:ring-4 focus:ring-[#E6F4F3] lg:hidden"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-[#E5E7EB] bg-white text-[#6B7280] outline-none transition hover:border-[#D1D5DB] hover:bg-[#F9FAFB] hover:text-[#111827] focus:ring-4 focus:ring-[#ECEFFF] lg:hidden"
           onClick={onMenuClick}
           type="button"
         >
@@ -144,7 +144,7 @@ const Topbar = ({ onMenuClick }: TopbarProps) => {
         <div className="flex shrink-0 items-center gap-3">
           <Link
             aria-label="Add student"
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-transparent bg-[#045A58] text-white outline-none transition hover:bg-[#034A48] focus:ring-4 focus:ring-[#E6F4F3] xl:w-auto xl:gap-2 xl:px-4"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-transparent bg-[#2B4BFF] text-white outline-none transition hover:bg-[#1E36D8] focus:ring-4 focus:ring-[#ECEFFF] xl:w-auto xl:gap-2 xl:px-4"
             to="/students/new"
           >
             <Plus size={24} strokeWidth={2.8} />
@@ -156,9 +156,9 @@ const Topbar = ({ onMenuClick }: TopbarProps) => {
               aria-expanded={isNotificationsOpen}
               aria-haspopup="dialog"
               aria-label={`View notifications${unreadCount ? `, ${unreadCount} unread` : ''}`}
-              className={`relative flex h-10 w-10 items-center justify-center rounded-xl border bg-white outline-none transition focus:ring-4 focus:ring-[#E6F4F3] ${
+              className={`relative flex h-10 w-10 items-center justify-center rounded-xl border bg-white outline-none transition focus:ring-4 focus:ring-[#ECEFFF] ${
                 isNotificationsOpen
-                  ? 'border-[#B9DAD8] bg-[#E6F4F3] text-[#045A58]'
+                  ? 'border-[#C2CBFF] bg-[#ECEFFF] text-[#2B4BFF]'
                   : 'border-[#E5E7EB] text-[#6B7280] hover:border-[#D1D5DB] hover:bg-[#F9FAFB] hover:text-[#111827]'
               }`}
               onClick={() => {
@@ -186,7 +186,7 @@ const Topbar = ({ onMenuClick }: TopbarProps) => {
                     <div className="flex items-center gap-2">
                       <h2 className="text-base font-semibold text-[#111827]">Notifications</h2>
                       {unreadCount ? (
-                        <span className="rounded-full bg-[#E6F4F3] px-2 py-0.5 text-xs font-semibold text-[#045A58]">
+                        <span className="rounded-full bg-[#ECEFFF] px-2 py-0.5 text-xs font-semibold text-[#2B4BFF]">
                           {unreadCount} unread
                         </span>
                       ) : null}
@@ -195,7 +195,7 @@ const Topbar = ({ onMenuClick }: TopbarProps) => {
                   </div>
                   {unreadCount ? (
                     <button
-                      className="inline-flex shrink-0 items-center gap-1.5 text-xs font-semibold text-[#045A58] outline-none hover:text-[#034A48] focus:underline"
+                      className="inline-flex shrink-0 items-center gap-1.5 text-xs font-semibold text-[#2B4BFF] outline-none hover:text-[#1E36D8] focus:underline"
                       onClick={() => markAllRead.mutate()}
                       type="button"
                     >
@@ -213,7 +213,7 @@ const Topbar = ({ onMenuClick }: TopbarProps) => {
                         return (
                         <Link
                           className={`flex gap-3 border-b border-[#E5E7EB] px-4 py-4 transition last:border-b-0 hover:bg-[#F9FAFB] ${
-                            read ? 'bg-white' : 'bg-[#F2F9F8]'
+                            read ? 'bg-white' : 'bg-[#F5F7FF]'
                           }`}
                           key={notification.id}
                           onClick={() => {
@@ -226,7 +226,7 @@ const Topbar = ({ onMenuClick }: TopbarProps) => {
                             className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${
                               read
                                 ? 'bg-[#F3F4F6] text-[#6B7280]'
-                                : 'bg-[#E6F4F3] text-[#045A58]'
+                                : 'bg-[#ECEFFF] text-[#2B4BFF]'
                             }`}
                           >
                             {notificationIcons[notification.type]}
@@ -235,7 +235,7 @@ const Topbar = ({ onMenuClick }: TopbarProps) => {
                             <div className="flex items-start justify-between gap-3">
                               <p className="text-sm font-semibold text-[#111827]">{notification.title}</p>
                               {!read ? (
-                                <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[#045A58]" />
+                                <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-[#2B4BFF]" />
                               ) : null}
                             </div>
                             <p className="mt-1 text-sm leading-5 text-[#6B7280]">{notification.body}</p>
@@ -247,7 +247,7 @@ const Topbar = ({ onMenuClick }: TopbarProps) => {
                     </div>
                     <div className="border-t border-[#E5E7EB] px-4 py-3">
                       <button
-                        className="inline-flex w-full items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-[#6B7280] outline-none transition hover:bg-[#F3F4F6] hover:text-[#B42318] focus:ring-4 focus:ring-[#E6F4F3]"
+                        className="inline-flex w-full items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-[#6B7280] outline-none transition hover:bg-[#F3F4F6] hover:text-[#B42318] focus:ring-4 focus:ring-[#ECEFFF]"
                         onClick={() => clear.mutate()}
                         type="button"
                       >
@@ -258,7 +258,7 @@ const Topbar = ({ onMenuClick }: TopbarProps) => {
                   </>
                 ) : (
                   <div className="flex min-h-60 flex-col items-center justify-center px-6 py-10 text-center">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#E6F4F3] text-[#045A58]">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#ECEFFF] text-[#2B4BFF]">
                       <Bell size={21} />
                     </div>
                     <h3 className="mt-4 text-sm font-semibold text-[#111827]">You are all caught up</h3>
@@ -276,14 +276,14 @@ const Topbar = ({ onMenuClick }: TopbarProps) => {
               aria-expanded={isProfileMenuOpen}
               aria-label="Open profile menu"
               aria-haspopup="menu"
-              className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#E5E7EB] bg-white outline-none transition hover:border-[#D1D5DB] hover:bg-[#F9FAFB] focus:ring-4 focus:ring-[#E6F4F3] md:h-11 md:w-auto md:gap-3 md:px-2.5 md:pr-3"
+              className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#E5E7EB] bg-white outline-none transition hover:border-[#D1D5DB] hover:bg-[#F9FAFB] focus:ring-4 focus:ring-[#ECEFFF] md:h-11 md:w-auto md:gap-3 md:px-2.5 md:pr-3"
               onClick={() => {
                 setIsProfileMenuOpen((isOpen) => !isOpen)
                 setIsNotificationsOpen(false)
               }}
               type="button"
             >
-              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#E6F4F3] text-xs font-semibold text-[#045A58] md:h-8 md:w-8 md:rounded-xl md:text-sm">
+              <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#ECEFFF] text-xs font-semibold text-[#2B4BFF] md:h-8 md:w-8 md:rounded-xl md:text-sm">
                 {currentUser.initials}
               </span>
               <span className="hidden text-left md:block">

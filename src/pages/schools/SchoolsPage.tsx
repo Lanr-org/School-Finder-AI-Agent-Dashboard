@@ -11,6 +11,7 @@ import {
   Pencil,
   Plus,
   Search,
+  ShieldCheck,
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
@@ -24,7 +25,8 @@ import Input from '../../components/ui/Input.js'
 import { api } from '../../lib/api/client.js'
 import type { ApiErrorResponse } from '../../lib/api/types.js'
 import { useAuthStore } from '../../store/authStore.js'
-import { useSchools } from '../../features/schools/useSchools.js'
+import { useSchools, useSyncSponsorRegister } from '../../features/schools/useSchools.js'
+import { apiErrorMessage } from '../../lib/api/errors.js'
 import type { PartnerStatus, School, SchoolType } from '../../features/schools/schools.api.js'
 
 const PAGE_SIZE = 20
@@ -63,6 +65,7 @@ const formatDate = (value: string) =>
 const SchoolsPage = () => {
   const queryClient = useQueryClient()
   const canManage = useAuthStore((state) => (state.user ? MANAGE_ROLES.includes(state.user.role) : false))
+  const syncRegister = useSyncSponsorRegister()
   const [searchInput, setSearchInput] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [type, setType] = useState<SchoolType | 'ALL'>('ALL')
@@ -117,8 +120,19 @@ const SchoolsPage = () => {
               Export directory
             </Button>
             {canManage ? (
+              <Button
+                disabled={syncRegister.isPending}
+                leftIcon={<ShieldCheck size={17} />}
+                onClick={() => syncRegister.mutate()}
+                size="md"
+                variant="secondary"
+              >
+                {syncRegister.isPending ? 'Checking register…' : 'Check UK sponsor register'}
+              </Button>
+            ) : null}
+            {canManage ? (
               <Link
-                className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-transparent bg-[#045A58] px-4 text-sm font-semibold text-white outline-none transition hover:bg-[#034A48] focus:ring-4 focus:ring-[#E6F4F3]"
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-transparent bg-[#2B4BFF] px-4 text-sm font-semibold text-white outline-none transition hover:bg-[#1E36D8] focus:ring-4 focus:ring-[#ECEFFF]"
                 to="/schools/new"
               >
                 <Plus size={17} />
@@ -127,6 +141,37 @@ const SchoolsPage = () => {
             ) : null}
           </div>
         </div>
+
+        {syncRegister.isSuccess ? (
+          <Card>
+            <p className="text-sm font-semibold text-[#111827]">
+              Checked {syncRegister.data.ukSchools} UK schools against today's Home Office register:{' '}
+              {syncRegister.data.licensed} licensed
+              {syncRegister.data.notListed > 0 ? `, ${syncRegister.data.notListed} no longer listed` : ''}
+              {syncRegister.data.unmatched.length > 0 ? `, ${syncRegister.data.unmatched.length} not found by name` : ''}.
+            </p>
+            {syncRegister.data.unmatched.length > 0 ? (
+              <ul className="mt-3 space-y-1 text-sm text-[#6B7280]">
+                {syncRegister.data.unmatched.map((school) => (
+                  <li key={school.publicId}>
+                    <Link className="font-semibold text-[#2B4BFF] hover:text-[#1E36D8]" to={`/schools/${school.publicId}`}>
+                      {school.name}
+                    </Link>
+                    {school.note ? ` — ${school.note}` : ''}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            <p className="mt-2 text-xs text-[#6B7280]">This check also runs by itself every morning.</p>
+          </Card>
+        ) : null}
+        {syncRegister.isError ? (
+          <Card>
+            <p className="text-sm text-[#991B1B]" role="alert">
+              {apiErrorMessage(syncRegister.error, "Couldn't reach the Home Office register. Try again later.")}
+            </p>
+          </Card>
+        ) : null}
 
         <Card className="p-0">
           <div className="border-b border-[#E5E7EB] px-5 py-5 sm:px-6">
@@ -176,7 +221,7 @@ const SchoolsPage = () => {
 
           {isLoading ? (
             <div className="flex min-h-72 flex-col items-center justify-center gap-3 px-6 py-12 text-center">
-              <Loader2 className="animate-spin text-[#045A58]" size={24} />
+              <Loader2 className="animate-spin text-[#2B4BFF]" size={24} />
               <p className="text-sm text-[#6B7280]">Loading schools…</p>
             </div>
           ) : isError ? (
@@ -207,13 +252,13 @@ const SchoolsPage = () => {
                     <tr className="transition hover:bg-[#F9FAFB]" key={school.publicId}>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#E6F4F3] text-[#045A58]">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#ECEFFF] text-[#2B4BFF]">
                             <Building2 size={18} />
                           </div>
                           <div>
                             <div className="flex items-center gap-2">
                               <Link
-                                className="text-sm font-semibold text-[#111827] outline-none transition hover:text-[#045A58] focus:underline"
+                                className="text-sm font-semibold text-[#111827] outline-none transition hover:text-[#2B4BFF] focus:underline"
                                 to={`/schools/${school.publicId}`}
                               >
                                 {school.name}
@@ -245,7 +290,7 @@ const SchoolsPage = () => {
                           <div className="flex items-center gap-3">
                             <div className="h-2 w-20 rounded-full bg-[#E5E7EB]">
                               <div
-                                className="h-2 rounded-full bg-[#045A58]"
+                                className="h-2 rounded-full bg-[#2B4BFF]"
                                 style={{ width: `${school.visaFriendlinessScore}%` }}
                               />
                             </div>
@@ -263,7 +308,7 @@ const SchoolsPage = () => {
                           <div className="flex items-center justify-end gap-1">
                             <Link
                               aria-label={`Edit ${school.name}`}
-                              className="flex h-9 w-9 items-center justify-center rounded-xl text-[#6B7280] outline-none transition hover:bg-[#E6F4F3] hover:text-[#045A58] focus:ring-4 focus:ring-[#E6F4F3]"
+                              className="flex h-9 w-9 items-center justify-center rounded-xl text-[#6B7280] outline-none transition hover:bg-[#ECEFFF] hover:text-[#2B4BFF] focus:ring-4 focus:ring-[#ECEFFF]"
                               title="Edit school"
                               to={`/schools/${school.publicId}/edit`}
                             >
@@ -295,7 +340,7 @@ const SchoolsPage = () => {
             </div>
           ) : (
             <div className="flex min-h-72 flex-col items-center justify-center px-6 py-12 text-center">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#E6F4F3] text-[#045A58]">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#ECEFFF] text-[#2B4BFF]">
                 <Building2 size={21} />
               </div>
               <h3 className="mt-4 text-base font-semibold text-[#111827]">No schools match these filters</h3>
@@ -369,7 +414,7 @@ const FilterSelect = <TValue extends string>({ id, label, onChange, options, val
         {label}
       </label>
       <select
-        className="h-11 w-full rounded-xl border border-[#E5E7EB] bg-white px-3 text-sm font-medium text-[#374151] outline-none transition focus:border-[#045A58] focus:ring-4 focus:ring-[#E6F4F3]"
+        className="h-11 w-full rounded-xl border border-[#E5E7EB] bg-white px-3 text-sm font-medium text-[#374151] outline-none transition focus:border-[#2B4BFF] focus:ring-4 focus:ring-[#ECEFFF]"
         id={id}
         onChange={(event) => onChange(event.target.value as TValue)}
         value={value}

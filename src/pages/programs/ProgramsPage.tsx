@@ -1,6 +1,10 @@
 import {
   AlertCircle,
+  AlertTriangle,
+  BadgeCheck,
   BookOpen,
+  CircleDashed,
+  Flag,
   ChevronLeft,
   ChevronRight,
   CircleDollarSign,
@@ -22,7 +26,12 @@ import type { ApiErrorResponse } from '../../lib/api/types.js'
 import { useAuthStore } from '../../store/authStore.js'
 import { useSchools } from '../../features/schools/useSchools.js'
 import { usePrograms } from '../../features/programs/usePrograms.js'
-import type { ProgramIntake, StudyLevel } from '../../features/programs/programs.api.js'
+import type {
+  ProgramIntake,
+  StudyLevel,
+  VerificationStatus,
+} from '../../features/programs/programs.api.js'
+import { VERIFICATION_LABEL } from '../../features/programs/programs.format.js'
 
 const PAGE_SIZE = 20
 const MANAGE_ROLES = ['ADMIN', 'OPERATIONS']
@@ -34,6 +43,19 @@ const studyLevelOptions: { label: string; value: StudyLevel | 'ALL' }[] = [
   { label: 'Doctorate', value: 'DOCTORATE' },
   { label: 'Foundation', value: 'FOUNDATION' },
 ]
+
+const verificationOptions: { label: string; value: VerificationStatus | 'ALL' }[] = [
+  { label: 'Any data check', value: 'ALL' },
+  { label: 'Verified', value: 'VERIFIED' },
+  { label: 'Needs re-check', value: 'NEEDS_RECHECK' },
+  { label: 'Not verified', value: 'UNVERIFIED' },
+]
+
+const VERIFICATION_ICON = {
+  VERIFIED: <BadgeCheck className="text-[#166534]" size={13} />,
+  NEEDS_RECHECK: <AlertTriangle className="text-[#B45309]" size={13} />,
+  UNVERIFIED: <CircleDashed className="text-[#9CA3AF]" size={13} />,
+} satisfies Record<VerificationStatus, React.ReactNode>
 
 const studyLevelLabels: Record<StudyLevel, string> = {
   DOCTORATE: 'Doctorate',
@@ -62,6 +84,7 @@ const ProgramsPage = () => {
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [studyLevel, setStudyLevel] = useState<StudyLevel | 'ALL'>('ALL')
   const [schoolId, setSchoolId] = useState('ALL')
+  const [verification, setVerification] = useState<VerificationStatus | 'ALL'>('ALL')
   const [page, setPage] = useState(1)
 
   useEffect(() => {
@@ -79,8 +102,9 @@ const ProgramsPage = () => {
       search: debouncedSearch || undefined,
       studyLevel: studyLevel === 'ALL' ? undefined : studyLevel,
       schoolId: schoolId === 'ALL' ? undefined : schoolId,
+      verificationStatus: verification === 'ALL' ? undefined : verification,
     }),
-    [debouncedSearch, page, schoolId, studyLevel],
+    [debouncedSearch, page, schoolId, studyLevel, verification],
   )
 
   const { data, error, isError, isLoading, isFetching } = usePrograms(queryParams)
@@ -103,13 +127,22 @@ const ProgramsPage = () => {
           </div>
 
           {canManage ? (
-            <Link
-              className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-transparent bg-[#045A58] px-4 text-sm font-semibold text-white outline-none transition hover:bg-[#034A48] focus:ring-4 focus:ring-[#E6F4F3]"
-              to="/programs/new"
-            >
-              <Plus size={17} />
-              Add program
-            </Link>
+            <div className="flex flex-wrap gap-3">
+              <Link
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-[#E5E7EB] bg-white px-4 text-sm font-semibold text-[#111827] outline-none transition hover:border-[#D1D5DB] hover:bg-[#F9FAFB] focus:ring-4 focus:ring-[#ECEFFF]"
+                to="/programs/reports"
+              >
+                <Flag size={17} />
+                Outdated-data reports
+              </Link>
+              <Link
+                className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-transparent bg-[#2B4BFF] px-4 text-sm font-semibold text-white outline-none transition hover:bg-[#1E36D8] focus:ring-4 focus:ring-[#ECEFFF]"
+                to="/programs/new"
+              >
+                <Plus size={17} />
+                Add program
+              </Link>
+            </div>
           ) : null}
         </div>
 
@@ -122,7 +155,7 @@ const ProgramsPage = () => {
               </p>
             </div>
 
-            <div className="mt-5 grid gap-3 xl:grid-cols-[minmax(280px,1fr)_220px_200px]">
+            <div className="mt-5 grid gap-3 xl:grid-cols-[minmax(280px,1fr)_220px_200px_200px]">
               <Input
                 className="h-11 bg-[#F9FAFB]"
                 id="program-search"
@@ -158,12 +191,22 @@ const ProgramsPage = () => {
                 options={studyLevelOptions}
                 value={studyLevel}
               />
+              <FilterSelect
+                id="verification-filter"
+                label="Data check"
+                onChange={(value) => {
+                  setVerification(value as VerificationStatus | 'ALL')
+                  resetToFirstPage()
+                }}
+                options={verificationOptions}
+                value={verification}
+              />
             </div>
           </div>
 
           {isLoading ? (
             <div className="flex min-h-72 flex-col items-center justify-center gap-3 px-6 py-12 text-center">
-              <Loader2 className="animate-spin text-[#045A58]" size={24} />
+              <Loader2 className="animate-spin text-[#2B4BFF]" size={24} />
               <p className="text-sm text-[#6B7280]">Loading programs…</p>
             </div>
           ) : isError ? (
@@ -195,12 +238,12 @@ const ProgramsPage = () => {
                     <tr className="transition hover:bg-[#F9FAFB]" key={program.publicId}>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#E6F4F3] text-[#045A58]">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#ECEFFF] text-[#2B4BFF]">
                             <BookOpen size={18} />
                           </div>
                           <div>
                             <Link
-                              className="text-sm font-semibold text-[#111827] outline-none transition hover:text-[#045A58] focus:underline"
+                              className="text-sm font-semibold text-[#111827] outline-none transition hover:text-[#2B4BFF] focus:underline"
                               to={`/programs/${program.publicId}`}
                             >
                               {program.name}
@@ -208,12 +251,16 @@ const ProgramsPage = () => {
                             <p className="mt-1 text-xs font-medium text-[#6B7280]">
                               {program.publicId} · {program.category}
                             </p>
+                            <p className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-[#6B7280]">
+                              {VERIFICATION_ICON[program.verificationStatus]}
+                              {VERIFICATION_LABEL[program.verificationStatus]}
+                            </p>
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4">
                         <Link
-                          className="inline-flex items-center gap-2 text-sm font-semibold text-[#045A58] outline-none hover:text-[#034A48] focus:underline"
+                          className="inline-flex items-center gap-2 text-sm font-semibold text-[#2B4BFF] outline-none hover:text-[#1E36D8] focus:underline"
                           to={`/schools/${program.school.publicId}`}
                         >
                           <School size={16} />
@@ -251,7 +298,7 @@ const ProgramsPage = () => {
                         {canManage ? (
                           <Link
                             aria-label={`Edit ${program.name}`}
-                            className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-[#6B7280] outline-none transition hover:bg-[#E6F4F3] hover:text-[#045A58] focus:ring-4 focus:ring-[#E6F4F3]"
+                            className="inline-flex h-9 w-9 items-center justify-center rounded-xl text-[#6B7280] outline-none transition hover:bg-[#ECEFFF] hover:text-[#2B4BFF] focus:ring-4 focus:ring-[#ECEFFF]"
                             title="Edit program"
                             to={`/programs/${program.publicId}/edit`}
                           >
@@ -268,7 +315,7 @@ const ProgramsPage = () => {
             </div>
           ) : (
             <div className="flex min-h-72 flex-col items-center justify-center px-6 py-12 text-center">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#E6F4F3] text-[#045A58]">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#ECEFFF] text-[#2B4BFF]">
                 <BookOpen size={21} />
               </div>
               <h3 className="mt-4 text-base font-semibold text-[#111827]">No programs match these filters</h3>
@@ -341,7 +388,7 @@ const FilterSelect = ({ id, label, onChange, options, value }: FilterSelectProps
       {label}
     </label>
     <select
-      className="h-11 w-full rounded-xl border border-[#E5E7EB] bg-white px-3 text-sm font-medium text-[#374151] outline-none transition focus:border-[#045A58] focus:ring-4 focus:ring-[#E6F4F3]"
+      className="h-11 w-full rounded-xl border border-[#E5E7EB] bg-white px-3 text-sm font-medium text-[#374151] outline-none transition focus:border-[#2B4BFF] focus:ring-4 focus:ring-[#ECEFFF]"
       id={id}
       onChange={(event) => onChange(event.target.value)}
       value={value}

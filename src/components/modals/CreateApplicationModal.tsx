@@ -110,16 +110,16 @@ const CreateApplicationModal = ({ isOpen, onClose, studentId, studentName }: Cre
                 return (
                   <button
                     aria-pressed={isSelected}
-                    className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left outline-none transition focus:ring-4 focus:ring-[#E6F4F3] ${
+                    className={`flex w-full items-center gap-3 rounded-xl border p-3 text-left outline-none transition focus:ring-4 focus:ring-[#ECEFFF] ${
                       isSelected
-                        ? 'border-[#045A58] bg-[#F2F9F8] ring-1 ring-[#045A58]'
-                        : 'border-[#E5E7EB] bg-white hover:border-[#B9DAD8] hover:bg-[#F9FAFB]'
+                        ? 'border-[#2B4BFF] bg-[#F5F7FF] ring-1 ring-[#2B4BFF]'
+                        : 'border-[#E5E7EB] bg-white hover:border-[#C2CBFF] hover:bg-[#F9FAFB]'
                     }`}
                     key={program.publicId}
                     onClick={() => selectProgram(program)}
                     type="button"
                   >
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#E6F4F3] text-[#045A58]">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#ECEFFF] text-[#2B4BFF]">
                       <BookOpen size={16} />
                     </div>
                     <div className="min-w-0">
@@ -146,7 +146,7 @@ const CreateApplicationModal = ({ isOpen, onClose, studentId, studentName }: Cre
                 Intake
               </label>
               <select
-                className="h-11 w-full rounded-xl border border-[#E5E7EB] bg-white px-3 text-sm font-medium text-[#374151] outline-none transition focus:border-[#045A58] focus:ring-4 focus:ring-[#E6F4F3]"
+                className="h-11 w-full rounded-xl border border-[#E5E7EB] bg-white px-3 text-sm font-medium text-[#374151] outline-none transition focus:border-[#2B4BFF] focus:ring-4 focus:ring-[#ECEFFF]"
                 id="create-application-intake"
                 onChange={(event) => setIntakeKey(event.target.value)}
                 value={intakeKey}
@@ -180,7 +180,7 @@ const CreateApplicationModal = ({ isOpen, onClose, studentId, studentName }: Cre
                 Notes <span className="font-normal text-[#9CA3AF]">(optional)</span>
               </label>
               <textarea
-                className="mt-2 min-h-24 w-full resize-y rounded-xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm leading-6 text-[#111827] outline-none transition placeholder:text-[#9CA3AF] focus:border-[#045A58] focus:ring-4 focus:ring-[#E6F4F3]"
+                className="mt-2 min-h-24 w-full resize-y rounded-xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm leading-6 text-[#111827] outline-none transition placeholder:text-[#9CA3AF] focus:border-[#2B4BFF] focus:ring-4 focus:ring-[#ECEFFF]"
                 id="create-application-notes"
                 maxLength={5000}
                 onChange={(event) => setNotes(event.target.value)}

@@ -122,7 +122,7 @@ const ConversationsPage = () => {
                       {stat.value ?? '—'}
                     </p>
                   </div>
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#E6F4F3] text-[#045A58]">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#ECEFFF] text-[#2B4BFF]">
                     <Icon size={20} />
                   </div>
                 </div>
@@ -151,7 +151,7 @@ const ConversationsPage = () => {
                 />
                 <select
                   aria-label="Filter by advisor"
-                  className="h-11 rounded-xl border border-[#E5E7EB] bg-white px-3 text-sm font-medium text-[#374151] outline-none transition focus:border-[#045A58] focus:ring-4 focus:ring-[#E6F4F3]"
+                  className="h-11 rounded-xl border border-[#E5E7EB] bg-white px-3 text-sm font-medium text-[#374151] outline-none transition focus:border-[#2B4BFF] focus:ring-4 focus:ring-[#ECEFFF]"
                   onChange={(event) => setAdvisorId(event.target.value)}
                   value={advisorId}
                 >
@@ -170,7 +170,7 @@ const ConversationsPage = () => {
                 <button
                   className={`h-10 shrink-0 border-b-2 px-4 text-sm font-semibold outline-none transition ${
                     status === tab
-                      ? 'border-[#045A58] text-[#045A58]'
+                      ? 'border-[#2B4BFF] text-[#2B4BFF]'
                       : 'border-transparent text-[#6B7280] hover:text-[#111827]'
                   }`}
                   key={tab}
@@ -185,7 +185,7 @@ const ConversationsPage = () => {
 
           {isLoading ? (
             <div className="flex min-h-72 items-center justify-center">
-              <Loader2 className="animate-spin text-[#045A58]" size={28} />
+              <Loader2 className="animate-spin text-[#2B4BFF]" size={28} />
             </div>
           ) : isError ? (
             <div className="flex min-h-72 flex-col items-center justify-center gap-3 px-6 py-12 text-center">
@@ -202,7 +202,7 @@ const ConversationsPage = () => {
                 <article className="px-5 py-5 transition hover:bg-[#F9FAFB] sm:px-6" key={conversation.publicId}>
                   <div className="grid gap-5 sm:grid-cols-[220px_minmax(0,1fr)_96px] sm:items-center">
                     <div className="flex items-start gap-3">
-                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#E6F4F3] text-sm font-semibold text-[#045A58]">
+                      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#ECEFFF] text-sm font-semibold text-[#2B4BFF]">
                         {conversation.student.firstName[0]}
                         {conversation.student.lastName?.[0] ?? ''}
                       </div>
@@ -224,7 +224,7 @@ const ConversationsPage = () => {
                         <p className="text-xs font-semibold uppercase tracking-normal text-[#9CA3AF]">Assigned advisor</p>
                         {conversation.student.assignedAdvisor ? (
                           <p className="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-[#111827]">
-                            <UserRoundCheck className="text-[#045A58]" size={16} />
+                            <UserRoundCheck className="text-[#2B4BFF]" size={16} />
                             {conversation.student.assignedAdvisor.fullName}
                           </p>
                         ) : (
@@ -239,7 +239,7 @@ const ConversationsPage = () => {
 
                     <div className="flex sm:justify-end">
                       <Link
-                        className="inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-transparent bg-transparent px-3 text-sm font-semibold text-[#045A58] outline-none transition hover:bg-[#E6F4F3] hover:text-[#034A48] focus:ring-4 focus:ring-[#E6F4F3]"
+                        className="inline-flex h-9 items-center justify-center gap-2 rounded-xl border border-transparent bg-transparent px-3 text-sm font-semibold text-[#2B4BFF] outline-none transition hover:bg-[#ECEFFF] hover:text-[#1E36D8] focus:ring-4 focus:ring-[#ECEFFF]"
                         to={`/conversations/${conversation.publicId}`}
                       >
                         <Eye size={16} />
@@ -252,7 +252,7 @@ const ConversationsPage = () => {
             </div>
           ) : (
             <div className="flex min-h-72 flex-col items-center justify-center px-6 py-12 text-center">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#E6F4F3] text-[#045A58]">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#ECEFFF] text-[#2B4BFF]">
                 <MessageSquareText size={21} />
               </div>
               <h3 className="mt-4 text-base font-semibold text-[#111827]">No conversations match this view</h3>

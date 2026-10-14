@@ -78,12 +78,12 @@ const AccountAccessConfirmationModal = ({
           className={`flex items-start gap-3 rounded-xl border p-4 ${
             isDangerous
               ? 'border-[#F7C9C5] bg-[#FEF3F2]'
-              : 'border-[#B9DAD8] bg-[#F2F9F8]'
+              : 'border-[#C2CBFF] bg-[#F5F7FF]'
           }`}
         >
           <div
             className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${
-              isDangerous ? 'bg-[#FEE2E2] text-[#B42318]' : 'bg-[#E6F4F3] text-[#045A58]'
+              isDangerous ? 'bg-[#FEE2E2] text-[#B42318]' : 'bg-[#ECEFFF] text-[#2B4BFF]'
             }`}
           >
             <Icon size={18} />

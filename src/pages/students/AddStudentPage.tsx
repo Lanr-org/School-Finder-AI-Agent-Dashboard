@@ -37,7 +37,7 @@ const AddStudentPage = () => {
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div>
             <Link
-              className="inline-flex items-center gap-2 text-sm font-semibold text-[#045A58] transition hover:text-[#034A48]"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-[#2B4BFF] transition hover:text-[#1E36D8]"
               to="/students"
             >
               <ArrowLeft size={16} />
@@ -136,7 +136,7 @@ const AddStudentPage = () => {
                       key={country}
                     >
                       <input
-                        className="h-4 w-4 accent-[#045A58]"
+                        className="h-4 w-4 accent-[#2B4BFF]"
                         name="destinationCountries"
                         type="checkbox"
                         value={country}
@@ -320,7 +320,7 @@ const FormSection = ({
 }) => (
   <Card>
     <div className="mb-6 flex items-start gap-3 border-b border-[#E5E7EB] pb-5">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#E6F4F3] text-[#045A58]">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#ECEFFF] text-[#2B4BFF]">
         {icon}
       </div>
       <div>
@@ -352,7 +352,7 @@ const SelectField = ({
       {label}
     </label>
     <select
-      className="h-12 w-full rounded-xl border border-[#E5E7EB] bg-white px-4 text-sm text-[#111827] outline-none transition focus:border-[#045A58] focus:ring-4 focus:ring-[#E6F4F3]"
+      className="h-12 w-full rounded-xl border border-[#E5E7EB] bg-white px-4 text-sm text-[#111827] outline-none transition focus:border-[#2B4BFF] focus:ring-4 focus:ring-[#ECEFFF]"
       defaultValue={defaultValue ?? options[0]}
       id={id}
       name={name}
@@ -385,7 +385,7 @@ const TextareaField = ({
       {label}
     </label>
     <textarea
-      className="w-full resize-y rounded-xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm leading-6 text-[#111827] outline-none transition placeholder:text-[#9CA3AF] focus:border-[#045A58] focus:ring-4 focus:ring-[#E6F4F3]"
+      className="w-full resize-y rounded-xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm leading-6 text-[#111827] outline-none transition placeholder:text-[#9CA3AF] focus:border-[#2B4BFF] focus:ring-4 focus:ring-[#ECEFFF]"
       id={id}
       name={name}
       placeholder={placeholder}
@@ -404,7 +404,7 @@ const CheckboxField = ({
   name: string
 }) => (
   <label className="flex items-start gap-3 rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] p-4">
-    <input className="mt-0.5 h-4 w-4 accent-[#045A58]" name={name} type="checkbox" />
+    <input className="mt-0.5 h-4 w-4 accent-[#2B4BFF]" name={name} type="checkbox" />
     <span>
       <span className="block text-sm font-semibold text-[#111827]">{label}</span>
       <span className="mt-1 block text-sm leading-5 text-[#6B7280]">{description}</span>
@@ -414,7 +414,7 @@ const CheckboxField = ({
 
 const ChecklistItem = ({ label }: { label: string }) => (
   <div className="flex items-center gap-3">
-    <CheckCircle2 className="shrink-0 text-[#045A58]" size={18} />
+    <CheckCircle2 className="shrink-0 text-[#2B4BFF]" size={18} />
     <span className="text-sm font-medium text-[#374151]">{label}</span>
   </div>
 )

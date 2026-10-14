@@ -207,7 +207,7 @@ const TeamPage = () => {
                     <p className="mt-3 text-3xl font-semibold tracking-normal text-[#111827]">{stat.value}</p>
                     <p className="mt-2 text-xs font-medium text-[#6B7280]">{stat.note}</p>
                   </div>
-                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#E6F4F3] text-[#045A58]">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-[#ECEFFF] text-[#2B4BFF]">
                     <Icon size={20} />
                   </div>
                 </div>
@@ -263,7 +263,7 @@ const TeamPage = () => {
 
           {isLoading ? (
             <div className="flex min-h-72 flex-col items-center justify-center gap-3 px-6 py-12 text-center">
-              <Loader2 className="animate-spin text-[#045A58]" size={24} />
+              <Loader2 className="animate-spin text-[#2B4BFF]" size={24} />
               <p className="text-sm text-[#6B7280]">Loading team members…</p>
             </div>
           ) : isError ? (
@@ -292,7 +292,7 @@ const TeamPage = () => {
                     <tr className="transition hover:bg-[#F9FAFB]" key={member.publicId}>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#E6F4F3] text-sm font-semibold text-[#045A58]">
+                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#ECEFFF] text-sm font-semibold text-[#2B4BFF]">
                             {member.fullName
                               .split(' ')
                               .map((name) => name[0])
@@ -325,9 +325,9 @@ const TeamPage = () => {
                             aria-expanded={openMenuId === member.publicId}
                             aria-haspopup="menu"
                             aria-label={`Manage ${member.fullName}`}
-                            className={`flex h-9 w-9 items-center justify-center rounded-xl outline-none transition focus:ring-4 focus:ring-[#E6F4F3] ${
+                            className={`flex h-9 w-9 items-center justify-center rounded-xl outline-none transition focus:ring-4 focus:ring-[#ECEFFF] ${
                               openMenuId === member.publicId
-                                ? 'bg-[#E6F4F3] text-[#045A58]'
+                                ? 'bg-[#ECEFFF] text-[#2B4BFF]'
                                 : 'text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#111827]'
                             }`}
                             onClick={() =>
@@ -392,7 +392,7 @@ const TeamPage = () => {
             </div>
           ) : (
             <div className="flex min-h-72 flex-col items-center justify-center px-6 py-12 text-center">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#E6F4F3] text-[#045A58]">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#ECEFFF] text-[#2B4BFF]">
                 <UsersRound size={21} />
               </div>
               <h3 className="mt-4 text-base font-semibold text-[#111827]">No team members match these filters</h3>
@@ -492,7 +492,7 @@ const FilterSelect = ({
 }) => (
   <select
     aria-label={label}
-    className="h-11 rounded-xl border border-[#E5E7EB] bg-white px-3 text-sm font-medium text-[#374151] outline-none transition focus:border-[#045A58] focus:ring-4 focus:ring-[#E6F4F3]"
+    className="h-11 rounded-xl border border-[#E5E7EB] bg-white px-3 text-sm font-medium text-[#374151] outline-none transition focus:border-[#2B4BFF] focus:ring-4 focus:ring-[#ECEFFF]"
     onChange={(event) => onChange(event.target.value)}
     value={value}
   >
@@ -543,7 +543,7 @@ const RoleSummary = ({
 }) => (
   <Card>
     <div className="flex items-start gap-3">
-      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#E6F4F3] text-[#045A58]">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-[#ECEFFF] text-[#2B4BFF]">
         {icon}
       </div>
       <div>

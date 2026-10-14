@@ -24,8 +24,36 @@ export type School = {
   admissionFriendlinessScore: number | null
   admissionFriendlinessNotes: string | null
   rankingReputationNotes: string | null
+  visaSponsorStatus: VisaSponsorStatus
+  visaSponsorSource: string | null
+  visaSponsorCheckedAt: string | null
+  visaSponsorRegisterName: string | null
+  visaSponsorNote: string | null
   createdAt: string
   updatedAt: string
+}
+
+export type VisaSponsorStatus = 'LICENSED' | 'NOT_LISTED' | 'UNKNOWN'
+
+// What the create/update endpoints accept.
+export type SchoolInput = {
+  name: string
+  schoolType: SchoolType
+  recordStatus: SchoolRecordStatus
+  description: string | null
+  website: string | null
+  admissionsEmail: string | null
+  phoneNumbers: string[]
+  streetAddress: string | null
+  city: string
+  country: string
+  postalCode: string | null
+  partnerStatus: PartnerStatus
+  visaFriendlinessScore: number | null
+  visaFriendlinessNotes: string | null
+  admissionFriendlinessScore: number | null
+  admissionFriendlinessNotes: string | null
+  rankingReputationNotes: string | null
 }
 
 export type SchoolsPagination = {
@@ -53,5 +81,35 @@ export type ListSchoolsResult = {
 
 export const listSchools = async (params: ListSchoolsParams): Promise<ListSchoolsResult> => {
   const res = await api.get<ApiSuccessResponse<ListSchoolsResult>>('/schools', { params })
+  return res.data.data
+}
+
+export const getSchool = async (schoolId: string): Promise<School> => {
+  const res = await api.get<ApiSuccessResponse<School>>(`/schools/${schoolId}`)
+  return res.data.data
+}
+
+export const createSchool = async (input: SchoolInput): Promise<School> => {
+  const res = await api.post<ApiSuccessResponse<School>>('/schools', input)
+  return res.data.data
+}
+
+export const updateSchool = async (schoolId: string, input: Partial<SchoolInput>): Promise<School> => {
+  const res = await api.patch<ApiSuccessResponse<School>>(`/schools/${schoolId}`, input)
+  return res.data.data
+}
+
+export type SponsorSyncSummary = {
+  csvUrl: string
+  checkedAt: string
+  ukSchools: number
+  licensed: number
+  notListed: number
+  unmatched: { publicId: string; name: string; note: string | null }[]
+  changed: number
+}
+
+export const syncSponsorRegister = async (): Promise<SponsorSyncSummary> => {
+  const res = await api.post<ApiSuccessResponse<SponsorSyncSummary>>('/schools/sponsor-register/sync')
   return res.data.data
 }

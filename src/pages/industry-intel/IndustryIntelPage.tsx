@@ -67,7 +67,7 @@ const TabButton = ({
 }) => (
   <button
     className={`flex items-center gap-2 border-b-2 px-4 py-3 text-sm font-semibold transition ${
-      active ? 'border-[#045A58] text-[#045A58]' : 'border-transparent text-[#6B7280] hover:text-[#111827]'
+      active ? 'border-[#2B4BFF] text-[#2B4BFF]' : 'border-transparent text-[#6B7280] hover:text-[#111827]'
     }`}
     onClick={onClick}
     type="button"
@@ -146,7 +146,7 @@ const BulletinsTab = ({ canManage }: { canManage: boolean }) => {
                   Body
                 </label>
                 <textarea
-                  className="min-h-24 w-full resize-y rounded-xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm leading-6 text-[#111827] outline-none transition focus:border-[#045A58] focus:ring-4 focus:ring-[#E6F4F3]"
+                  className="min-h-24 w-full resize-y rounded-xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm leading-6 text-[#111827] outline-none transition focus:border-[#2B4BFF] focus:ring-4 focus:ring-[#ECEFFF]"
                   id="bulletin-body"
                   onChange={(e) => setBody(e.target.value)}
                   value={body}
@@ -194,7 +194,7 @@ const BulletinsTab = ({ canManage }: { canManage: boolean }) => {
 
       {isLoading ? (
         <div className="flex min-h-52 items-center justify-center">
-          <Loader2 className="animate-spin text-[#045A58]" size={26} />
+          <Loader2 className="animate-spin text-[#2B4BFF]" size={26} />
         </div>
       ) : isError ? (
         <ErrorState error={error} />
@@ -224,8 +224,8 @@ const BulletinsTab = ({ canManage }: { canManage: boolean }) => {
                 {canManage ? (
                   <div className="flex shrink-0 items-center gap-2">
                     <button
-                      className={`relative h-6 w-11 shrink-0 rounded-full outline-none transition focus:ring-4 focus:ring-[#E6F4F3] ${
-                        bulletin.isActive ? 'bg-[#045A58]' : 'bg-[#D1D5DB]'
+                      className={`relative h-6 w-11 shrink-0 rounded-full outline-none transition focus:ring-4 focus:ring-[#ECEFFF] ${
+                        bulletin.isActive ? 'bg-[#2B4BFF]' : 'bg-[#D1D5DB]'
                       }`}
                       onClick={() =>
                         updateBulletin.mutate({ bulletinId: bulletin.publicId, data: { isActive: !bulletin.isActive } })
@@ -382,7 +382,7 @@ const VisaRatesTab = ({ canManage }: { canManage: boolean }) => {
 
       {isLoading ? (
         <div className="flex min-h-52 items-center justify-center">
-          <Loader2 className="animate-spin text-[#045A58]" size={26} />
+          <Loader2 className="animate-spin text-[#2B4BFF]" size={26} />
         </div>
       ) : isError ? (
         <ErrorState error={error} />
@@ -408,8 +408,8 @@ const VisaRatesTab = ({ canManage }: { canManage: boolean }) => {
               {canManage ? (
                 <div className="flex shrink-0 items-center gap-2">
                   <button
-                    className={`relative h-6 w-11 shrink-0 rounded-full outline-none transition focus:ring-4 focus:ring-[#E6F4F3] ${
-                      rate.isActive ? 'bg-[#045A58]' : 'bg-[#D1D5DB]'
+                    className={`relative h-6 w-11 shrink-0 rounded-full outline-none transition focus:ring-4 focus:ring-[#ECEFFF] ${
+                      rate.isActive ? 'bg-[#2B4BFF]' : 'bg-[#D1D5DB]'
                     }`}
                     onClick={() => updateRate.mutate({ rateId: rate.publicId, data: { isActive: !rate.isActive } })}
                     title={rate.isActive ? 'Retract' : 'Reactivate'}

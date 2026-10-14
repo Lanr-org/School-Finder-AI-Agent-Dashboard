@@ -16,6 +16,7 @@ import AddProgramPage from '../pages/programs/AddProgramPage.js'
 import EditProgramPage from '../pages/programs/EditProgramPage.js'
 import GlobalAddProgramPage from '../pages/programs/GlobalAddProgramPage.js'
 import ProgramDetailPage from '../pages/programs/ProgramDetailPage.js'
+import ProgramReportsPage from '../pages/programs/ProgramReportsPage.js'
 import ProgramsPage from '../pages/programs/ProgramsPage.js'
 import RecommendationsPage from '../pages/recommendations/RecommendationsPage.js'
 import AddSchoolPage from '../pages/schools/AddSchoolPage.js'
@@ -50,6 +51,7 @@ const AppRoutes = () => {
         <Route path='/students/:studentId' element={<ProtectedRoute><StudentDetailPage /></ProtectedRoute>} />
         <Route path='/programs' element={<ProtectedRoute><ProgramsPage /></ProtectedRoute>} />
         <Route path='/programs/new' element={<ProtectedRoute roles={['ADMIN', 'OPERATIONS']}><GlobalAddProgramPage /></ProtectedRoute>} />
+        <Route path='/programs/reports' element={<ProtectedRoute roles={['ADMIN', 'OPERATIONS']}><ProgramReportsPage /></ProtectedRoute>} />
         <Route path='/programs/:programId/edit' element={<ProtectedRoute roles={['ADMIN', 'OPERATIONS']}><EditProgramPage /></ProtectedRoute>} />
         <Route path='/programs/:programId' element={<ProtectedRoute><ProgramDetailPage /></ProtectedRoute>} />
         <Route path='/applications' element={<ProtectedRoute roles={['ADMIN', 'ADVISOR']}><ApplicationsPage /></ProtectedRoute>} />

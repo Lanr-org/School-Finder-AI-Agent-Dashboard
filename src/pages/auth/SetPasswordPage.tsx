@@ -5,7 +5,6 @@ import {
   CheckCircle2,
   Eye,
   EyeOff,
-  GraduationCap,
   LoaderCircle,
   LockKeyhole,
   Mail,
@@ -19,6 +18,7 @@ import Card from '../../components/ui/Card.js'
 import Input from '../../components/ui/Input.js'
 import { api } from '../../lib/api/client.js'
 import type { ApiErrorResponse, ApiSuccessResponse } from '../../lib/api/types.js'
+import Logo from '../../components/brand/Logo.js'
 
 type InvitationState = 'validating' | 'valid' | 'invalid' | 'expired' | 'submitting' | 'success'
 
@@ -115,13 +115,8 @@ const SetPasswordPage = () => {
       <div className="mx-auto flex min-h-[calc(100vh-4rem)] w-full max-w-6xl items-center justify-center">
         <div className="w-full max-w-[520px]">
           <div className="mb-6 flex items-center justify-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#E6F4F3] text-[#045A58]">
-              <GraduationCap size={23} />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-[#111827]">Smetase</p>
-              <p className="text-xs font-medium text-[#6B7280]">Staff Portal</p>
-            </div>
+            <Logo height={26} />
+            <p className="border-l border-[#E5E7EB] pl-3 text-xs font-medium text-[#6B7280]">Staff Portal</p>
           </div>
 
           <Card
@@ -141,10 +136,10 @@ const SetPasswordPage = () => {
             ) : (
               <section className="p-6 sm:p-10">
                 <div className="mb-7">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#E6F4F3] text-[#045A58]">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#ECEFFF] text-[#2B4BFF]">
                     <ShieldCheck size={22} />
                   </div>
-                  <p className="mb-2 mt-5 text-sm font-medium text-[#045A58]">Account setup</p>
+                  <p className="mb-2 mt-5 text-sm font-medium text-[#2B4BFF]">Account setup</p>
                   <h1 className="text-2xl font-semibold tracking-normal text-[#111827]">Create your password</h1>
                   <p className="mt-3 text-sm leading-6 text-[#6B7280]">
                     Set the password you will use with your company email on the shared staff login page.
@@ -152,7 +147,7 @@ const SetPasswordPage = () => {
                 </div>
 
                 <div className="mb-6 flex items-start gap-3 rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] p-4">
-                  <Mail className="mt-0.5 shrink-0 text-[#045A58]" size={18} />
+                  <Mail className="mt-0.5 shrink-0 text-[#2B4BFF]" size={18} />
                   <div className="min-w-0">
                     <p className="text-xs font-semibold uppercase tracking-normal text-[#9CA3AF]">Invitation for</p>
                     <p className="mt-1 break-words text-sm font-semibold text-[#111827]">{invitationEmail}</p>
@@ -255,7 +250,7 @@ const SetPasswordPage = () => {
 
           <p className="mt-5 text-center text-sm text-[#6B7280]">
             Already activated your account?{' '}
-            <Link className="font-semibold text-[#045A58] hover:text-[#034A48]" to="/login">
+            <Link className="font-semibold text-[#2B4BFF] hover:text-[#1E36D8]" to="/login">
               Sign in
             </Link>
           </p>
@@ -276,7 +271,7 @@ const PasswordVisibilityButton = ({
 }) => (
   <button
     aria-label={label}
-    className="flex h-8 w-8 items-center justify-center rounded-lg outline-none transition hover:bg-[#F3F4F6] hover:text-[#111827] focus:ring-4 focus:ring-[#E6F4F3]"
+    className="flex h-8 w-8 items-center justify-center rounded-lg outline-none transition hover:bg-[#F3F4F6] hover:text-[#111827] focus:ring-4 focus:ring-[#ECEFFF]"
     onClick={onClick}
     title={label}
     type="button"
@@ -295,7 +290,7 @@ const StatusPanel = ({
   title: string
 }) => (
   <section className="flex min-h-[360px] flex-col items-center justify-center p-8 text-center sm:p-10">
-    <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-[#E6F4F3] text-[#045A58]">{icon}</div>
+    <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-[#ECEFFF] text-[#2B4BFF]">{icon}</div>
     <h1 className="mt-5 text-xl font-semibold text-[#111827]">{title}</h1>
     <p className="mt-2 max-w-sm text-sm leading-6 text-[#6B7280]">{description}</p>
   </section>
@@ -312,7 +307,7 @@ const ErrorPanel = ({ state }: { state: 'expired' | 'invalid' }) => {
       <h1 className="mt-5 text-xl font-semibold text-[#111827]">{error.title}</h1>
       <p className="mt-2 max-w-sm text-sm leading-6 text-[#6B7280]">{error.description}</p>
       <Link
-        className="mt-6 inline-flex h-11 items-center justify-center rounded-xl border border-[#E5E7EB] bg-white px-4 text-sm font-semibold text-[#111827] outline-none transition hover:bg-[#F9FAFB] focus:ring-4 focus:ring-[#E6F4F3]"
+        className="mt-6 inline-flex h-11 items-center justify-center rounded-xl border border-[#E5E7EB] bg-white px-4 text-sm font-semibold text-[#111827] outline-none transition hover:bg-[#F9FAFB] focus:ring-4 focus:ring-[#ECEFFF]"
         to="/login"
       >
         Return to sign in

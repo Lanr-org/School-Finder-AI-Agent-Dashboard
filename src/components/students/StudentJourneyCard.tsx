@@ -35,7 +35,7 @@ const StudentJourneyCard = ({ studentId }: { studentId: string }) => {
     <Card>
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#E6F4F3] text-[#045A58]">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#ECEFFF] text-[#2B4BFF]">
             <Route size={19} />
           </div>
           <div>
@@ -71,7 +71,7 @@ const StudentJourneyCard = ({ studentId }: { studentId: string }) => {
                         className="flex items-center gap-2 text-left text-[#111827] disabled:opacity-60"
                       >
                         {item.done ? (
-                          <CheckSquare size={16} className="text-[#045A58]" aria-hidden />
+                          <CheckSquare size={16} className="text-[#2B4BFF]" aria-hidden />
                         ) : (
                           <Square size={16} className="text-[#9CA3AF]" aria-hidden />
                         )}

@@ -138,7 +138,7 @@ const ApplicationDetailModal = ({ applicationId, onClose }: ApplicationDetailMod
       <div className="max-h-[560px] overflow-y-auto px-5 py-5 sm:px-6">
         {isLoading ? (
           <div className="flex min-h-48 items-center justify-center">
-            <Loader2 className="animate-spin text-[#045A58]" size={26} />
+            <Loader2 className="animate-spin text-[#2B4BFF]" size={26} />
           </div>
         ) : isError || !application ? (
           <div className="flex min-h-48 flex-col items-center justify-center gap-3 text-center">
@@ -152,7 +152,7 @@ const ApplicationDetailModal = ({ applicationId, onClose }: ApplicationDetailMod
                 Intake
               </label>
               <select
-                className="h-11 w-full rounded-xl border border-[#E5E7EB] bg-white px-3 text-sm font-medium text-[#374151] outline-none transition focus:border-[#045A58] focus:ring-4 focus:ring-[#E6F4F3]"
+                className="h-11 w-full rounded-xl border border-[#E5E7EB] bg-white px-3 text-sm font-medium text-[#374151] outline-none transition focus:border-[#2B4BFF] focus:ring-4 focus:ring-[#ECEFFF]"
                 id="edit-application-intake"
                 onChange={(event) => setIntakeKey(event.target.value)}
                 value={intakeKey}
@@ -179,7 +179,7 @@ const ApplicationDetailModal = ({ applicationId, onClose }: ApplicationDetailMod
                 Notes
               </label>
               <textarea
-                className="mt-2 min-h-24 w-full resize-y rounded-xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm leading-6 text-[#111827] outline-none transition placeholder:text-[#9CA3AF] focus:border-[#045A58] focus:ring-4 focus:ring-[#E6F4F3]"
+                className="mt-2 min-h-24 w-full resize-y rounded-xl border border-[#E5E7EB] bg-white px-4 py-3 text-sm leading-6 text-[#111827] outline-none transition placeholder:text-[#9CA3AF] focus:border-[#2B4BFF] focus:ring-4 focus:ring-[#ECEFFF]"
                 id="edit-application-notes"
                 maxLength={5000}
                 onChange={(event) => setNotes(event.target.value)}
@@ -201,7 +201,7 @@ const ApplicationDetailModal = ({ applicationId, onClose }: ApplicationDetailMod
                   {application.school.name} · {application.school.country}
                 </p>
                 <Link
-                  className="mt-2 inline-block text-sm font-semibold text-[#045A58] hover:text-[#034A48]"
+                  className="mt-2 inline-block text-sm font-semibold text-[#2B4BFF] hover:text-[#1E36D8]"
                   onClick={onClose}
                   to={`/students/${application.student.publicId}`}
                 >
@@ -246,7 +246,7 @@ const ApplicationDetailModal = ({ applicationId, onClose }: ApplicationDetailMod
               <ol className="mt-3 space-y-3">
                 {application.history.map((entry, index) => (
                   <li className="flex gap-3" key={`${entry.toStatus}-${entry.changedAt}-${index}`}>
-                    <CheckCircle2 className="mt-0.5 shrink-0 text-[#045A58]" size={17} />
+                    <CheckCircle2 className="mt-0.5 shrink-0 text-[#2B4BFF]" size={17} />
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-[#111827]">
                         {entry.fromStatus

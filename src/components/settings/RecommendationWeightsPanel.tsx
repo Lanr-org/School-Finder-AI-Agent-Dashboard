@@ -67,7 +67,7 @@ const RecommendationWeightsPanel = ({ canManage }: RecommendationWeightsPanelPro
   if (isLoading) {
     return (
       <div className="flex min-h-52 items-center justify-center">
-        <Loader2 className="animate-spin text-[#045A58]" size={26} />
+        <Loader2 className="animate-spin text-[#2B4BFF]" size={26} />
       </div>
     )
   }
@@ -89,7 +89,7 @@ const RecommendationWeightsPanel = ({ canManage }: RecommendationWeightsPanelPro
     <div className="p-5 sm:p-6">
       <div
         className={`mb-6 flex flex-col gap-3 rounded-xl border p-4 sm:flex-row sm:items-center sm:justify-between ${
-          total === 100 ? 'border-[#B9DAD8] bg-[#F2F9F8]' : 'border-[#F7C9C5] bg-[#FEF3F2]'
+          total === 100 ? 'border-[#C2CBFF] bg-[#F5F7FF]' : 'border-[#F7C9C5] bg-[#FEF3F2]'
         }`}
       >
         <div>
@@ -113,7 +113,7 @@ const RecommendationWeightsPanel = ({ canManage }: RecommendationWeightsPanelPro
             </div>
             <input
               aria-label={`${factor.label} weight`}
-              className="w-full accent-[#045A58] disabled:cursor-not-allowed disabled:opacity-60"
+              className="w-full accent-[#2B4BFF] disabled:cursor-not-allowed disabled:opacity-60"
               disabled={!canManage}
               max="100"
               min="0"
@@ -123,7 +123,7 @@ const RecommendationWeightsPanel = ({ canManage }: RecommendationWeightsPanelPro
             />
             <div className="relative">
               <input
-                className="h-11 w-full rounded-xl border border-[#E5E7EB] bg-white px-3 pr-8 text-right text-sm font-semibold text-[#111827] outline-none transition focus:border-[#045A58] focus:ring-4 focus:ring-[#E6F4F3] disabled:cursor-not-allowed disabled:bg-[#F9FAFB] disabled:opacity-70"
+                className="h-11 w-full rounded-xl border border-[#E5E7EB] bg-white px-3 pr-8 text-right text-sm font-semibold text-[#111827] outline-none transition focus:border-[#2B4BFF] focus:ring-4 focus:ring-[#ECEFFF] disabled:cursor-not-allowed disabled:bg-[#F9FAFB] disabled:opacity-70"
                 disabled={!canManage}
                 id={`weight-${factor.key}`}
                 max="100"

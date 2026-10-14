@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import Sidebar from './Sidebar.js'
 import Topbar from './Topbar.js'
 
@@ -9,6 +10,12 @@ type AppShellProps = {
 
 const AppShell = ({ children }: AppShellProps) => {
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false)
+  const { pathname } = useLocation()
+
+  // A new page starts at the top, not at the previous page's scroll position.
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [pathname])
 
   return (
     <div className="min-h-screen bg-[#F5F6F8] text-[#111827]">

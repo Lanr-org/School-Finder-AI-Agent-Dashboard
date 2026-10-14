@@ -9,7 +9,7 @@ type BadgeProps = HTMLAttributes<HTMLSpanElement> & {
 }
 
 const toneClasses: Record<BadgeTone, string> = {
-  brand: 'bg-[#E6F4F3] text-[#045A58]',
+  brand: 'bg-[#ECEFFF] text-[#2B4BFF]',
   neutral: 'bg-[#F3F4F6] text-[#374151]',
   success: 'bg-[#DCFCE7] text-[#166534]',
   warning: 'bg-[#FEF3C7] text-[#92400E]',

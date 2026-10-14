@@ -13,11 +13,11 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary:
-    'border-transparent bg-[#045A58] text-white hover:bg-[#034A48] focus:ring-[#E6F4F3]',
+    'border-transparent bg-[#2B4BFF] text-white hover:bg-[#1E36D8] focus:ring-[#ECEFFF]',
   secondary:
-    'border-[#E5E7EB] bg-white text-[#111827] hover:border-[#D1D5DB] hover:bg-[#F9FAFB] focus:ring-[#E6F4F3]',
+    'border-[#E5E7EB] bg-white text-[#111827] hover:border-[#D1D5DB] hover:bg-[#F9FAFB] focus:ring-[#ECEFFF]',
   ghost:
-    'border-transparent bg-transparent text-[#045A58] hover:bg-[#E6F4F3] hover:text-[#034A48] focus:ring-[#E6F4F3]',
+    'border-transparent bg-transparent text-[#2B4BFF] hover:bg-[#ECEFFF] hover:text-[#1E36D8] focus:ring-[#ECEFFF]',
   danger:
     'border-transparent bg-[#DC2626] text-white hover:bg-[#B91C1C] focus:ring-[#FEE2E2]',
 }
