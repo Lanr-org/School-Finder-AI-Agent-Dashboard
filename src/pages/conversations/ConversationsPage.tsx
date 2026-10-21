@@ -22,6 +22,7 @@ import Card from '../../components/ui/Card.js'
 import Input from '../../components/ui/Input.js'
 import type { ApiErrorResponse } from '../../lib/api/types.js'
 import { useTeamMembers } from '../../features/team/useTeamMembers.js'
+import { useAuthStore } from '../../store/authStore.js'
 import { useConversations } from '../../features/conversations/useConversations.js'
 import type { ConversationStatus } from '../../features/conversations/conversations.api.js'
 
@@ -66,7 +67,9 @@ const ConversationsPage = () => {
 
   useEffect(() => setPage(1), [debouncedSearch, advisorId, status])
 
-  const { data: advisors } = useTeamMembers()
+  // Advisors only see their own conversations, so the advisor filter is for ADMIN.
+  const isAdmin = useAuthStore((state) => state.user?.role === 'ADMIN')
+  const { data: advisors } = useTeamMembers({ enabled: isAdmin })
   const advisorOptions = useMemo(() => (advisors ?? []).filter((member) => member.role === 'ADVISOR'), [advisors])
 
   const queryParams = useMemo(
@@ -149,19 +152,21 @@ const ConversationsPage = () => {
                   type="search"
                   value={searchInput}
                 />
-                <select
-                  aria-label="Filter by advisor"
-                  className="h-11 rounded-xl border border-[#E5E7EB] bg-white px-3 text-sm font-medium text-[#374151] outline-none transition focus:border-[#2B4BFF] focus:ring-4 focus:ring-[#ECEFFF]"
-                  onChange={(event) => setAdvisorId(event.target.value)}
-                  value={advisorId}
-                >
-                  <option value="ALL">All advisors</option>
-                  {advisorOptions.map((advisor) => (
-                    <option key={advisor.publicId} value={advisor.publicId}>
-                      {advisor.fullName}
-                    </option>
-                  ))}
-                </select>
+                {isAdmin ? (
+                  <select
+                    aria-label="Filter by advisor"
+                    className="h-11 rounded-xl border border-[#E5E7EB] bg-white px-3 text-sm font-medium text-[#374151] outline-none transition focus:border-[#2B4BFF] focus:ring-4 focus:ring-[#ECEFFF]"
+                    onChange={(event) => setAdvisorId(event.target.value)}
+                    value={advisorId}
+                  >
+                    <option value="ALL">All advisors</option>
+                    {advisorOptions.map((advisor) => (
+                      <option key={advisor.publicId} value={advisor.publicId}>
+                        {advisor.fullName}
+                      </option>
+                    ))}
+                  </select>
+                ) : null}
               </div>
             </div>
 

@@ -22,6 +22,7 @@ import type { ApiErrorResponse } from '../../lib/api/types.js'
 import type { StudentStatus } from '../../features/students/students.api.js'
 import type { DashboardSummary } from '../../features/dashboard/dashboard.api.js'
 import { useDashboardSummary } from '../../features/dashboard/useDashboardSummary.js'
+import { useAuthStore } from '../../store/authStore.js'
 
 type Tone = 'brand' | 'neutral' | 'success' | 'warning' | 'error'
 
@@ -75,6 +76,10 @@ const EmptyNote = ({ children }: { children: ReactNode }) => (
 
 const DashboardContent = ({ summary }: { summary: DashboardSummary }) => {
   const { leads, conversations } = summary
+  // OPERATIONS also gets the ALL scope, but the Advisors page is ADMIN-only.
+  const isAdmin = useAuthStore((state) => state.user?.role === 'ADMIN')
+  // The API sends null for the student lists when the role can't open student records (OPERATIONS).
+  const canSeeLists = summary.pendingFollowUps !== null
   const assignedShare = Math.round(leads.assignedShareOfOpen)
 
   const metrics = [
@@ -174,7 +179,7 @@ const DashboardContent = ({ summary }: { summary: DashboardSummary }) => {
         </Card>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-3">
+      <div className={`grid gap-6 ${canSeeLists ? 'xl:grid-cols-3' : 'xl:grid-cols-2'}`}>
         <Card>
           <div className="mb-5 flex items-center justify-between gap-3">
             <div>
@@ -212,7 +217,7 @@ const DashboardContent = ({ summary }: { summary: DashboardSummary }) => {
               <h2 className="text-lg font-semibold text-[#111827]">Advisor workload</h2>
               <p className="mt-1 text-sm text-[#6B7280]">Active students and follow-ups</p>
             </div>
-            {summary.scope === 'ALL' ? (
+            {isAdmin ? (
               <Link className="text-sm font-semibold text-[#2B4BFF] hover:text-[#1E36D8]" to="/advisors">
                 View all
               </Link>
@@ -247,6 +252,7 @@ const DashboardContent = ({ summary }: { summary: DashboardSummary }) => {
           )}
         </Card>
 
+        {summary.pendingFollowUps !== null ? (
         <Card>
           <div className="mb-5 flex items-center justify-between gap-3">
             <div>
@@ -256,9 +262,7 @@ const DashboardContent = ({ summary }: { summary: DashboardSummary }) => {
             <Clock3 className="text-[#2B4BFF]" size={20} />
           </div>
 
-          {summary.pendingFollowUps === null ? (
-            <EmptyNote>Not available for your role.</EmptyNote>
-          ) : summary.pendingFollowUps.length ? (
+          {summary.pendingFollowUps.length ? (
             <div className="space-y-3">
               {summary.pendingFollowUps.map((followUp) => {
                 const badge = dueBadge(followUp.dueAt, followUp.overdue, summary.generatedAt)
@@ -282,8 +286,10 @@ const DashboardContent = ({ summary }: { summary: DashboardSummary }) => {
             <EmptyNote>No pending follow-ups.</EmptyNote>
           )}
         </Card>
+        ) : null}
       </div>
 
+      {summary.recentRecommendations !== null ? (
       <Card className="p-0">
         <div className="flex items-center justify-between gap-4 border-b border-[#E5E7EB] px-6 py-5">
           <div>
@@ -293,11 +299,7 @@ const DashboardContent = ({ summary }: { summary: DashboardSummary }) => {
           <Sparkles className="text-[#2B4BFF]" size={20} />
         </div>
 
-        {summary.recentRecommendations === null ? (
-          <div className="p-6">
-            <EmptyNote>Not available for your role.</EmptyNote>
-          </div>
-        ) : summary.recentRecommendations.length ? (
+        {summary.recentRecommendations.length ? (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[760px] text-left">
               <thead>
@@ -345,6 +347,7 @@ const DashboardContent = ({ summary }: { summary: DashboardSummary }) => {
           </div>
         )}
       </Card>
+      ) : null}
     </>
   )
 }

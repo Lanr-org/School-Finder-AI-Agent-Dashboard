@@ -7,7 +7,6 @@ import {
   Loader2,
   Mail,
   Phone,
-  Plus,
   Search,
   UserRoundCheck,
   Users,
@@ -22,6 +21,7 @@ import Card from '../../components/ui/Card.js'
 import Input from '../../components/ui/Input.js'
 import type { ApiErrorResponse } from '../../lib/api/types.js'
 import { useTeamMembers } from '../../features/team/useTeamMembers.js'
+import { useAuthStore } from '../../store/authStore.js'
 import { useStudents } from '../../features/students/useStudents.js'
 import type { Student, StudentStatus } from '../../features/students/students.api.js'
 
@@ -93,7 +93,9 @@ const StudentsPage = () => {
 
   useEffect(() => setPage(1), [debouncedSearch, status, advisorId])
 
-  const { data: advisors } = useTeamMembers()
+  // Advisors only see their own students, so the advisor filter is for ADMIN.
+  const isAdmin = useAuthStore((state) => state.user?.role === 'ADMIN')
+  const { data: advisors } = useTeamMembers({ enabled: isAdmin })
   const advisorOptions = useMemo(() => (advisors ?? []).filter((member) => member.role === 'ADVISOR'), [advisors])
 
   const queryParams = useMemo(
@@ -131,17 +133,9 @@ const StudentsPage = () => {
             <p className="text-sm font-medium text-[#6B7280]">Operations</p>
             <h1 className="mt-1 text-3xl font-semibold tracking-normal text-[#111827]">Students / Leads</h1>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-[#6B7280]">
-              Review student leads collected from Telegram and manual entry, then prioritize advisor assignment.
+              Students join through Telegram or the student app. Review them here and prioritize advisor assignment.
             </p>
           </div>
-
-          <Link
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl border border-transparent bg-[#2B4BFF] px-4 text-sm font-semibold text-white outline-none transition hover:bg-[#1E36D8] focus:ring-4 focus:ring-[#ECEFFF]"
-            to="/students/new"
-          >
-            <Plus size={17} />
-            Add student
-          </Link>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -194,22 +188,26 @@ const StudentsPage = () => {
                 ))}
               </select>
 
-              <label className="sr-only" htmlFor="advisor-filter">
-                Assigned advisor
-              </label>
-              <select
-                className="h-11 rounded-xl border border-[#E5E7EB] bg-white px-4 text-sm font-medium text-[#374151] outline-none transition focus:border-[#2B4BFF] focus:ring-4 focus:ring-[#ECEFFF]"
-                id="advisor-filter"
-                onChange={(event) => setAdvisorId(event.target.value)}
-                value={advisorId}
-              >
-                <option value="ALL">All advisors</option>
-                {advisorOptions.map((advisor) => (
-                  <option key={advisor.publicId} value={advisor.publicId}>
-                    {advisor.fullName}
-                  </option>
-                ))}
-              </select>
+              {isAdmin ? (
+                <>
+                  <label className="sr-only" htmlFor="advisor-filter">
+                    Assigned advisor
+                  </label>
+                  <select
+                    className="h-11 rounded-xl border border-[#E5E7EB] bg-white px-4 text-sm font-medium text-[#374151] outline-none transition focus:border-[#2B4BFF] focus:ring-4 focus:ring-[#ECEFFF]"
+                    id="advisor-filter"
+                    onChange={(event) => setAdvisorId(event.target.value)}
+                    value={advisorId}
+                  >
+                    <option value="ALL">All advisors</option>
+                    {advisorOptions.map((advisor) => (
+                      <option key={advisor.publicId} value={advisor.publicId}>
+                        {advisor.fullName}
+                      </option>
+                    ))}
+                  </select>
+                </>
+              ) : null}
             </div>
           </div>
 
