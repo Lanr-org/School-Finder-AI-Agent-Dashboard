@@ -27,6 +27,7 @@ import GenerateRecommendationsModal from '../../components/modals/GenerateRecomm
 import type { ApiErrorResponse } from '../../lib/api/types.js'
 import { cn } from '../../utils/cn.js'
 import { useTeamMembers } from '../../features/team/useTeamMembers.js'
+import { useAuthStore } from '../../store/authStore.js'
 import { useSettingGroups } from '../../features/settings/useSettings.js'
 import {
   useCreateShortlist,
@@ -59,7 +60,9 @@ const RecommendationsPage = () => {
 
   useEffect(() => setPage(1), [debouncedSearch, country, advisorId])
 
-  const { data: advisors } = useTeamMembers()
+  // Advisors only see their own students' recommendations, so the advisor filter is for ADMIN.
+  const isAdmin = useAuthStore((state) => state.user?.role === 'ADMIN')
+  const { data: advisors } = useTeamMembers({ enabled: isAdmin })
   const advisorOptions = useMemo(() => (advisors ?? []).filter((member) => member.role === 'ADVISOR'), [advisors])
 
   const { data: settingGroups } = useSettingGroups()
@@ -180,22 +183,26 @@ const RecommendationsPage = () => {
                   type="search"
                   value={searchInput}
                 />
-                <label className="sr-only" htmlFor="advisor-filter">
-                  Advisor
-                </label>
-                <select
-                  className="h-11 rounded-xl border border-[#E5E7EB] bg-white px-3 text-sm font-medium text-[#374151] outline-none transition focus:border-[#2B4BFF] focus:ring-4 focus:ring-[#ECEFFF]"
-                  id="advisor-filter"
-                  onChange={(event) => setAdvisorId(event.target.value)}
-                  value={advisorId}
-                >
-                  <option value="ALL">All advisors</option>
-                  {advisorOptions.map((advisor) => (
-                    <option key={advisor.publicId} value={advisor.publicId}>
-                      {advisor.fullName}
-                    </option>
-                  ))}
-                </select>
+                {isAdmin ? (
+                  <>
+                    <label className="sr-only" htmlFor="advisor-filter">
+                      Advisor
+                    </label>
+                    <select
+                      className="h-11 rounded-xl border border-[#E5E7EB] bg-white px-3 text-sm font-medium text-[#374151] outline-none transition focus:border-[#2B4BFF] focus:ring-4 focus:ring-[#ECEFFF]"
+                      id="advisor-filter"
+                      onChange={(event) => setAdvisorId(event.target.value)}
+                      value={advisorId}
+                    >
+                      <option value="ALL">All advisors</option>
+                      {advisorOptions.map((advisor) => (
+                        <option key={advisor.publicId} value={advisor.publicId}>
+                          {advisor.fullName}
+                        </option>
+                      ))}
+                    </select>
+                  </>
+                ) : null}
                 <label className="sr-only" htmlFor="country-filter">
                   Country
                 </label>

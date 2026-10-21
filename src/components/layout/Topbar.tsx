@@ -7,7 +7,6 @@ import {
   MailPlus,
   Menu,
   MessageSquareText,
-  Plus,
   Search,
   Settings,
   Trash2,
@@ -142,15 +141,6 @@ const Topbar = ({ onMenuClick }: TopbarProps) => {
         </div>
 
         <div className="flex shrink-0 items-center gap-3">
-          <Link
-            aria-label="Add student"
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-transparent bg-[#2B4BFF] text-white outline-none transition hover:bg-[#1E36D8] focus:ring-4 focus:ring-[#ECEFFF] xl:w-auto xl:gap-2 xl:px-4"
-            to="/students/new"
-          >
-            <Plus size={24} strokeWidth={2.8} />
-            <span className="hidden xl:inline">Add student</span>
-          </Link>
-
           <div className="relative" data-topbar-popover>
             <button
               aria-expanded={isNotificationsOpen}
@@ -195,12 +185,13 @@ const Topbar = ({ onMenuClick }: TopbarProps) => {
                   </div>
                   {unreadCount ? (
                     <button
-                      className="inline-flex shrink-0 items-center gap-1.5 text-xs font-semibold text-[#2B4BFF] outline-none hover:text-[#1E36D8] focus:underline"
+                      className="inline-flex shrink-0 items-center gap-1.5 text-xs font-semibold text-[#2B4BFF] outline-none hover:text-[#1E36D8] focus:underline disabled:cursor-not-allowed disabled:opacity-60"
+                      disabled={markAllRead.isPending}
                       onClick={() => markAllRead.mutate()}
                       type="button"
                     >
                       <CheckCheck size={15} />
-                      Mark all read
+                      {markAllRead.isPending ? 'Marking…' : 'Mark all read'}
                     </button>
                   ) : null}
                 </div>
@@ -247,12 +238,13 @@ const Topbar = ({ onMenuClick }: TopbarProps) => {
                     </div>
                     <div className="border-t border-[#E5E7EB] px-4 py-3">
                       <button
-                        className="inline-flex w-full items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-[#6B7280] outline-none transition hover:bg-[#F3F4F6] hover:text-[#B42318] focus:ring-4 focus:ring-[#ECEFFF]"
+                        className="inline-flex w-full items-center justify-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-[#6B7280] outline-none transition hover:bg-[#F3F4F6] hover:text-[#B42318] focus:ring-4 focus:ring-[#ECEFFF] disabled:cursor-not-allowed disabled:opacity-60"
+                        disabled={clear.isPending}
                         onClick={() => clear.mutate()}
                         type="button"
                       >
                         <Trash2 size={15} />
-                        Clear notifications
+                        {clear.isPending ? 'Clearing…' : 'Clear notifications'}
                       </button>
                     </div>
                   </>

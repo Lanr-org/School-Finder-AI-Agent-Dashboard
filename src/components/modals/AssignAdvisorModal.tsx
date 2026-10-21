@@ -1,5 +1,6 @@
 import { Check, Search, UserRoundCheck, Users } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import Badge from '../ui/Badge.js'
 import Button from '../ui/Button.js'
 import Input from '../ui/Input.js'
@@ -9,7 +10,9 @@ import type { AdvisorAvailability, AdvisorProfile } from '../../features/advisor
 type AssignAdvisorModalProps = {
   advisors: AdvisorProfile[]
   currentAdvisorId: string | null
+  errorMessage?: string | null | undefined
   isOpen: boolean
+  isSaving?: boolean | undefined
   onAssign: (advisorId: string) => void
   onClose: () => void
   studentName: string
@@ -30,7 +33,9 @@ const availabilityLabels: Record<AdvisorAvailability, string> = {
 const AssignAdvisorModal = ({
   advisors,
   currentAdvisorId,
+  errorMessage,
   isOpen,
+  isSaving = false,
   onAssign,
   onClose,
   studentName,
@@ -48,8 +53,13 @@ const AssignAdvisorModal = ({
   const filteredAdvisors = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase()
 
+    // Only ACTIVE accounts can be assigned (the API refuses the rest). Search matches name or email.
     return advisors.filter(
-      (advisor) => !normalizedQuery || advisor.fullName.toLowerCase().includes(normalizedQuery),
+      (advisor) =>
+        advisor.status === 'ACTIVE' &&
+        (!normalizedQuery ||
+          advisor.fullName.toLowerCase().includes(normalizedQuery) ||
+          advisor.email.toLowerCase().includes(normalizedQuery)),
     )
   }, [advisors, query])
 
@@ -60,7 +70,7 @@ const AssignAdvisorModal = ({
     <Modal
       description={`Choose the advisor who should own ${studentName}'s follow-ups, conversations, and recommendation workflow.`}
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={() => (isSaving ? undefined : onClose())}
       size="lg"
       title={currentAdvisorId ? 'Reassign advisor' : 'Assign advisor'}
     >
@@ -70,7 +80,7 @@ const AssignAdvisorModal = ({
           id="advisor-assignment-search"
           leftIcon={<Search size={17} />}
           onChange={(event) => setQuery(event.target.value)}
-          placeholder="Search advisor by name"
+          placeholder="Search advisor by name or email"
           type="search"
           value={query}
         />
@@ -122,6 +132,7 @@ const AssignAdvisorModal = ({
                         </Badge>
                         {isCurrent ? <Badge tone="brand">Current</Badge> : null}
                       </div>
+                      <p className="mt-0.5 truncate text-xs text-[#6B7280]">{advisor.email}</p>
                       <div className="mt-3">
                         <div className="flex items-center justify-between gap-3 text-xs">
                           <span className="font-medium text-[#6B7280]">
@@ -174,22 +185,43 @@ const AssignAdvisorModal = ({
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#ECEFFF] text-[#2B4BFF]">
               <Users size={19} />
             </div>
-            <h3 className="mt-4 text-sm font-semibold text-[#111827]">No matching advisors</h3>
-            <p className="mt-1 text-sm text-[#6B7280]">Try another name.</p>
+            {!advisors.some((advisor) => advisor.status === 'ACTIVE') ? (
+              <>
+                <h3 className="mt-4 text-sm font-semibold text-[#111827]">No active advisors yet</h3>
+                <p className="mt-1 max-w-sm text-sm text-[#6B7280]">
+                  Advisors appear here once they accept their invitation.{' '}
+                  <Link className="font-semibold text-[#2B4BFF]" to="/team/invite">
+                    Invite an advisor
+                  </Link>
+                  .
+                </p>
+              </>
+            ) : (
+              <>
+                <h3 className="mt-4 text-sm font-semibold text-[#111827]">No matching advisors</h3>
+                <p className="mt-1 text-sm text-[#6B7280]">Try another name or email.</p>
+              </>
+            )}
           </div>
         )}
       </div>
+
+      {errorMessage ? (
+        <p className="mx-5 mb-4 rounded-xl border border-[#F7C9C5] bg-[#FEF3F2] px-4 py-3 text-sm text-[#B42318] sm:mx-6" role="alert">
+          {errorMessage}
+        </p>
+      ) : null}
 
       <div className="flex flex-col-reverse gap-3 border-t border-[#E5E7EB] px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
         <p className="text-xs leading-5 text-[#6B7280]">
           Assignment changes affect workflow ownership, not account permissions.
         </p>
         <div className="flex shrink-0 justify-end gap-3">
-          <Button onClick={onClose} size="md" variant="secondary">
+          <Button disabled={isSaving} onClick={onClose} size="md" variant="secondary">
             Cancel
           </Button>
           <Button
-            disabled={!assignmentChanged || !selectedAdvisor}
+            disabled={!assignmentChanged || !selectedAdvisor || isSaving}
             leftIcon={<UserRoundCheck size={16} />}
             onClick={() => {
               if (selectedAdvisor) {
@@ -198,7 +230,7 @@ const AssignAdvisorModal = ({
             }}
             size="md"
           >
-            Reassign advisor
+            {isSaving ? 'Assigning…' : currentAdvisorId ? 'Reassign advisor' : 'Assign advisor'}
           </Button>
         </div>
       </div>

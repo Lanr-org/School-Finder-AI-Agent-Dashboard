@@ -58,7 +58,7 @@ const ApplicationsPage = () => {
 
   useEffect(() => setPage(1), [debouncedSearch, status, advisorId])
 
-  const { data: teamMembers } = useTeamMembers()
+  const { data: teamMembers } = useTeamMembers({ enabled: isAdmin })
   const advisorOptions = useMemo(
     () => (teamMembers ?? []).filter((member) => member.role === 'ADVISOR'),
     [teamMembers],

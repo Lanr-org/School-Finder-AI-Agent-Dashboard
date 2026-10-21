@@ -25,7 +25,6 @@ import SchoolDetailPage from '../pages/schools/SchoolDetailPage.js'
 import SchoolsPage from '../pages/schools/SchoolsPage.js'
 import SettingsPage from '../pages/settings/SettingsPage.js'
 import NotFoundPage from '../pages/system/NotFoundPage.js'
-import AddStudentPage from '../pages/students/AddStudentPage.js'
 import StudentDetailPage from '../pages/students/StudentDetailPage.js'
 import StudentsPage from '../pages/students/StudentsPage.js'
 import EditTeamMemberPage from '../pages/team/EditTeamMemberPage.js'
@@ -44,18 +43,17 @@ const AppRoutes = () => {
         <Route path='/profile' element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
         <Route path='/account-settings' element={<ProtectedRoute><AccountSettingsPage /></ProtectedRoute>} />
         <Route path='/' element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-        <Route path='/conversations' element={<ProtectedRoute><ConversationsPage /></ProtectedRoute>} />
-        <Route path='/conversations/:conversationId' element={<ProtectedRoute><ConversationDetailPage /></ProtectedRoute>} />
-        <Route path='/students' element={<ProtectedRoute><StudentsPage /></ProtectedRoute>} />
-        <Route path='/students/new' element={<ProtectedRoute><AddStudentPage /></ProtectedRoute>} />
-        <Route path='/students/:studentId' element={<ProtectedRoute><StudentDetailPage /></ProtectedRoute>} />
+        <Route path='/conversations' element={<ProtectedRoute roles={['ADMIN', 'ADVISOR']}><ConversationsPage /></ProtectedRoute>} />
+        <Route path='/conversations/:conversationId' element={<ProtectedRoute roles={['ADMIN', 'ADVISOR']}><ConversationDetailPage /></ProtectedRoute>} />
+        <Route path='/students' element={<ProtectedRoute roles={['ADMIN', 'ADVISOR']}><StudentsPage /></ProtectedRoute>} />
+        <Route path='/students/:studentId' element={<ProtectedRoute roles={['ADMIN', 'ADVISOR']}><StudentDetailPage /></ProtectedRoute>} />
         <Route path='/programs' element={<ProtectedRoute><ProgramsPage /></ProtectedRoute>} />
         <Route path='/programs/new' element={<ProtectedRoute roles={['ADMIN', 'OPERATIONS']}><GlobalAddProgramPage /></ProtectedRoute>} />
         <Route path='/programs/reports' element={<ProtectedRoute roles={['ADMIN', 'OPERATIONS']}><ProgramReportsPage /></ProtectedRoute>} />
         <Route path='/programs/:programId/edit' element={<ProtectedRoute roles={['ADMIN', 'OPERATIONS']}><EditProgramPage /></ProtectedRoute>} />
         <Route path='/programs/:programId' element={<ProtectedRoute><ProgramDetailPage /></ProtectedRoute>} />
         <Route path='/applications' element={<ProtectedRoute roles={['ADMIN', 'ADVISOR']}><ApplicationsPage /></ProtectedRoute>} />
-        <Route path='/recommendations' element={<ProtectedRoute><RecommendationsPage /></ProtectedRoute>} />
+        <Route path='/recommendations' element={<ProtectedRoute roles={['ADMIN', 'ADVISOR']}><RecommendationsPage /></ProtectedRoute>} />
         <Route path='/schools' element={<ProtectedRoute><SchoolsPage /></ProtectedRoute>} />
         <Route path='/schools/new' element={<ProtectedRoute roles={['ADMIN', 'OPERATIONS']}><AddSchoolPage /></ProtectedRoute>} />
         <Route path='/schools/:schoolId/edit' element={<ProtectedRoute roles={['ADMIN', 'OPERATIONS']}><EditSchoolPage /></ProtectedRoute>} />
@@ -65,8 +63,8 @@ const AppRoutes = () => {
         <Route path='/team/invite' element={<ProtectedRoute roles={['ADMIN']}><InviteTeamMemberPage /></ProtectedRoute>} />
         <Route path='/team/:memberId/edit' element={<ProtectedRoute roles={['ADMIN']}><EditTeamMemberPage /></ProtectedRoute>} />
         <Route path='/team/:memberId' element={<ProtectedRoute roles={['ADMIN']}><TeamMemberDetailPage /></ProtectedRoute>} />
-        <Route path='/advisors' element={<ProtectedRoute><AdvisorsPage /></ProtectedRoute>} />
-        <Route path='/settings' element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+        <Route path='/advisors' element={<ProtectedRoute roles={['ADMIN']}><AdvisorsPage /></ProtectedRoute>} />
+        <Route path='/settings' element={<ProtectedRoute roles={['ADMIN']}><SettingsPage /></ProtectedRoute>} />
         <Route path='/audit-log' element={<ProtectedRoute roles={['ADMIN']}><AuditLogPage /></ProtectedRoute>} />
         <Route path='/industry-intel' element={<ProtectedRoute><IndustryIntelPage /></ProtectedRoute>} />
         <Route path='*' element={<NotFoundPage />} />

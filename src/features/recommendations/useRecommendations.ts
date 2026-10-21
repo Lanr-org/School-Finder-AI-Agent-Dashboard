@@ -4,6 +4,7 @@ import {
   deleteShortlist,
   generateRecommendationRun,
   getRecommendationWeights,
+  getStudentRecommendations,
   listRecommendations,
   updateRecommendationWeights,
   type ListRecommendationsParams,
@@ -17,9 +18,19 @@ export const useRecommendationsList = (params: ListRecommendationsParams) =>
     placeholderData: (previousData) => previousData,
   })
 
+export const useStudentRecommendations = (studentId: string | undefined) =>
+  useQuery({
+    queryKey: ['student-recommendations', studentId],
+    queryFn: () => getStudentRecommendations(studentId as string),
+    enabled: Boolean(studentId),
+  })
+
 const useInvalidateRecommendations = () => {
   const queryClient = useQueryClient()
-  return () => void queryClient.invalidateQueries({ queryKey: ['recommendations'] })
+  return () => {
+    void queryClient.invalidateQueries({ queryKey: ['recommendations'] })
+    void queryClient.invalidateQueries({ queryKey: ['student-recommendations'] })
+  }
 }
 
 export const useGenerateRecommendationRun = () => {

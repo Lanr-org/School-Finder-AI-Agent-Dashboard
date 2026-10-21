@@ -15,7 +15,9 @@ type WorkflowStatusOption = {
 type UpdateWorkflowStatusModalProps = {
   currentStatus: string
   entityName: string
+  errorMessage?: string | null | undefined
   isOpen: boolean
+  isSaving?: boolean | undefined
   onClose: () => void
   onUpdate: (status: WorkflowStatusOption, note: string) => void
   options: WorkflowStatusOption[]
@@ -25,7 +27,9 @@ type UpdateWorkflowStatusModalProps = {
 const UpdateWorkflowStatusModal = ({
   currentStatus,
   entityName,
+  errorMessage,
   isOpen,
+  isSaving = false,
   onClose,
   onUpdate,
   options,
@@ -48,7 +52,7 @@ const UpdateWorkflowStatusModal = ({
     <Modal
       description={`Change the ${workflowLabel.toLowerCase()} for ${entityName}. This update will be visible across the operational workspace.`}
       isOpen={isOpen}
-      onClose={onClose}
+      onClose={() => (isSaving ? undefined : onClose())}
       size="lg"
       title="Update workflow status"
     >
@@ -138,18 +142,24 @@ const UpdateWorkflowStatusModal = ({
             </div>
           </div>
         ) : null}
+
+        {errorMessage ? (
+          <p className="mt-5 rounded-xl border border-[#F7C9C5] bg-[#FEF3F2] px-4 py-3 text-sm text-[#B42318]" role="alert">
+            {errorMessage}
+          </p>
+        ) : null}
       </div>
 
       <div className="flex flex-col-reverse gap-3 border-t border-[#E5E7EB] px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
         <p className="text-xs leading-5 text-[#6B7280]">
-          Status history and the optional note should be persisted for operational review.
+          The change and the optional note are saved to the status history.
         </p>
         <div className="flex shrink-0 justify-end gap-3">
-          <Button onClick={onClose} size="md" variant="secondary">
+          <Button disabled={isSaving} onClick={onClose} size="md" variant="secondary">
             Cancel
           </Button>
           <Button
-            disabled={!statusChanged || !selectedOption}
+            disabled={!statusChanged || !selectedOption || isSaving}
             leftIcon={<ClipboardList size={16} />}
             onClick={() => {
               if (selectedOption) {
@@ -158,7 +168,7 @@ const UpdateWorkflowStatusModal = ({
             }}
             size="md"
           >
-            Update status
+            {isSaving ? 'Updating…' : 'Update status'}
           </Button>
         </div>
       </div>

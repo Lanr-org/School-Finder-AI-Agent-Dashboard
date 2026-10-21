@@ -23,8 +23,9 @@ import Badge from '../../components/ui/Badge.js'
 import Button from '../../components/ui/Button.js'
 import Card from '../../components/ui/Card.js'
 import type { ApiErrorResponse } from '../../lib/api/types.js'
+import { apiErrorMessage } from '../../lib/api/errors.js'
 import { useAuthStore } from '../../store/authStore.js'
-import { useTeamMembers } from '../../features/team/useTeamMembers.js'
+import { useAdvisorProfiles } from '../../features/advisors/useAdvisors.js'
 import { useConversation, useConversationActions } from '../../features/conversations/useConversations.js'
 import { useAssignStudentAdvisor } from '../../features/students/useStudents.js'
 import type { ConversationMessage, ConversationStatus } from '../../features/conversations/conversations.api.js'
@@ -54,8 +55,12 @@ const ConversationDetailPage = () => {
   const isAdmin = useAuthStore((state) => state.user?.role === 'ADMIN')
 
   const { data: conversation, isLoading, isError, error } = useConversation(conversationId)
-  const { data: advisors } = useTeamMembers()
-  const advisorOptions = (advisors ?? []).filter((member) => member.role === 'ADVISOR')
+  // Only advisors with a profile can take students (the team list is also ADMIN-only).
+  const { data: advisorProfiles } = useAdvisorProfiles()
+  const advisorOptions = (advisorProfiles ?? []).map((profile) => ({
+    publicId: profile.advisorId,
+    fullName: profile.fullName,
+  }))
 
   const { reply, escalate, resolve, handback } = useConversationActions(conversationId)
   const assignAdvisor = useAssignStudentAdvisor(conversation?.student.publicId)
@@ -131,10 +136,10 @@ const ConversationDetailPage = () => {
                     size="md"
                     variant="secondary"
                   >
-                    Hand back to AI
+                    {handback.isPending ? 'Handing back…' : 'Hand back to AI'}
                   </Button>
                   <Button disabled={resolve.isPending} leftIcon={<CheckCircle2 size={17} />} onClick={() => resolve.mutate()} size="md">
-                    Mark resolved
+                    {resolve.isPending ? 'Resolving…' : 'Mark resolved'}
                   </Button>
                 </>
               ) : (
@@ -145,12 +150,21 @@ const ConversationDetailPage = () => {
                   size="md"
                   variant="secondary"
                 >
-                  Escalate
+                  {escalate.isPending ? 'Escalating…' : 'Escalate'}
                 </Button>
               )}
             </div>
           ) : null}
         </div>
+
+        {handback.isError || resolve.isError || escalate.isError || assignAdvisor.isError ? (
+          <p className="rounded-xl border border-[#F7C9C5] bg-[#FEF3F2] px-4 py-3 text-sm text-[#B42318]" role="alert">
+            {apiErrorMessage(
+              handback.error ?? resolve.error ?? escalate.error ?? assignAdvisor.error,
+              "Couldn't update this conversation. Please try again.",
+            )}
+          </p>
+        ) : null}
 
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
           <Card className="p-0">
@@ -187,6 +201,11 @@ const ConversationDetailPage = () => {
                   placeholder="Write an advisor reply..."
                   value={replyText}
                 />
+                {reply.isError ? (
+                  <p className="mt-2 text-sm text-[#B42318]" role="alert">
+                    {apiErrorMessage(reply.error, "The reply wasn't sent. Your text is still here; try again.")}
+                  </p>
+                ) : null}
                 <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <p className="text-xs leading-5 text-[#6B7280]">
                     Replies go to wherever the student last wrote from (web or Telegram).
@@ -197,7 +216,7 @@ const ConversationDetailPage = () => {
                     onClick={handleReply}
                     size="md"
                   >
-                    Send reply
+                    {reply.isPending ? 'Sending…' : 'Send reply'}
                   </Button>
                 </div>
               </div>

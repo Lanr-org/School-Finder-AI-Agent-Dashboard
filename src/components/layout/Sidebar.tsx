@@ -44,21 +44,21 @@ const navSections: NavSection[] = [
   {
     label: 'Operations',
     items: [
-      { icon: Users, label: 'Students', path: '/students' },
+      { icon: Users, label: 'Students', path: '/students', roles: ['ADMIN', 'ADVISOR'] },
       { icon: FileCheck2, label: 'Applications', path: '/applications', roles: ['ADMIN', 'ADVISOR'] },
       { icon: School, label: 'Schools', path: '/schools' },
       { icon: BookOpen, label: 'Programs', path: '/programs' },
-      { icon: MessageSquareText, label: 'Conversations', path: '/conversations' },
-      { icon: Sparkles, label: 'Recommendations', path: '/recommendations' },
+      { icon: MessageSquareText, label: 'Conversations', path: '/conversations', roles: ['ADMIN', 'ADVISOR'] },
+      { icon: Sparkles, label: 'Recommendations', path: '/recommendations', roles: ['ADMIN', 'ADVISOR'] },
     ],
   },
   {
     label: 'Admin',
     items: [
       { icon: UsersRound, label: 'Team', path: '/team', roles: ['ADMIN'] },
-      { icon: UserRoundCheck, label: 'Advisors', path: '/advisors' },
+      { icon: UserRoundCheck, label: 'Advisors', path: '/advisors', roles: ['ADMIN'] },
       { icon: Newspaper, label: 'Industry Intel', path: '/industry-intel' },
-      { icon: Settings, label: 'Settings', path: '/settings' },
+      { icon: Settings, label: 'Settings', path: '/settings', roles: ['ADMIN'] },
       { icon: ScrollText, label: 'Audit log', path: '/audit-log', roles: ['ADMIN'] },
     ],
   },

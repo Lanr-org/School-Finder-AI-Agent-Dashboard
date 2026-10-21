@@ -5,7 +5,6 @@ import {
   ChevronLeft,
   ChevronRight,
   CircleOff,
-  ExternalLink,
   Loader2,
   MapPin,
   Pencil,
@@ -116,9 +115,6 @@ const SchoolsPage = () => {
           </div>
 
           <div className="flex flex-wrap gap-3">
-            <Button leftIcon={<ExternalLink size={17} />} size="md" variant="secondary">
-              Export directory
-            </Button>
             {canManage ? (
               <Button
                 disabled={syncRegister.isPending}
