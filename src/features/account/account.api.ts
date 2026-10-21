@@ -42,3 +42,13 @@ export const getCurrentUser = async (): Promise<CurrentUser> => {
   const res = await api.get<ApiSuccessResponse<RawUserDetails>>('/auth/me')
   return toCurrentUser(res.data.data)
 }
+
+// PATCH /auth/me takes name and phone only; the sign-in email can't be changed here.
+export const updateMyProfile = async (data: { fullName?: string; phone?: string | null }): Promise<void> => {
+  await api.patch('/auth/me', data)
+}
+
+// Revokes every session, this one included, and clears the refresh cookie.
+export const signOutEverywhere = async (): Promise<void> => {
+  await api.post('/auth/logout-all')
+}

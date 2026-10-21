@@ -11,7 +11,6 @@ import {
   Phone,
   Save,
   ShieldCheck,
-  Smartphone,
   UserRound,
 } from 'lucide-react'
 import { isAxiosError } from 'axios'
@@ -25,7 +24,8 @@ import Input from '../../components/ui/Input.js'
 import { api } from '../../lib/api/client.js'
 import type { ApiErrorResponse, ApiSuccessResponse } from '../../lib/api/types.js'
 import { useAuthStore } from '../../store/authStore.js'
-import { useCurrentUser } from '../../features/account/useCurrentUser.js'
+import { apiErrorMessage } from '../../lib/api/errors.js'
+import { useCurrentUser, useSignOutEverywhere, useUpdateMyProfile } from '../../features/account/useCurrentUser.js'
 
 type NotificationKey = 'assignments' | 'conversations' | 'followUps' | 'recommendations' | 'team'
 
@@ -43,6 +43,28 @@ const statusLabels: Record<string, string> = {
 
 const AccountSettingsPage = () => {
   const { data: currentUser } = useCurrentUser()
+  const updateProfile = useUpdateMyProfile()
+  const signOutAll = useSignOutEverywhere()
+  const [profileSaved, setProfileSaved] = useState(false)
+
+  const handleProfileSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!currentUser || updateProfile.isPending) return
+    const form = new FormData(event.currentTarget)
+    const fullName = String(form.get('fullName') ?? '').trim()
+    const phoneValue = String(form.get('phone') ?? '').trim()
+    const phone = phoneValue ? phoneValue : null
+    const data: { fullName?: string; phone?: string | null } = {}
+    if (fullName !== currentUser.fullName) data.fullName = fullName
+    if (phone !== currentUser.phone) data.phone = phone
+    setProfileSaved(false)
+    if (Object.keys(data).length === 0) {
+      setProfileSaved(true)
+      return
+    }
+    updateProfile.mutate(data, { onSuccess: () => setProfileSaved(true) })
+  }
+
   const [notifications, setNotifications] = useState<Record<NotificationKey, boolean>>({
     assignments: true,
     conversations: true,
@@ -125,15 +147,16 @@ const AccountSettingsPage = () => {
 
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
           <div className="space-y-6">
-            <form
-              onSubmit={(event) => {
-                event.preventDefault()
-              }}
-            >
+            <form onChange={() => setProfileSaved(false)} onSubmit={handleProfileSubmit}>
               <SettingsSection
                 action={
-                  <Button leftIcon={<Save size={16} />} size="sm" type="submit">
-                    Save profile
+                  <Button
+                    disabled={!currentUser || updateProfile.isPending}
+                    leftIcon={<Save size={16} />}
+                    size="sm"
+                    type="submit"
+                  >
+                    {updateProfile.isPending ? 'Saving…' : profileSaved ? 'Saved' : 'Save profile'}
                   </Button>
                 }
                 description="Contact details associated with your own internal account."
@@ -147,6 +170,8 @@ const AccountSettingsPage = () => {
                       defaultValue={currentUser?.fullName ?? ''}
                       id="account-full-name"
                       label="Full name"
+                      maxLength={160}
+                      minLength={2}
                       name="fullName"
                       required
                     />
@@ -154,12 +179,12 @@ const AccountSettingsPage = () => {
                   <Input
                     autoComplete="email"
                     defaultValue={currentUser?.email ?? ''}
-                    helperText="Your sign-in email. Changes may require verification."
+                    disabled
+                    helperText="Your sign-in email. Ask an admin if it needs to change."
                     id="account-email"
                     label="Work email"
                     leftIcon={<Mail size={17} />}
                     name="email"
-                    required
                     type="email"
                   />
                   <Input
@@ -169,20 +194,22 @@ const AccountSettingsPage = () => {
                     id="account-phone"
                     label="Phone number"
                     leftIcon={<Phone size={17} />}
+                    maxLength={40}
                     name="phone"
                     type="tel"
                   />
                 </div>
+                {updateProfile.isError ? (
+                  <p className="mt-4 rounded-xl border border-[#F7C9C5] bg-[#FEF3F2] px-4 py-3 text-sm text-[#B42318]" role="alert">
+                    {apiErrorMessage(updateProfile.error, "Couldn't save your profile. Please try again.")}
+                  </p>
+                ) : null}
               </SettingsSection>
             </form>
 
             <SettingsSection
-              action={
-                <Button leftIcon={<Save size={16} />} size="sm">
-                  Save preferences
-                </Button>
-              }
-              description="Choose which operational events should notify you."
+              action={<Badge tone="neutral">Not available yet</Badge>}
+              description="You get every notification for now. Choosing which ones you receive isn't built yet."
               icon={<Bell size={19} />}
               title="Notification preferences"
             >
@@ -374,29 +401,37 @@ const AccountSettingsPage = () => {
             <Card>
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <h2 className="text-lg font-semibold text-[#111827]">Active sessions</h2>
-                  <p className="mt-1 text-sm leading-6 text-[#6B7280]">Devices currently signed into your account.</p>
+                  <h2 className="text-lg font-semibold text-[#111827]">Sessions</h2>
+                  <p className="mt-1 text-sm leading-6 text-[#6B7280]">
+                    Lost a device or shared a computer? Sign out of every device, including this one. You'll sign in
+                    again here.
+                  </p>
                 </div>
-                <Badge tone="success">2 active</Badge>
               </div>
 
               <div className="mt-5 space-y-4">
                 <SessionItem
-                  detail="Chrome on Windows / Lagos"
+                  detail={`Last sign-in ${currentUser?.lastLoginAt ? new Date(currentUser.lastLoginAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' }) : '—'}`}
                   icon={<Laptop size={17} />}
-                  label="Current session"
+                  label="This device"
                   time="Active now"
-                />
-                <SessionItem
-                  detail="Mobile browser / Lagos"
-                  icon={<Smartphone size={17} />}
-                  label="Mobile session"
-                  time="June 8, 2026"
                 />
               </div>
 
-              <Button className="mt-5 w-full" size="sm" variant="secondary">
-                Sign out other sessions
+              {signOutAll.isError ? (
+                <p className="mt-4 text-sm text-[#B42318]" role="alert">
+                  {apiErrorMessage(signOutAll.error, "Couldn't sign out everywhere. Please try again.")}
+                </p>
+              ) : null}
+
+              <Button
+                className="mt-5 w-full"
+                disabled={signOutAll.isPending}
+                onClick={() => signOutAll.mutate()}
+                size="sm"
+                variant="secondary"
+              >
+                {signOutAll.isPending ? 'Signing out…' : 'Sign out everywhere'}
               </Button>
             </Card>
 
@@ -467,9 +502,11 @@ const NotificationSetting = ({
     <button
       aria-label={`${checked ? 'Disable' : 'Enable'} ${label}`}
       aria-pressed={checked}
-      className={`relative mt-0.5 h-6 w-11 shrink-0 rounded-full outline-none transition focus:ring-4 focus:ring-[#ECEFFF] ${
+      className={`relative mt-0.5 h-6 w-11 shrink-0 rounded-full outline-none transition focus:ring-4 focus:ring-[#ECEFFF] disabled:cursor-not-allowed disabled:opacity-50 ${
         checked ? 'bg-[#2B4BFF]' : 'bg-[#D1D5DB]'
       }`}
+      // Preferences have no backend yet, so the switches are shown but can't change.
+      disabled
       onClick={onChange}
       type="button"
     >
