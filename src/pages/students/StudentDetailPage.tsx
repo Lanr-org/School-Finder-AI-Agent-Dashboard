@@ -33,10 +33,12 @@ import UpdateWorkflowStatusModal, {
 } from '../../components/modals/UpdateWorkflowStatusModal.js'
 import AppShell from '../../components/layout/AppShell.js'
 import StudentJourneyCard from '../../components/students/StudentJourneyCard.js'
+import StudentRecommendationsCard from '../../components/students/StudentRecommendationsCard.js'
 import Badge from '../../components/ui/Badge.js'
 import Button from '../../components/ui/Button.js'
 import Card from '../../components/ui/Card.js'
 import type { ApiErrorResponse } from '../../lib/api/types.js'
+import { apiErrorMessage } from '../../lib/api/errors.js'
 import { useAuthStore } from '../../store/authStore.js'
 import { useAdvisorProfiles } from '../../features/advisors/useAdvisors.js'
 import {
@@ -243,14 +245,20 @@ const StudentDetailPage = () => {
             {isAdmin ? (
               <Button
                 leftIcon={<UserRoundCheck size={17} />}
-                onClick={() => setIsAdvisorModalOpen(true)}
+                onClick={() => {
+                  assignAdvisor.reset()
+                  setIsAdvisorModalOpen(true)
+                }}
                 size="md"
                 variant="secondary"
               >
                 {student.assignedAdvisor ? 'Reassign advisor' : 'Assign advisor'}
               </Button>
             ) : null}
-            <Button leftIcon={<SlidersHorizontal size={17} />} onClick={() => setIsStatusModalOpen(true)} size="md">
+            <Button leftIcon={<SlidersHorizontal size={17} />} onClick={() => {
+                  updateStatus.reset()
+                  setIsStatusModalOpen(true)
+                }} size="md">
               Update status
             </Button>
           </div>
@@ -302,7 +310,10 @@ const StudentDetailPage = () => {
                 <button
                   aria-label="Update student workflow status"
                   className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-[#2B4BFF] outline-none transition hover:bg-[#ECEFFF] focus:ring-4 focus:ring-[#ECEFFF]"
-                  onClick={() => setIsStatusModalOpen(true)}
+                  onClick={() => {
+                  updateStatus.reset()
+                  setIsStatusModalOpen(true)
+                }}
                   title="Update status"
                   type="button"
                 >
@@ -424,6 +435,8 @@ const StudentDetailPage = () => {
 
         <StudentJourneyCard studentId={student.publicId} />
 
+        <StudentRecommendationsCard studentId={student.publicId} />
+
         <Card>
           <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -507,14 +520,22 @@ const StudentDetailPage = () => {
                       <p className="text-xs font-medium text-[#6B7280]">{formatDateTime(note.createdAt)}</p>
                       <button
                         aria-label="Delete note"
-                        className="text-[#9CA3AF] transition hover:text-[#DC2626]"
+                        className="text-[#9CA3AF] transition hover:text-[#DC2626] disabled:cursor-not-allowed disabled:opacity-60"
+                        disabled={deleteNote.isPending && deleteNote.variables === note.publicId}
                         onClick={() => deleteNote.mutate(note.publicId)}
                         type="button"
                       >
-                        <Trash2 size={15} />
+                        {deleteNote.isPending && deleteNote.variables === note.publicId ? (
+                          <Loader2 className="animate-spin" size={15} />
+                        ) : (
+                          <Trash2 size={15} />
+                        )}
                       </button>
                     </div>
                     <p className="mt-2 text-sm leading-6 text-[#374151]">{note.body}</p>
+                    {deleteNote.isError && deleteNote.variables === note.publicId ? (
+                      <p className="mt-2 text-xs text-[#B42318]">{apiErrorMessage(deleteNote.error, "Couldn't delete this note.")}</p>
+                    ) : null}
                   </div>
                 ))
               ) : (
@@ -547,22 +568,43 @@ const StudentDetailPage = () => {
                       {followUp.status === 'PENDING' || followUp.status === 'OVERDUE' ? (
                         <div className="mt-3 flex gap-2">
                           <Button
+                            disabled={
+                              (completeFollowUp.isPending && completeFollowUp.variables === followUp.publicId) ||
+                              (cancelFollowUp.isPending && cancelFollowUp.variables === followUp.publicId)
+                            }
                             leftIcon={<CheckCircle2 size={14} />}
                             onClick={() => completeFollowUp.mutate(followUp.publicId)}
                             size="sm"
                             variant="secondary"
                           >
-                            Mark complete
+                            {completeFollowUp.isPending && completeFollowUp.variables === followUp.publicId
+                              ? 'Completing…'
+                              : 'Mark complete'}
                           </Button>
                           <Button
+                            disabled={
+                              (completeFollowUp.isPending && completeFollowUp.variables === followUp.publicId) ||
+                              (cancelFollowUp.isPending && cancelFollowUp.variables === followUp.publicId)
+                            }
                             leftIcon={<X size={14} />}
                             onClick={() => cancelFollowUp.mutate(followUp.publicId)}
                             size="sm"
                             variant="secondary"
                           >
-                            Cancel
+                            {cancelFollowUp.isPending && cancelFollowUp.variables === followUp.publicId
+                              ? 'Canceling…'
+                              : 'Cancel'}
                           </Button>
                         </div>
+                      ) : null}
+                      {(completeFollowUp.isError && completeFollowUp.variables === followUp.publicId) ||
+                      (cancelFollowUp.isError && cancelFollowUp.variables === followUp.publicId) ? (
+                        <p className="mt-2 text-xs text-[#B42318]">
+                          {apiErrorMessage(
+                            completeFollowUp.isError ? completeFollowUp.error : cancelFollowUp.error,
+                            "Couldn't update this follow-up.",
+                          )}
+                        </p>
                       ) : null}
                     </div>
                   ))}
@@ -589,7 +631,9 @@ const StudentDetailPage = () => {
         <AssignAdvisorModal
           advisors={advisors ?? []}
           currentAdvisorId={student.assignedAdvisor?.publicId ?? null}
+          errorMessage={assignAdvisor.isError ? apiErrorMessage(assignAdvisor.error) : null}
           isOpen={isAdvisorModalOpen}
+          isSaving={assignAdvisor.isPending}
           onAssign={(advisorId) => {
             assignAdvisor.mutate(advisorId, { onSuccess: () => setIsAdvisorModalOpen(false) })
           }}
@@ -600,7 +644,9 @@ const StudentDetailPage = () => {
       <UpdateWorkflowStatusModal
         currentStatus={statusLabels[student.status]}
         entityName={fullName || student.publicId}
+        errorMessage={updateStatus.isError ? apiErrorMessage(updateStatus.error) : null}
         isOpen={isStatusModalOpen}
+        isSaving={updateStatus.isPending}
         onClose={() => setIsStatusModalOpen(false)}
         onUpdate={(status, note) => {
           const option = statusOptions.find((candidate) => candidate.label === status.label)

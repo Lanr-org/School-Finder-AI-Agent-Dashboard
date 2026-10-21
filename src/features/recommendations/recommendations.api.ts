@@ -85,6 +85,35 @@ export const generateRecommendationRun = async (
   return res.data.data
 }
 
+export type StudentRecommendation = Omit<RecommendationListItem, 'createdAt' | 'studentId' | 'studentName'>
+
+export type StudentRecommendationsResult = {
+  createdAt: string | null
+  publicId: string | null
+  recommendations: StudentRecommendation[]
+  scoringVersion: string | null
+}
+
+// The backend returns { run: null, recommendations: [] } when the student has no run yet.
+export const getStudentRecommendations = async (studentId: string): Promise<StudentRecommendationsResult> => {
+  const res = await api.get<
+    ApiSuccessResponse<
+      | (Omit<GeneratedRecommendationRun, 'recommendations'> & { recommendations: StudentRecommendation[] })
+      | { run: null; recommendations: StudentRecommendation[] }
+    >
+  >(`/students/${studentId}/recommendations`)
+  const data = res.data.data
+  if ('run' in data) {
+    return { createdAt: null, publicId: null, recommendations: data.recommendations, scoringVersion: null }
+  }
+  return {
+    createdAt: data.createdAt,
+    publicId: data.publicId,
+    recommendations: data.recommendations,
+    scoringVersion: data.scoringVersion,
+  }
+}
+
 export const createShortlist = async (
   studentId: string,
   programId: string,

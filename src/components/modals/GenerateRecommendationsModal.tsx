@@ -5,6 +5,7 @@ import Input from '../ui/Input.js'
 import Modal from '../ui/Modal.js'
 import { useStudents } from '../../features/students/useStudents.js'
 import { useGenerateRecommendationRun } from '../../features/recommendations/useRecommendations.js'
+import { apiErrorMessage } from '../../lib/api/errors.js'
 
 type GenerateRecommendationsModalProps = {
   isOpen: boolean
@@ -21,7 +22,9 @@ const GenerateRecommendationsModal = ({ isOpen, onClose }: GenerateRecommendatio
       setSearchInput('')
       setDebouncedSearch('')
       setSelectedStudentId(null)
+      generateRun.reset()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reset only when the dialog opens
   }, [isOpen])
 
   useEffect(() => {
@@ -105,9 +108,13 @@ const GenerateRecommendationsModal = ({ isOpen, onClose }: GenerateRecommendatio
       </div>
 
       <div className="flex flex-col-reverse gap-3 border-t border-[#E5E7EB] px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-        <p className="text-xs leading-5 text-[#6B7280]">
-          Generating replaces the student's current recommendation list with a new scored run.
-        </p>
+        {generateRun.isError ? (
+          <p className="text-sm text-[#B42318]">{apiErrorMessage(generateRun.error, "Couldn't generate recommendations.")}</p>
+        ) : (
+          <p className="text-xs leading-5 text-[#6B7280]">
+            Generating replaces the student's current recommendation list with a new scored run.
+          </p>
+        )}
         <div className="flex shrink-0 justify-end gap-3">
           <Button onClick={onClose} size="md" variant="secondary">
             Cancel
