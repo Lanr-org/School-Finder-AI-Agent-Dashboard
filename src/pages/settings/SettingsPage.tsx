@@ -19,6 +19,7 @@ import Button from '../../components/ui/Button.js'
 import Card from '../../components/ui/Card.js'
 import Input from '../../components/ui/Input.js'
 import type { ApiErrorResponse } from '../../lib/api/types.js'
+import { apiErrorMessage } from '../../lib/api/errors.js'
 import { useAuthStore } from '../../store/authStore.js'
 import {
   useCreateSettingValue,
@@ -243,11 +244,18 @@ const SettingsPage = () => {
                           </div>
 
                           <div className="flex items-center gap-2 self-end sm:self-auto">
+                            {updateValue.isError && updateValue.variables?.valueId === value.id ? (
+                              <span className="text-xs text-[#B42318]">
+                                {apiErrorMessage(updateValue.error, "Couldn't save")}
+                              </span>
+                            ) : null}
                             <button
+                              aria-busy={updateValue.isPending && updateValue.variables?.valueId === value.id}
                               aria-pressed={value.isActive}
-                              className={`relative h-6 w-11 rounded-full outline-none transition focus:ring-4 focus:ring-[#ECEFFF] ${
+                              className={`relative h-6 w-11 rounded-full outline-none transition focus:ring-4 focus:ring-[#ECEFFF] disabled:cursor-wait disabled:opacity-60 ${
                                 value.isActive ? 'bg-[#2B4BFF]' : 'bg-[#D1D5DB]'
                               }`}
+                              disabled={updateValue.isPending && updateValue.variables?.valueId === value.id}
                               onClick={() => toggleItem(value)}
                               title={value.isActive ? 'Disable value' : 'Enable value'}
                               type="button"
@@ -297,11 +305,10 @@ const SettingsPage = () => {
 
       {pendingDeletion ? (
         <DeleteConfirmationModal
-          consequence={
-            deleteError ??
-            'Confirm that no existing records depend on this value. If it is still enabled, disable it first.'
-          }
+          consequence="Confirm that no existing records depend on this value. If it is still enabled, disable it first."
           description={`Remove this value from ${pendingDeletion.groupLabel.toLowerCase()}.`}
+          errorMessage={deleteError}
+          isDeleting={deleteValue.isPending}
           isOpen
           itemLabel={pendingDeletion.value.label}
           itemType="setting value"

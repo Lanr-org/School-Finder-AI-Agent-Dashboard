@@ -8,6 +8,7 @@ import Button from '../../components/ui/Button.js'
 import Card from '../../components/ui/Card.js'
 import Input from '../../components/ui/Input.js'
 import type { ApiErrorResponse } from '../../lib/api/types.js'
+import { apiErrorMessage } from '../../lib/api/errors.js'
 import { useAuthStore } from '../../store/authStore.js'
 import { useBulletins, useCreateBulletin, useDeleteBulletin, useUpdateBulletin } from '../../features/bulletins/useBulletins.js'
 import type { Bulletin } from '../../features/bulletins/bulletins.api.js'
@@ -223,10 +224,14 @@ const BulletinsTab = ({ canManage }: { canManage: boolean }) => {
 
                 {canManage ? (
                   <div className="flex shrink-0 items-center gap-2">
+                    {updateBulletin.isError && updateBulletin.variables?.bulletinId === bulletin.publicId ? (
+                      <span className="text-xs text-[#B42318]">{apiErrorMessage(updateBulletin.error, "Couldn't save")}</span>
+                    ) : null}
                     <button
-                      className={`relative h-6 w-11 shrink-0 rounded-full outline-none transition focus:ring-4 focus:ring-[#ECEFFF] ${
+                      className={`relative h-6 w-11 shrink-0 rounded-full outline-none transition focus:ring-4 focus:ring-[#ECEFFF] disabled:cursor-wait disabled:opacity-60 ${
                         bulletin.isActive ? 'bg-[#2B4BFF]' : 'bg-[#D1D5DB]'
                       }`}
+                      disabled={updateBulletin.isPending && updateBulletin.variables?.bulletinId === bulletin.publicId}
                       onClick={() =>
                         updateBulletin.mutate({ bulletinId: bulletin.publicId, data: { isActive: !bulletin.isActive } })
                       }
@@ -258,10 +263,15 @@ const BulletinsTab = ({ canManage }: { canManage: boolean }) => {
       {pendingDelete ? (
         <DeleteConfirmationModal
           consequence="This bulletin will stop being cited by the AI immediately and cannot be recovered."
+          errorMessage={deleteBulletin.isError ? apiErrorMessage(deleteBulletin.error) : null}
+          isDeleting={deleteBulletin.isPending}
           isOpen
           itemLabel={pendingDelete.title}
           itemType="bulletin"
-          onClose={() => setPendingDelete(null)}
+          onClose={() => {
+            deleteBulletin.reset()
+            setPendingDelete(null)
+          }}
           onConfirm={() => deleteBulletin.mutate(pendingDelete.publicId, { onSuccess: () => setPendingDelete(null) })}
         />
       ) : null}
@@ -407,10 +417,14 @@ const VisaRatesTab = ({ canManage }: { canManage: boolean }) => {
 
               {canManage ? (
                 <div className="flex shrink-0 items-center gap-2">
+                  {updateRate.isError && updateRate.variables?.rateId === rate.publicId ? (
+                    <span className="text-xs text-[#B42318]">{apiErrorMessage(updateRate.error, "Couldn't save")}</span>
+                  ) : null}
                   <button
-                    className={`relative h-6 w-11 shrink-0 rounded-full outline-none transition focus:ring-4 focus:ring-[#ECEFFF] ${
+                    className={`relative h-6 w-11 shrink-0 rounded-full outline-none transition focus:ring-4 focus:ring-[#ECEFFF] disabled:cursor-wait disabled:opacity-60 ${
                       rate.isActive ? 'bg-[#2B4BFF]' : 'bg-[#D1D5DB]'
                     }`}
+                    disabled={updateRate.isPending && updateRate.variables?.rateId === rate.publicId}
                     onClick={() => updateRate.mutate({ rateId: rate.publicId, data: { isActive: !rate.isActive } })}
                     title={rate.isActive ? 'Retract' : 'Reactivate'}
                     type="button"
@@ -439,10 +453,15 @@ const VisaRatesTab = ({ canManage }: { canManage: boolean }) => {
       {pendingDelete ? (
         <DeleteConfirmationModal
           consequence="This rate will stop being cited by the AI immediately and cannot be recovered."
+          errorMessage={deleteRate.isError ? apiErrorMessage(deleteRate.error) : null}
+          isDeleting={deleteRate.isPending}
           isOpen
           itemLabel={`${pendingDelete.country} — ${pendingDelete.periodLabel}`}
           itemType="visa success rate"
-          onClose={() => setPendingDelete(null)}
+          onClose={() => {
+            deleteRate.reset()
+            setPendingDelete(null)
+          }}
           onConfirm={() => deleteRate.mutate(pendingDelete.publicId, { onSuccess: () => setPendingDelete(null) })}
         />
       ) : null}

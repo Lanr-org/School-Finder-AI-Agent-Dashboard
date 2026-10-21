@@ -5,6 +5,8 @@ import Modal from '../ui/Modal.js'
 type DeleteConfirmationModalProps = {
   consequence: string
   description?: string
+  errorMessage?: string | null | undefined
+  isDeleting?: boolean | undefined
   isOpen: boolean
   itemLabel: string
   itemType: string
@@ -15,6 +17,8 @@ type DeleteConfirmationModalProps = {
 const DeleteConfirmationModal = ({
   consequence,
   description = 'This action cannot be undone.',
+  errorMessage,
+  isDeleting = false,
   isOpen,
   itemLabel,
   itemType,
@@ -24,7 +28,7 @@ const DeleteConfirmationModal = ({
   <Modal
     description={description}
     isOpen={isOpen}
-    onClose={onClose}
+    onClose={() => (isDeleting ? undefined : onClose())}
     title={`Delete ${itemType}?`}
   >
     <div className="px-5 py-5 sm:px-6">
@@ -47,14 +51,20 @@ const DeleteConfirmationModal = ({
           <p className="mt-1 text-sm leading-6 text-[#4B5563]">{consequence}</p>
         </div>
       </div>
+
+      {errorMessage ? (
+        <p className="mt-4 rounded-xl border border-[#F7C9C5] bg-[#FEF3F2] px-4 py-3 text-sm text-[#B42318]" role="alert">
+          {errorMessage}
+        </p>
+      ) : null}
     </div>
 
     <div className="flex flex-col-reverse gap-3 border-t border-[#E5E7EB] px-5 py-4 sm:flex-row sm:justify-end sm:px-6">
-      <Button onClick={onClose} size="md" variant="secondary">
+      <Button disabled={isDeleting} onClick={onClose} size="md" variant="secondary">
         Keep {itemType}
       </Button>
-      <Button leftIcon={<Trash2 size={16} />} onClick={onConfirm} size="md" variant="danger">
-        Delete {itemType}
+      <Button disabled={isDeleting} leftIcon={<Trash2 size={16} />} onClick={onConfirm} size="md" variant="danger">
+        {isDeleting ? 'Deleting…' : `Delete ${itemType}`}
       </Button>
     </div>
   </Modal>

@@ -108,6 +108,7 @@ const ApplicationDetailModal = ({ applicationId, onClose }: ApplicationDetailMod
         currentStatus={applicationStatusLabels[application.status]}
         entityName={`${application.program.name} (${application.publicId})`}
         isOpen
+        isSaving={updateStatus.isPending}
         onClose={() => setView('detail')}
         onUpdate={(option, note) => {
           const selected = statusOptions.find((candidate) => candidate.label === option.label)
