@@ -16,6 +16,7 @@ import { useMemo, useState } from 'react'
 import { isAxiosError } from 'axios'
 import { useNavigate } from 'react-router-dom'
 import AppShell from '../../components/layout/AppShell.js'
+import AdvisorProfileModal from '../../components/modals/AdvisorProfileModal.js'
 import Badge from '../../components/ui/Badge.js'
 import Button from '../../components/ui/Button.js'
 import Card from '../../components/ui/Card.js'
@@ -23,6 +24,7 @@ import Input from '../../components/ui/Input.js'
 import type { ApiErrorResponse } from '../../lib/api/types.js'
 import { useAdvisorProfiles } from '../../features/advisors/useAdvisors.js'
 import type { AdvisorAvailability, AdvisorProfile } from '../../features/advisors/advisors.api.js'
+import { useAuthStore } from '../../store/authStore.js'
 
 type WorkloadState = 'Balanced' | 'Near capacity' | 'Over capacity'
 
@@ -70,6 +72,9 @@ const AdvisorsPage = () => {
   const [page, setPage] = useState(1)
 
   const { data: advisors, isLoading, isError, error } = useAdvisorProfiles()
+  // Creating and editing profiles is ADMIN-only on the API.
+  const isAdmin = useAuthStore((state) => state.user?.role === 'ADMIN')
+  const [profileModal, setProfileModal] = useState<{ advisor?: AdvisorProfile } | null>(null)
 
   const filteredAdvisors = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase()
@@ -155,9 +160,19 @@ const AdvisorsPage = () => {
             >
               Manage team accounts
             </Button>
-            <Button leftIcon={<Users size={17} />} onClick={() => navigate('/students')} size="md">
+            <Button
+              leftIcon={<Users size={17} />}
+              onClick={() => navigate('/students')}
+              size="md"
+              variant={isAdmin ? 'secondary' : 'primary'}
+            >
               Review assignments
             </Button>
+            {isAdmin ? (
+              <Button leftIcon={<UserRoundCheck size={17} />} onClick={() => setProfileModal({})} size="md">
+                Create advisor profile
+              </Button>
+            ) : null}
           </div>
         </div>
 
@@ -319,14 +334,26 @@ const AdvisorsPage = () => {
                           </span>
                         </td>
                         <td className="whitespace-nowrap px-6 py-4 text-right">
-                          <Button
-                            className="w-max whitespace-nowrap"
-                            onClick={() => navigate(`/students?advisorId=${advisor.advisorId}`)}
-                            size="sm"
-                            variant="secondary"
-                          >
-                            View students
-                          </Button>
+                          <div className="flex justify-end gap-2">
+                            {isAdmin ? (
+                              <Button
+                                className="w-max whitespace-nowrap"
+                                onClick={() => setProfileModal({ advisor })}
+                                size="sm"
+                                variant="ghost"
+                              >
+                                Edit
+                              </Button>
+                            ) : null}
+                            <Button
+                              className="w-max whitespace-nowrap"
+                              onClick={() => navigate(`/students?advisorId=${advisor.advisorId}`)}
+                              size="sm"
+                              variant="secondary"
+                            >
+                              View students
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     )
@@ -454,6 +481,14 @@ const AdvisorsPage = () => {
           </Card>
         </div>
       </div>
+
+      {profileModal ? (
+        <AdvisorProfileModal
+          advisor={profileModal.advisor}
+          existingAdvisorIds={(advisors ?? []).map((advisor) => advisor.advisorId)}
+          onClose={() => setProfileModal(null)}
+        />
+      ) : null}
     </AppShell>
   )
 }

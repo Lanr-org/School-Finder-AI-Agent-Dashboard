@@ -9,6 +9,7 @@ export type AdvisorProfile = {
   advisorId: string
   fullName: string
   email: string
+  status: 'INVITED' | 'ACTIVE' | 'DISABLED'
   availability: AdvisorAvailability
   maxCapacity: number | null
   activeStudentCount: number
