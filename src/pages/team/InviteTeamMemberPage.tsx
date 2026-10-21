@@ -7,7 +7,7 @@ import {
   UserRoundCheck,
   UsersRound,
 } from 'lucide-react'
-import { useState, type ReactNode } from 'react'
+import { useState, type FormEvent, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import AppShell from '../../components/layout/AppShell.js'
 import UnsavedChangesModal from '../../components/modals/UnsavedChangesModal.js'
@@ -15,9 +15,14 @@ import Badge from '../../components/ui/Badge.js'
 import Button from '../../components/ui/Button.js'
 import Card from '../../components/ui/Card.js'
 import Input from '../../components/ui/Input.js'
+import type { UserRole } from '../../features/team/team.api.js'
+import { useInviteTeamMember } from '../../features/team/useTeamMembers.js'
 import useUnsavedChanges from '../../hooks/useUnsavedChanges.js'
+import { apiErrorMessage } from '../../lib/api/errors.js'
 
 type TeamRole = 'Admin' | 'Advisor' | 'Operations'
+
+const roleValues: Record<TeamRole, UserRole> = { Admin: 'ADMIN', Advisor: 'ADVISOR', Operations: 'OPERATIONS' }
 
 const roles: {
   description: string
@@ -47,19 +52,48 @@ const roles: {
 
 const InviteTeamMemberPage = () => {
   const unsavedChanges = useUnsavedChanges()
+  const invite = useInviteTeamMember()
   const [selectedRole, setSelectedRole] = useState<TeamRole>('Advisor')
+  const [fullName, setFullName] = useState('')
+  const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
+  // Set when the account was created but the email provider refused the message.
+  const [unsentFor, setUnsentFor] = useState<{ publicId: string; email: string } | null>(null)
   const selectedRoleDetails = roles.find((role) => role.name === selectedRole) ?? roles[0]!
+  const isSending = invite.isPending
+
+  const submit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (isSending) return
+    setUnsentFor(null)
+    invite.mutate(
+      {
+        fullName: fullName.trim(),
+        email: email.trim(),
+        role: roleValues[selectedRole],
+        phone: phone.trim() ? phone.trim() : null,
+      },
+      {
+        onSuccess: (result) => {
+          if (result.emailSent) {
+            unsavedChanges.navigateAfterSave(`/team/${result.publicId}`)
+          } else {
+            setUnsentFor({ publicId: result.publicId, email: result.email })
+          }
+        },
+      },
+    )
+  }
+
+  const sendButton = (
+    <Button disabled={isSending} leftIcon={<MailPlus size={17} />} size="md" type="submit">
+      {isSending ? 'Sending invitation…' : 'Send invitation'}
+    </Button>
+  )
 
   return (
     <AppShell>
-      <form
-        className="space-y-6"
-        onChange={unsavedChanges.markDirty}
-        onSubmit={(event) => {
-          event.preventDefault()
-          unsavedChanges.navigateAfterSave('/team')
-        }}
-      >
+      <form className="space-y-6" onChange={unsavedChanges.markDirty} onSubmit={submit}>
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div>
             <Link
@@ -79,14 +113,33 @@ const InviteTeamMemberPage = () => {
           </div>
 
           <div className="flex flex-wrap gap-3">
-            <Button onClick={() => unsavedChanges.requestNavigation('/team')} size="md" variant="secondary">
+            <Button
+              disabled={isSending}
+              onClick={() => unsavedChanges.requestNavigation('/team')}
+              size="md"
+              variant="secondary"
+            >
               Cancel
             </Button>
-            <Button leftIcon={<MailPlus size={17} />} size="md" type="submit">
-              Send invitation
-            </Button>
+            {sendButton}
           </div>
         </div>
+
+        {invite.isError ? (
+          <p className="rounded-xl border border-[#F7C9C5] bg-[#FEF3F2] px-4 py-3 text-sm text-[#B42318]" role="alert">
+            {apiErrorMessage(invite.error, "Couldn't send the invitation. Please try again.")}
+          </p>
+        ) : null}
+
+        {unsentFor ? (
+          <p className="rounded-xl border border-[#FDE68A] bg-[#FFFBEB] px-4 py-3 text-sm text-[#92400E]" role="alert">
+            The account was created, but the email to {unsentFor.email} didn't send.{' '}
+            <Link className="font-semibold underline" to={`/team/${unsentFor.publicId}`}>
+              Open their account to resend it
+            </Link>
+            .
+          </p>
+        ) : null}
 
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
           <div className="space-y-6">
@@ -101,9 +154,12 @@ const InviteTeamMemberPage = () => {
                     autoComplete="name"
                     id="full-name"
                     label="Full name"
+                    minLength={2}
                     name="fullName"
+                    onChange={(event) => setFullName(event.target.value)}
                     placeholder="Enter team member's full name"
                     required
+                    value={fullName}
                   />
                 </div>
                 <Input
@@ -111,19 +167,25 @@ const InviteTeamMemberPage = () => {
                   helperText="The invitation will be sent to this address."
                   id="work-email"
                   label="Work email"
+                  maxLength={160}
                   name="email"
+                  onChange={(event) => setEmail(event.target.value)}
                   placeholder="name@company.com"
                   required
                   type="email"
+                  value={email}
                 />
                 <Input
                   autoComplete="tel"
                   helperText="Optional internal contact number."
                   id="phone-number"
                   label="Phone number"
+                  maxLength={40}
                   name="phone"
+                  onChange={(event) => setPhone(event.target.value)}
                   placeholder="+234 000 000 0000"
                   type="tel"
+                  value={phone}
                 />
               </div>
             </FormSection>
@@ -216,7 +278,7 @@ const InviteTeamMemberPage = () => {
               <h2 className="text-lg font-semibold text-[#111827]">Invitation process</h2>
               <ol className="mt-4 space-y-4">
                 <ProcessStep label="Account is created with Invited status." number="1" />
-                <ProcessStep label="A secure setup link is sent by email." number="2" />
+                <ProcessStep label="A secure setup link is sent by email. It works for 7 days." number="2" />
                 <ProcessStep label="The member creates their own password." number="3" />
                 <ProcessStep label="Their account becomes active." number="4" />
               </ol>
@@ -238,12 +300,15 @@ const InviteTeamMemberPage = () => {
 
         <div className="sticky bottom-0 z-10 -mx-4 border-t border-[#E5E7EB] bg-white/95 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8 xl:hidden">
           <div className="flex justify-end gap-3">
-            <Button onClick={() => unsavedChanges.requestNavigation('/team')} size="md" variant="secondary">
+            <Button
+              disabled={isSending}
+              onClick={() => unsavedChanges.requestNavigation('/team')}
+              size="md"
+              variant="secondary"
+            >
               Cancel
             </Button>
-            <Button leftIcon={<MailPlus size={17} />} size="md" type="submit">
-              Send invitation
-            </Button>
+            {sendButton}
           </div>
         </div>
       </form>

@@ -31,8 +31,15 @@ import Button from '../../components/ui/Button.js'
 import Card from '../../components/ui/Card.js'
 import Input from '../../components/ui/Input.js'
 import type { ApiErrorResponse } from '../../lib/api/types.js'
-import { useTeamMembers } from '../../features/team/useTeamMembers.js'
-import { updateMemberStatus, type TeamMember, type UserRole, type UserStatus } from '../../features/team/team.api.js'
+import { apiErrorMessage } from '../../lib/api/errors.js'
+import { useCancelInvitation, useResendInvitation, useTeamMembers } from '../../features/team/useTeamMembers.js'
+import {
+  getTeamMember,
+  updateMemberStatus,
+  type TeamMember,
+  type UserRole,
+  type UserStatus,
+} from '../../features/team/team.api.js'
 
 const PAGE_SIZE = 10
 
@@ -93,11 +100,47 @@ const TeamPage = () => {
     member: TeamMember
   } | null>(null)
 
+  const [notice, setNotice] = useState<{ tone: 'success' | 'error'; text: string } | null>(null)
+
   const updateStatus = useMutation({
     mutationFn: ({ userId, nextStatus }: { userId: string; nextStatus: 'ACTIVE' | 'DISABLED' }) =>
       updateMemberStatus(userId, nextStatus),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['team-members'] }),
   })
+  const resend = useResendInvitation(undefined)
+  const cancel = useCancelInvitation()
+  const [resendingId, setResendingId] = useState<string | null>(null)
+
+  // The list has no invitation ids, so look the member up first.
+  const invitationIdFor = async (member: TeamMember) => {
+    const detail = await queryClient.fetchQuery({
+      queryKey: ['team-member', member.publicId],
+      queryFn: () => getTeamMember(member.publicId),
+    })
+    if (!detail.invitation) throw new Error('This invitation is no longer open. Refresh the page.')
+    return detail.invitation.id
+  }
+
+  const resendFor = async (member: TeamMember) => {
+    setOpenMenuId(null)
+    setNotice(null)
+    setResendingId(member.publicId)
+    try {
+      const result = await resend.mutateAsync(await invitationIdFor(member))
+      setNotice(
+        result.emailSent
+          ? { tone: 'success', text: `Invitation resent to ${member.email}.` }
+          : { tone: 'error', text: `The new link was created but the email to ${member.email} didn't send. Try again.` },
+      )
+    } catch (resendError) {
+      setNotice({
+        tone: 'error',
+        text: resendError instanceof Error && !isAxiosError(resendError) ? resendError.message : apiErrorMessage(resendError),
+      })
+    } finally {
+      setResendingId(null)
+    }
+  }
 
   useEffect(() => {
     const closeMenu = (event: MouseEvent) => {
@@ -138,22 +181,39 @@ const TeamPage = () => {
   const totalPages = Math.max(1, Math.ceil(filteredMembers.length / PAGE_SIZE))
   const pagedMembers = filteredMembers.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
+  const [accessError, setAccessError] = useState<string | null>(null)
+  const [isConfirming, setIsConfirming] = useState(false)
+
   const openAccessConfirmation = (action: AccountAccessAction, member: TeamMember) => {
     setOpenMenuId(null)
+    setAccessError(null)
     setAccessAction({ action, member })
   }
 
-  const confirmAccessChange = () => {
+  // The dialog stays open, showing progress, until the change succeeds or fails.
+  const confirmAccessChange = async () => {
     if (!accessAction) return
-
-    if (accessAction.action === 'activate' || accessAction.action === 'disable') {
-      updateStatus.mutate({
-        userId: accessAction.member.publicId,
-        nextStatus: accessAction.action === 'activate' ? 'ACTIVE' : 'DISABLED',
-      })
+    const { action, member } = accessAction
+    setAccessError(null)
+    setIsConfirming(true)
+    try {
+      if (action === 'cancel-invitation') {
+        await cancel.mutateAsync(await invitationIdFor(member))
+        setNotice({ tone: 'success', text: `Invitation for ${member.email} canceled.` })
+      } else {
+        await updateStatus.mutateAsync({
+          userId: member.publicId,
+          nextStatus: action === 'activate' ? 'ACTIVE' : 'DISABLED',
+        })
+      }
+      setAccessAction(null)
+    } catch (changeError) {
+      setAccessError(
+        changeError instanceof Error && !isAxiosError(changeError) ? changeError.message : apiErrorMessage(changeError),
+      )
+    } finally {
+      setIsConfirming(false)
     }
-
-    setAccessAction(null)
   }
 
   const teamStats = [
@@ -194,6 +254,24 @@ const TeamPage = () => {
             Invite team member
           </Button>
         </div>
+
+        {resendingId ? (
+          <p className="flex items-center gap-2 rounded-xl border border-[#C2CBFF] bg-[#F5F7FF] px-4 py-3 text-sm text-[#2B4BFF]" role="status">
+            <Loader2 className="animate-spin" size={16} />
+            Resending invitation…
+          </p>
+        ) : notice ? (
+          <p
+            className={`rounded-xl border px-4 py-3 text-sm ${
+              notice.tone === 'success'
+                ? 'border-[#B7E4CB] bg-[#ECFDF3] text-[#067647]'
+                : 'border-[#F7C9C5] bg-[#FEF3F2] text-[#B42318]'
+            }`}
+            role={notice.tone === 'error' ? 'alert' : 'status'}
+          >
+            {notice.text}
+          </p>
+        ) : null}
 
         <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {teamStats.map((stat) => {
@@ -352,7 +430,7 @@ const TeamPage = () => {
                               />
                               <TeamMenuAction
                                 icon={<KeyRound size={16} />}
-                                label="Edit role & permissions"
+                                label="Edit account"
                                 onClick={() => navigate(`/team/${member.publicId}/edit`)}
                               />
 
@@ -360,11 +438,16 @@ const TeamPage = () => {
 
                               {member.status === 'INVITED' ? (
                                 <>
-                                  <TeamMenuAction icon={<RefreshCw size={16} />} label="Resend invitation" />
+                                  <TeamMenuAction
+                                    icon={<RefreshCw size={16} />}
+                                    label="Resend invitation"
+                                    onClick={() => void resendFor(member)}
+                                  />
                                   <TeamMenuAction
                                     danger
                                     icon={<PowerOff size={16} />}
                                     label="Cancel invitation"
+                                    onClick={() => openAccessConfirmation('cancel-invitation', member)}
                                   />
                                 </>
                               ) : member.status === 'ACTIVE' ? (
@@ -469,10 +552,12 @@ const TeamPage = () => {
         <AccountAccessConfirmationModal
           action={accessAction.action}
           email={accessAction.member.email}
+          errorMessage={accessError}
+          isConfirming={isConfirming}
           isOpen
           memberName={accessAction.member.fullName}
-          onClose={() => setAccessAction(null)}
-          onConfirm={confirmAccessChange}
+          onClose={() => (isConfirming ? undefined : setAccessAction(null))}
+          onConfirm={() => void confirmAccessChange()}
         />
       ) : null}
     </AppShell>
