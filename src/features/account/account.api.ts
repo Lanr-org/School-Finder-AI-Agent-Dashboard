@@ -10,6 +10,7 @@ type RawUserDetails = {
   role: string
   status: string
   last_login_at: string | null
+  is_owner: boolean
   created_at: string
   updated_at: string
 }
@@ -22,6 +23,7 @@ export type CurrentUser = {
   role: string
   status: string
   lastLoginAt: string | null
+  isOwner: boolean
   createdAt: string
   updatedAt: string
 }
@@ -34,6 +36,7 @@ const toCurrentUser = (raw: RawUserDetails): CurrentUser => ({
   role: raw.role,
   status: raw.status,
   lastLoginAt: raw.last_login_at,
+  isOwner: raw.is_owner,
   createdAt: raw.created_at,
   updatedAt: raw.updated_at,
 })
