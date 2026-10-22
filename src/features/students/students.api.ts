@@ -58,6 +58,11 @@ export const getStudent = async (studentId: string): Promise<Student> => {
   return res.data.data
 }
 
+// ADMIN only. Permanent: removes the student, their chats and everything linked to them.
+export const deleteStudent = async (studentId: string): Promise<void> => {
+  await api.delete(`/students/${studentId}`)
+}
+
 export const assignStudentAdvisor = async (studentId: string, advisorId: string | null): Promise<Student> => {
   const res = await api.patch<ApiSuccessResponse<Student>>(`/students/${studentId}/advisor`, { advisorId })
   return res.data.data

@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   assignStudentAdvisor,
+  deleteStudent,
   getStudent,
   getStudentStatusHistory,
   listStudents,
@@ -36,6 +37,20 @@ export const useAssignStudentAdvisor = (studentId: string | undefined) => {
       void queryClient.invalidateQueries({ queryKey: ['advisor-profiles'] })
       void queryClient.invalidateQueries({ queryKey: ['advisor-students'] })
       void queryClient.invalidateQueries({ queryKey: ['student-status-history', studentId] })
+    },
+  })
+}
+
+export const useDeleteStudent = (studentId: string | undefined) => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: () => deleteStudent(studentId as string),
+    onSuccess: () => {
+      // Drop the student's own queries so nothing refetches a 404, then refresh every list and count.
+      queryClient.removeQueries({ queryKey: ['student', studentId] })
+      queryClient.removeQueries({ queryKey: ['student-status-history', studentId] })
+      void queryClient.invalidateQueries()
     },
   })
 }
