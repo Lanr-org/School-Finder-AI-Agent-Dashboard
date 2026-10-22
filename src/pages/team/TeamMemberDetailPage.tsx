@@ -42,12 +42,15 @@ import {
   useTeamMember,
   useUpdateMemberStatus,
 } from '../../features/team/useTeamMembers.js'
+import { useCurrentUser } from '../../features/account/useCurrentUser.js'
+import { canChangeMemberAccess, canEditMember } from '../../features/team/teamRoles.js'
 import { apiErrorMessage } from '../../lib/api/errors.js'
 
 const TeamMemberDetailPage = () => {
   const navigate = useNavigate()
   const { memberId } = useParams()
   const { data: member, isLoading, isError, error } = useTeamMember(memberId)
+  const { data: me } = useCurrentUser()
   // Invitation and account events are both keyed by the member's USR- id.
   const activity = useAuditLogs({ entityId: memberId, limit: 10 })
   const resend = useResendInvitation(memberId)
@@ -140,6 +143,7 @@ const TeamMemberDetailPage = () => {
               <h1 className="text-3xl font-semibold tracking-normal text-[#111827]">{member.fullName}</h1>
               <Badge tone={statusTones[member.status]}>{statusLabels[member.status]}</Badge>
               <Badge tone={roleTones[member.role]}>{roleLabels[member.role]}</Badge>
+              {member.isOwner ? <Badge tone="neutral">Owner</Badge> : null}
               <Badge tone="neutral">{member.publicId}</Badge>
             </div>
             <p className="mt-2 max-w-3xl text-sm leading-6 text-[#6B7280]">
@@ -148,14 +152,16 @@ const TeamMemberDetailPage = () => {
           </div>
 
           <div className="flex flex-wrap gap-3">
-            <Button
-              leftIcon={<Pencil size={17} />}
-              onClick={() => navigate(`/team/${member.publicId}/edit`)}
-              size="md"
-              variant="secondary"
-            >
-              Edit account
-            </Button>
+            {canEditMember(member, me) ? (
+              <Button
+                leftIcon={<Pencil size={17} />}
+                onClick={() => navigate(`/team/${member.publicId}/edit`)}
+                size="md"
+                variant="secondary"
+              >
+                Edit account
+              </Button>
+            ) : null}
             {isInvited ? (
               <>
                 <Button
@@ -166,17 +172,19 @@ const TeamMemberDetailPage = () => {
                 >
                   {resend.isPending ? 'Resending…' : 'Resend invitation'}
                 </Button>
-                <Button
-                  disabled={!invitation}
-                  leftIcon={<Trash2 size={17} />}
-                  onClick={() => openAccess('cancel-invitation')}
-                  size="md"
-                  variant="danger"
-                >
-                  Delete invited account
-                </Button>
+                {canChangeMemberAccess(member, me) ? (
+                  <Button
+                    disabled={!invitation}
+                    leftIcon={<Trash2 size={17} />}
+                    onClick={() => openAccess('cancel-invitation')}
+                    size="md"
+                    variant="danger"
+                  >
+                    Delete invited account
+                  </Button>
+                ) : null}
               </>
-            ) : member.status === 'ACTIVE' ? (
+            ) : !canChangeMemberAccess(member, me) ? null : member.status === 'ACTIVE' ? (
               <Button leftIcon={<PowerOff size={17} />} onClick={() => openAccess('disable')} size="md" variant="danger">
                 Disable account
               </Button>

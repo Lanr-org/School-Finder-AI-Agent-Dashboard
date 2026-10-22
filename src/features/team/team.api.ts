@@ -10,6 +10,8 @@ export type TeamMember = {
   email: string
   role: UserRole
   status: UserStatus
+  // The protected owner account (the first admin).
+  isOwner: boolean
   phone: string | null
   createdAt: string
 }

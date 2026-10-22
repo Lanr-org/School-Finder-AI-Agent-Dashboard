@@ -35,6 +35,8 @@ import Input from '../../components/ui/Input.js'
 import type { ApiErrorResponse } from '../../lib/api/types.js'
 import { apiErrorMessage } from '../../lib/api/errors.js'
 import { useCancelInvitation, useResendInvitation, useTeamMembers } from '../../features/team/useTeamMembers.js'
+import { useCurrentUser } from '../../features/account/useCurrentUser.js'
+import { canChangeMemberAccess, canEditMember } from '../../features/team/teamRoles.js'
 import {
   getTeamMember,
   updateMemberStatus,
@@ -90,6 +92,7 @@ const TeamPage = () => {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { data, error, isError, isLoading } = useTeamMembers()
+  const { data: me } = useCurrentUser()
   const members = data ?? []
 
   const [query, setQuery] = useState('')
@@ -397,7 +400,10 @@ const TeamPage = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <Badge tone={roleTone[member.role]}>{roleLabels[member.role]}</Badge>
+                        <div className="flex flex-wrap gap-1.5">
+                          <Badge tone={roleTone[member.role]}>{roleLabels[member.role]}</Badge>
+                          {member.isOwner ? <Badge tone="neutral">Owner</Badge> : null}
+                        </div>
                       </td>
                       <td className="px-6 py-4">
                         <Badge tone={statusTone[member.status]}>{statusLabels[member.status]}</Badge>
@@ -449,13 +455,17 @@ const TeamPage = () => {
                                 label="View account"
                                 onClick={() => navigate(`/team/${member.publicId}`)}
                               />
-                              <TeamMenuAction
-                                icon={<KeyRound size={16} />}
-                                label="Edit account"
-                                onClick={() => navigate(`/team/${member.publicId}/edit`)}
-                              />
+                              {canEditMember(member, me) ? (
+                                <TeamMenuAction
+                                  icon={<KeyRound size={16} />}
+                                  label="Edit account"
+                                  onClick={() => navigate(`/team/${member.publicId}/edit`)}
+                                />
+                              ) : null}
 
-                              <div className="my-1.5 border-t border-[#E5E7EB]" />
+                              {member.status === 'INVITED' || canChangeMemberAccess(member, me) ? (
+                                <div className="my-1.5 border-t border-[#E5E7EB]" />
+                              ) : null}
 
                               {member.status === 'INVITED' ? (
                                 <>
@@ -464,14 +474,16 @@ const TeamPage = () => {
                                     label="Resend invitation"
                                     onClick={() => void resendFor(member)}
                                   />
-                                  <TeamMenuAction
-                                    danger
-                                    icon={<Trash2 size={16} />}
-                                    label="Delete invited account"
-                                    onClick={() => openAccessConfirmation('cancel-invitation', member)}
-                                  />
+                                  {canChangeMemberAccess(member, me) ? (
+                                    <TeamMenuAction
+                                      danger
+                                      icon={<Trash2 size={16} />}
+                                      label="Delete invited account"
+                                      onClick={() => openAccessConfirmation('cancel-invitation', member)}
+                                    />
+                                  ) : null}
                                 </>
-                              ) : member.status === 'ACTIVE' ? (
+                              ) : !canChangeMemberAccess(member, me) ? null : member.status === 'ACTIVE' ? (
                                 <TeamMenuAction
                                   danger
                                   icon={<PowerOff size={16} />}

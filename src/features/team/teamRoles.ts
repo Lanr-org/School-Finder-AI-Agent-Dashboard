@@ -14,6 +14,23 @@ export const statusTones: Record<UserStatus, 'error' | 'success' | 'warning'> = 
   INVITED: 'warning',
 }
 
+// Mirrors the backend owner rules (team.service assertCanManageMember): only the owner changes the
+// owner's account, and only the owner changes other admins. The server enforces it; this only hides
+// buttons that would be refused.
+type MemberRef = { publicId: string; role: UserRole; isOwner: boolean }
+type Viewer = { publicId: string; isOwner: boolean } | undefined
+
+export const canEditMember = (member: MemberRef, me: Viewer) => {
+  if (!me) return false
+  if (member.publicId === me.publicId) return true
+  if (member.isOwner) return false
+  return member.role !== 'ADMIN' || me.isOwner
+}
+
+// Nobody changes their own access (disable, delete): it could lock everyone out.
+export const canChangeMemberAccess = (member: MemberRef, me: Viewer) =>
+  !!me && member.publicId !== me.publicId && canEditMember(member, me)
+
 // What each role can do; permissions come from the role (AGENTS.md "Baseline Access").
 export const rolePermissions: Record<UserRole, string[]> = {
   ADMIN: ['Manage team access', 'View all students', 'Manage schools and programs', 'Access all workflows'],
