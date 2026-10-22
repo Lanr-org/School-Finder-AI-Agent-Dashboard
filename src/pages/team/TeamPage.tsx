@@ -17,8 +17,10 @@ import {
   UserRoundCheck,
   UserRoundX,
   UsersRound,
+  Trash2,
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
@@ -95,6 +97,8 @@ const TeamPage = () => {
   const [status, setStatus] = useState<UserStatus | 'ALL'>('ALL')
   const [page, setPage] = useState(1)
   const [openMenuId, setOpenMenuId] = useState<string | null>(null)
+  // The menu is drawn on <body> at the button's screen position, so the table's scroll box can't clip it.
+  const [menuPosition, setMenuPosition] = useState<React.CSSProperties>({})
   const [accessAction, setAccessAction] = useState<{
     action: AccountAccessAction
     member: TeamMember
@@ -155,12 +159,19 @@ const TeamPage = () => {
       }
     }
 
+    // A fixed-position menu would drift away from its row on scroll or resize, so close it instead.
+    const closeMenuOnMove = () => setOpenMenuId(null)
+
     document.addEventListener('mousedown', closeMenu)
     document.addEventListener('keydown', closeMenuOnEscape)
+    window.addEventListener('scroll', closeMenuOnMove, true)
+    window.addEventListener('resize', closeMenuOnMove)
 
     return () => {
       document.removeEventListener('mousedown', closeMenu)
       document.removeEventListener('keydown', closeMenuOnEscape)
+      window.removeEventListener('scroll', closeMenuOnMove, true)
+      window.removeEventListener('resize', closeMenuOnMove)
     }
   }, [])
 
@@ -408,20 +419,30 @@ const TeamPage = () => {
                                 ? 'bg-[#ECEFFF] text-[#2B4BFF]'
                                 : 'text-[#6B7280] hover:bg-[#F3F4F6] hover:text-[#111827]'
                             }`}
-                            onClick={() =>
+                            onClick={(event) => {
+                              const rect = event.currentTarget.getBoundingClientRect()
+                              const right = window.innerWidth - rect.right
+                              // Open upwards when there isn't room for the menu below the button.
+                              setMenuPosition(
+                                rect.bottom + 240 > window.innerHeight
+                                  ? { bottom: window.innerHeight - rect.top + 6, right }
+                                  : { top: rect.bottom + 6, right },
+                              )
                               setOpenMenuId((currentId) => (currentId === member.publicId ? null : member.publicId))
-                            }
+                            }}
                             title="Manage account"
                             type="button"
                           >
                             <MoreHorizontal size={17} />
                           </button>
 
-                          {openMenuId === member.publicId ? (
+                          {openMenuId === member.publicId ? createPortal(
                             <div
                               aria-label={`Actions for ${member.fullName}`}
-                              className="absolute right-0 top-11 z-30 w-64 overflow-hidden rounded-lg border border-[#E5E7EB] bg-white py-1.5 text-left shadow-[0_14px_36px_rgba(17,24,39,0.14)]"
+                              className="fixed z-50 w-64 overflow-hidden rounded-lg border border-[#E5E7EB] bg-white py-1.5 text-left shadow-[0_14px_36px_rgba(17,24,39,0.14)]"
+                              data-team-menu
                               role="menu"
+                              style={menuPosition}
                             >
                               <TeamMenuAction
                                 icon={<Eye size={16} />}
@@ -445,8 +466,8 @@ const TeamPage = () => {
                                   />
                                   <TeamMenuAction
                                     danger
-                                    icon={<PowerOff size={16} />}
-                                    label="Cancel invitation"
+                                    icon={<Trash2 size={16} />}
+                                    label="Delete invited account"
                                     onClick={() => openAccessConfirmation('cancel-invitation', member)}
                                   />
                                 </>
@@ -464,7 +485,8 @@ const TeamPage = () => {
                                   onClick={() => openAccessConfirmation('activate', member)}
                                 />
                               )}
-                            </div>
+                            </div>,
+                            document.body,
                           ) : null}
                         </div>
                       </td>
