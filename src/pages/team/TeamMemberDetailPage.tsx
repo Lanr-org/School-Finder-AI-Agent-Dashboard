@@ -14,6 +14,7 @@ import {
   RefreshCw,
   ShieldCheck,
   UserRound,
+  Trash2,
 } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useState } from 'react'
@@ -167,12 +168,12 @@ const TeamMemberDetailPage = () => {
                 </Button>
                 <Button
                   disabled={!invitation}
-                  leftIcon={<PowerOff size={17} />}
+                  leftIcon={<Trash2 size={17} />}
                   onClick={() => openAccess('cancel-invitation')}
                   size="md"
                   variant="danger"
                 >
-                  Cancel invitation
+                  Delete invited account
                 </Button>
               </>
             ) : member.status === 'ACTIVE' ? (
@@ -186,6 +187,13 @@ const TeamMemberDetailPage = () => {
             )}
           </div>
         </div>
+
+        {isInvited && !invitation ? (
+          <p className="rounded-xl border border-[#FDE68A] bg-[#FFFBEB] px-4 py-3 text-sm text-[#92400E]" role="alert">
+            This account is invited, but the server sent no open invitation, so resend and delete are unavailable.
+            Refresh the page. If it keeps happening, the API is likely running an older version than the hub.
+          </p>
+        ) : null}
 
         {resendNotice ? (
           <p

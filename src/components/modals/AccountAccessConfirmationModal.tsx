@@ -39,13 +39,13 @@ const actionContent: Record<AccountAccessAction, ActionContent> = {
     variant: 'primary',
   },
   'cancel-invitation': {
-    buttonLabel: 'Cancel invitation',
-    pendingLabel: 'Canceling…',
-    description: 'Invalidate the pending account setup invitation.',
+    buttonLabel: 'Delete account',
+    pendingLabel: 'Deleting…',
+    description: 'Remove this invited account before it is set up.',
     detail:
-      'The invitation link will stop working and the pending account will be removed. Send a new invitation if this person needs access later.',
+      'The invitation link stops working and the account is deleted. Send a new invitation if this person needs access later.',
     icon: MailX,
-    title: 'Cancel this invitation?',
+    title: 'Delete this invited account?',
     variant: 'danger',
   },
   disable: {
