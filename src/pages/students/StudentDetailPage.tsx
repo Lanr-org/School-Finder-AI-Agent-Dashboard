@@ -20,10 +20,11 @@ import {
 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { isAxiosError } from 'axios'
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import ApplicationDetailModal from '../../components/modals/ApplicationDetailModal.js'
 import AssignAdvisorModal from '../../components/modals/AssignAdvisorModal.js'
 import CreateApplicationModal from '../../components/modals/CreateApplicationModal.js'
+import DeleteConfirmationModal from '../../components/modals/DeleteConfirmationModal.js'
 import QuickStudentEntryModal, {
   type QuickEntryMode,
   type QuickEntryResult,
@@ -43,6 +44,7 @@ import { useAuthStore } from '../../store/authStore.js'
 import { useAdvisorProfiles } from '../../features/advisors/useAdvisors.js'
 import {
   useAssignStudentAdvisor,
+  useDeleteStudent,
   useStudent,
   useStudentStatusHistory,
   useUpdateStudentStatus,
@@ -130,6 +132,7 @@ const formatIntake = (studyMonth: string | null, year: number | null) =>
 
 const StudentDetailPage = () => {
   const { studentId } = useParams()
+  const navigate = useNavigate()
   const currentUser = useAuthStore((state) => state.user)
   const isAdmin = currentUser?.role === 'ADMIN'
 
@@ -137,6 +140,8 @@ const StudentDetailPage = () => {
   const { data: advisors } = useAdvisorProfiles()
   const assignAdvisor = useAssignStudentAdvisor(studentId)
   const updateStatus = useUpdateStudentStatus(studentId)
+  const deleteStudent = useDeleteStudent(studentId)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
 
   const { data: notesResult } = useNotes(studentId)
   const createNote = useCreateNote(studentId)
@@ -261,6 +266,19 @@ const StudentDetailPage = () => {
                 }} size="md">
               Update status
             </Button>
+            {isAdmin ? (
+              <Button
+                leftIcon={<Trash2 size={17} />}
+                onClick={() => {
+                  deleteStudent.reset()
+                  setIsDeleteModalOpen(true)
+                }}
+                size="md"
+                variant="danger"
+              >
+                Delete student
+              </Button>
+            ) : null}
           </div>
         </div>
 
@@ -639,6 +657,21 @@ const StudentDetailPage = () => {
           }}
           onClose={() => setIsAdvisorModalOpen(false)}
           studentName={fullName || student.publicId}
+        />
+      ) : null}
+      {isAdmin ? (
+        <DeleteConfirmationModal
+          consequence="Their profile, every chat and message, notes, follow-ups, applications, recommendations and shortlist are deleted for good. If they message the bot again, they start as a new student."
+          description="This removes the student from Smetase permanently and cannot be undone."
+          errorMessage={deleteStudent.isError ? apiErrorMessage(deleteStudent.error) : null}
+          isDeleting={deleteStudent.isPending}
+          isOpen={isDeleteModalOpen}
+          itemLabel={`${fullName || student.publicId} (${student.publicId})`}
+          itemType="student"
+          onClose={() => setIsDeleteModalOpen(false)}
+          onConfirm={() => {
+            deleteStudent.mutate(undefined, { onSuccess: () => navigate('/students', { replace: true }) })
+          }}
         />
       ) : null}
       <UpdateWorkflowStatusModal
