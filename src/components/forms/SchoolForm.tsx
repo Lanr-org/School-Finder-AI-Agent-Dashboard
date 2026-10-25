@@ -76,6 +76,7 @@ const SchoolForm = ({
       admissionFriendlinessScore: numberOrNull(form, 'admissionFriendlinessScore'),
       admissionFriendlinessNotes: textOrNull(form, 'admissionFriendlinessNotes'),
       rankingReputationNotes: textOrNull(form, 'rankingReputationNotes'),
+      visaSponsorLookupName: textOrNull(form, 'visaSponsorLookupName'),
     })
   }
 
@@ -86,12 +87,22 @@ const SchoolForm = ({
           <div className="sm:col-span-2">
             <Input
               defaultValue={initialValues?.name}
-              helperText="Use the official name, as on the Home Office sponsor register (e.g. The University of Manchester)."
+              helperText="Use the official name students know (e.g. The University of Manchester)."
               id="school-name"
               label="School name"
               name="name"
               placeholder="Enter official school name"
               required
+            />
+          </div>
+          <div className="sm:col-span-2">
+            <Input
+              defaultValue={initialValues?.visaSponsorLookupName ?? ''}
+              helperText="UK only. Fill this in only if the Home Office sponsor register lists the school under another name (e.g. University of Ulster for Ulster University)."
+              id="sponsor-lookup-name"
+              label="Name on UK sponsor register (optional)"
+              name="visaSponsorLookupName"
+              placeholder="Leave blank if it matches the school name"
             />
           </div>
           <SelectField
