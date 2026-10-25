@@ -50,7 +50,7 @@ const AddSchoolPage = () => {
                   <h2 className="text-lg font-semibold text-[#111827]">Visa sponsor check</h2>
                   <p className="mt-2 text-sm leading-6 text-[#6B7280]">
                     UK schools are checked automatically against the Home Office register of licensed student
-                    sponsors. Use the school's official name so the check can find it.
+                    sponsors. If the register uses a different name, add it under Name on UK sponsor register.
                   </p>
                 </div>
               </div>

@@ -24,6 +24,7 @@ export type School = {
   admissionFriendlinessScore: number | null
   admissionFriendlinessNotes: string | null
   rankingReputationNotes: string | null
+  visaSponsorLookupName: string | null
   visaSponsorStatus: VisaSponsorStatus
   visaSponsorSource: string | null
   visaSponsorCheckedAt: string | null
@@ -54,6 +55,7 @@ export type SchoolInput = {
   admissionFriendlinessScore: number | null
   admissionFriendlinessNotes: string | null
   rankingReputationNotes: string | null
+  visaSponsorLookupName: string | null
 }
 
 export type SchoolsPagination = {

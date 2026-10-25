@@ -300,8 +300,9 @@ const SponsorCard = ({ school }: { school: School }) => (
     ) : school.visaSponsorCheckedAt ? (
       <p className="flex items-start gap-2 text-sm leading-6 text-[#6B7280]">
         <CircleDashed className="mt-0.5 shrink-0" size={17} />
-        {school.visaSponsorNote ?? 'Not found on the register.'} Edit the school name to match the register, or
-        confirm with the school that it is licensed.
+        {school.visaSponsorNote ?? 'Not found on the register.'} If the register lists it under another name, edit the
+        school, set its name on the UK sponsor register, then check the register again. Otherwise confirm with the
+        school that it is licensed.
       </p>
     ) : (
       <p className="flex items-start gap-2 text-sm leading-6 text-[#6B7280]">
