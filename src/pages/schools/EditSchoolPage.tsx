@@ -29,6 +29,7 @@ const toInput = (school: School): SchoolInput => ({
   admissionFriendlinessScore: school.admissionFriendlinessScore,
   admissionFriendlinessNotes: school.admissionFriendlinessNotes,
   rankingReputationNotes: school.rankingReputationNotes,
+  visaSponsorLookupName: school.visaSponsorLookupName,
 })
 
 const EditSchoolPage = () => {
