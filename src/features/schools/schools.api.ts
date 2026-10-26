@@ -86,6 +86,13 @@ export const listSchools = async (params: ListSchoolsParams): Promise<ListSchool
   return res.data.data
 }
 
+export type SchoolCountry = { country: string; schools: number }
+
+export const listSchoolCountries = async (): Promise<SchoolCountry[]> => {
+  const res = await api.get<ApiSuccessResponse<{ countries: SchoolCountry[] }>>('/schools/countries')
+  return res.data.data.countries
+}
+
 export const getSchool = async (schoolId: string): Promise<School> => {
   const res = await api.get<ApiSuccessResponse<School>>(`/schools/${schoolId}`)
   return res.data.data

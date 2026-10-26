@@ -24,7 +24,7 @@ import Input from '../../components/ui/Input.js'
 import { api } from '../../lib/api/client.js'
 import type { ApiErrorResponse } from '../../lib/api/types.js'
 import { useAuthStore } from '../../store/authStore.js'
-import { useSchools, useSyncSponsorRegister } from '../../features/schools/useSchools.js'
+import { useSchoolCountries, useSchools, useSyncSponsorRegister } from '../../features/schools/useSchools.js'
 import { apiErrorMessage } from '../../lib/api/errors.js'
 import type { PartnerStatus, School, SchoolType } from '../../features/schools/schools.api.js'
 
@@ -69,6 +69,7 @@ const SchoolsPage = () => {
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [type, setType] = useState<SchoolType | 'ALL'>('ALL')
   const [partnerStatus, setPartnerStatus] = useState<PartnerStatus | 'ALL'>('ALL')
+  const [country, setCountry] = useState('ALL')
   const [page, setPage] = useState(1)
 
   useEffect(() => {
@@ -81,13 +82,22 @@ const SchoolsPage = () => {
       page,
       limit: PAGE_SIZE,
       search: debouncedSearch || undefined,
+      country: country === 'ALL' ? undefined : country,
       schoolType: type === 'ALL' ? undefined : type,
       partnerStatus: partnerStatus === 'ALL' ? undefined : partnerStatus,
     }),
-    [debouncedSearch, page, partnerStatus, type],
+    [country, debouncedSearch, page, partnerStatus, type],
   )
 
   const { data, error, isError, isLoading, isFetching } = useSchools(queryParams)
+  const { data: countries } = useSchoolCountries()
+  const countryOptions = useMemo(
+    () => [
+      { label: 'All countries', value: 'ALL' },
+      ...(countries ?? []).map((item) => ({ label: `${item.country} (${item.schools})`, value: item.country })),
+    ],
+    [countries],
+  )
 
   const toggleStatus = useMutation({
     mutationFn: (school: School) =>
@@ -178,7 +188,7 @@ const SchoolsPage = () => {
               </p>
             </div>
 
-            <div className="mt-5 grid gap-3 xl:grid-cols-[minmax(280px,1fr)_200px_220px]">
+            <div className="mt-5 grid gap-3 xl:grid-cols-[minmax(280px,1fr)_200px_200px_220px]">
               <Input
                 className="h-11 bg-[#F9FAFB]"
                 id="school-search"
@@ -192,6 +202,16 @@ const SchoolsPage = () => {
                 value={searchInput}
               />
 
+              <FilterSelect
+                id="country-filter"
+                label="Country"
+                onChange={(value) => {
+                  setCountry(value)
+                  resetToFirstPage()
+                }}
+                options={countryOptions}
+                value={country}
+              />
               <FilterSelect
                 id="type-filter"
                 label="Type"
@@ -349,6 +369,7 @@ const SchoolsPage = () => {
                   setSearchInput('')
                   setType('ALL')
                   setPartnerStatus('ALL')
+                  setCountry('ALL')
                   resetToFirstPage()
                 }}
                 size="md"

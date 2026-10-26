@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import {
   createSchool,
   getSchool,
+  listSchoolCountries,
   listSchools,
   syncSponsorRegister,
   updateSchool,
@@ -15,6 +16,13 @@ export const useSchools = (params: ListSchoolsParams) =>
     queryKey: ['schools', params],
     queryFn: () => listSchools(params),
     placeholderData: (previousData) => previousData,
+  })
+
+// Shares the ['schools'] prefix so adding or editing a school refreshes the options.
+export const useSchoolCountries = () =>
+  useQuery({
+    queryKey: ['schools', 'countries'],
+    queryFn: listSchoolCountries,
   })
 
 export const useSchool = (schoolId: string | undefined) =>
